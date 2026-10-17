@@ -1160,7 +1160,7 @@
     let x = 0, i = 0;
     while (x < 480) {
       const w = Math.min(28 + hash(i * 7 + 5) % 11, 480 - x);
-      out.push({ x, w, h: 29 + hash(i * 11 + 3) % 8, awning: ['#d7263d', '#2e8b57', null][hash(i * 5 + 1) % 3] });
+      out.push({ x, w, h: 40 + hash(i * 11 + 3) % 9, awning: ['#d7263d', '#2e8b57', null][hash(i * 5 + 1) % 3] });
       x += w; i++;
     }
     return out;
@@ -1394,7 +1394,9 @@
   });
 
   const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5];
-  let ev = null, evSeg = -1, evFx = [];
+  let ev = null, evSeg = -1, evFx = [], shake = 0;
+  let reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
   const groundY = () => (world >= 3 ? H * 0.88 : H * 0.84) - (camY - camBase()) * 0.3;
   const evK = () => (H >= 260 ? 2 : 1);
   const ease = u => u * u * (3 - 2 * u);
@@ -1409,6 +1411,7 @@
     Sound.event(w);
   }
   function updateEvent(dt) {
+    shake *= Math.exp(-dt * 10);
     for (const q of evFx) { q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
     evFx = evFx.filter(q => q.life > 0);
     if (!ev) return;
@@ -1418,7 +1421,17 @@
     if (ev.w === 0) {
       const [x, y] = unicornPos(ev.t, dur), last = ev.path[ev.path.length - 1];
       if (!last || x - last.x >= 2) ev.path.push({ x: x + 2 * s, y: y + 8 * s });
-    } else if (ev.w === 1 && ev.t > 1.6 && ev.t < 4.6) {
+    } else if (ev.w === 2) {
+      // Une secousse à chaque coup sur la poitrine, plus forte quand le gorille passe devant le personnage.
+      const phase = ev.t % 1.6, frame = phase < 0.9 ? Math.floor(phase / 0.15) % 2 : 0;
+      const cx = W + 50 * evK() - (ev.t / dur) * (W + 120 * evK());
+      if (frame === 1 && ev.lastFrame === 0 && cx > -20 && cx < W + 20) shake = Math.max(shake, Math.abs(cx - W * 0.28) < 70 ? 3.5 : 1.8);
+      ev.lastFrame = frame;
+    } else if (ev.w === 1 && (ev.t < 1.2 || ev.t > dur - 1.2)) {
+      shake = Math.max(shake, 0.8);
+    }
+    if (ev && ev.w === 1 && ev.t > 1.6 && ev.t < 4.6) {
+      shake = Math.max(shake, 1.8);
       const spr = kaijuFrames[1];
       const mx = W * 0.74 - spr.width * s / 2 + 3 * s, my = groundY() - spr.height * s + 17 * s;
       for (let i = 0; i < 3; i++) {
@@ -1428,7 +1441,7 @@
   }
   function drawEvent() {
     if (!ev) { drawEventFx(); return; }
-    const t = ev.t, dur = EVENT_DUR[ev.w], u = t / dur, K = evK(), gy = Math.round(groundY());
+    const t = ev.t, dur = EVENT_DUR[ev.w], u = t / dur, K = evK(), gy = Math.round(groundY()), gyBase = gy;
     const fade = clamp((dur - t) / 1, 0, 1);
     if (ev.w === 0) {
       // La licorne vole en laissant un grand arc-en-ciel.
@@ -1456,7 +1469,7 @@
       ctx.drawImage(g, cx - Math.round(g.width * gs / 2), gy - 83 * K - g.height * gs + 2 * gs, g.width * gs, g.height * gs);
     } else if (ev.w === 3) {
       // Buckingham Palace défile : la reine salue la foule depuis le balcon.
-      const cx = Math.round(W + 90 * K - u * (W + 180 * K));
+      const cx = Math.round(W + 90 * K - u * (W + 180 * K)), gy = gyBase - 30 * K;
       ctx.drawImage(palaceC, cx - 80 * K, gy - 80 * K, 160 * K, 80 * K);
       const qs = 2 * K, q = queenFrames[Math.floor(t / 0.3) % 2];
       ctx.drawImage(q, cx - Math.round(q.width * qs / 2), gy - 30 * K - (q.height - 4) * qs, q.width * qs, q.height * qs);
@@ -1519,7 +1532,7 @@
     camX = player.x - W * 0.28;
     camY = camBase();
     world = 0; genWorld = 0; trans = null; plane = null; worldCard = 0; petals = [];
-    ev = null; evFx = []; evSeg = -1;
+    ev = null; evFx = []; evSeg = -1; shake = 0;
     Sound.setSong(0);
     while (lastPlat().x + lastPlat().w < camX + W + 200) genNext();
   }
@@ -1556,7 +1569,7 @@
   }
   function switchWorld(w) {
     world = w;
-    ev = null; evFx = [];
+    ev = null; evFx = []; shake = 0;
     for (const pl of platforms) { pl.s = w * 3 + (pl.s % 3); pl.img = null; }
     Sound.setSong(w);
     plane = { t: 0 };
@@ -1947,7 +1960,7 @@
       drawStrip(parisFar, 0.1, far, '#7a83b8');
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
-      drawStrip(parisMid, 0.3, H * 0.88 - vOff * 0.3, '#5a5f75');
+      drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
     }
   }
   const mod = (a, n) => ((a % n) + n) % n;
@@ -2110,6 +2123,10 @@
   function draw() {
     ctx.setTransform(PX, 0, 0, PX, 0, 0);
     ctx.imageSmoothingEnabled = false;
+    if (shake > 0.3 && !reduceMotion && !paused) {
+      ctx.fillStyle = '#1f1533'; ctx.fillRect(0, 0, W, H);
+      ctx.translate(Math.round((Math.random() * 2 - 1) * shake), Math.round((Math.random() * 2 - 1) * shake));
+    }
     drawBackground();
     drawEvent();
     drawPlane();
