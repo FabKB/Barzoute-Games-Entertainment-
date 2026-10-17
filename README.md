@@ -6,7 +6,7 @@ Une glace licorne en pixel art court de plateforme en plateforme en laissant der
 
 ### Jouer
 
-Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, le doudou cigogne ou le doudou faune.
+Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, le doudou cigogne, le doudou faune ou Douliam, le doudou en tricot.
 
 - **Toucher l'écran** (ou Espace / flèche haut) : sauter. Garde le doigt appuyé pour sauter plus haut.
 - **Toucher une 2e fois en l'air** : double saut.

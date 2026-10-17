@@ -452,7 +452,9 @@
     // Hélice de l'avion
     A: '#a3a9bb',
     // Licorne volante, reine, avions de la patrouille
-    m: '#ff9ecf', M: '#b48be8', V: '#a46bff', U: '#8fb7e8', j: '#f2f2f2', i: '#f3d3b8', x: '#3c4f7a'
+    m: '#ff9ecf', M: '#b48be8', V: '#a46bff', U: '#8fb7e8', j: '#f2f2f2', i: '#f3d3b8', x: '#3c4f7a',
+    // Douliam, le doudou en tricot vert d'eau
+    Q: '#a8d8b0', X: '#86bf91', Z: '#c6ead0', D: '#79b386', F: '#f4f1ea'
   };
   // La glace licorne, d'après le dessin : corne, oreilles de chat, grands yeux, cornet gaufré.
   const SCOOP = [
@@ -583,6 +585,37 @@
     });
     return c;
   }
+  // Douliam : nid d'ange en tricot vert d'eau, col roulé, torsades et petite étiquette.
+  const DOULIAM = (() => {
+    const rows = [], w = 18, c = 9;
+    for (let y = 0; y < 30; y++) {
+      // Col roulé plus large, bande de torsades, puis une poche arrondie qui finit en petite pointe.
+      const half = y < 5 ? 9 : y < 12 ? 7.5 : y < 28 ? Math.max(1.5, 7.5 * Math.sqrt(Math.max(0, 1 - ((y - 12) / 17.5) ** 2))) : 1.2;
+      let r = '';
+      for (let x = 0; x < w; x++) {
+        const d = Math.abs(x + 0.5 - c);
+        if (d > half) { r += '.'; continue; }
+        if (d > half - 1 || y === 0) { r += 'K'; continue; }
+        let ch;
+        if (y <= 4) ch = y === 4 ? 'D' : y <= 1 ? 'Z' : ((x + y) % 2 ? 'Q' : 'Z');
+        else if (y <= 11) {
+          const k = x % 4;
+          ch = k === 3 ? 'X' : (k === 0 || k === 1) ? (((y + k) % 2 === 0) ? 'Z' : 'D') : 'Q';
+        } else ch = (x + 0.5 > c + half - 2) ? 'X' : ((x + y) % 3 === 0 ? 'X' : 'Q');
+        r += ch;
+      }
+      rows.push(r);
+    }
+    const put = (x, y, ch) => { rows[y] = rows[y].slice(0, x) + ch + rows[y].slice(x + 1); };
+    put(13, 8, 'F'); put(14, 8, 'F'); put(13, 9, 'F'); put(14, 9, 'F');
+    put(6, 15, 'K'); put(11, 15, 'K'); put(4, 17, 'R'); put(13, 17, 'R'); put(8, 18, 'K'); put(9, 18, 'K');
+    return rows;
+  })();
+  const DOULIAM_BLINK = DOULIAM.map((r, y) => y === 15 ? r.slice(0, 6) + 'X' + r.slice(7, 11) + 'X' + r.slice(12) : r);
+  // Accent : la petite pointe se balance.
+  const douliamSway = {};
+  for (let y = 24; y < 30; y++) douliamSway[y] = '.' + DOULIAM[y].slice(0, -1);
+
   // trail : hauteur (depuis les pieds) où part l'arc-en-ciel.
   // Animation d'attente en boucle, indépendante du saut :
   // normal → tassé (on retire la ligne « cut », le haut descend d'1 px) → normal → petit détail (accent).
@@ -602,7 +635,8 @@
       18: '.TTTKKoooqoooooKK....',
       19: '...TTKoooooooooK.....',
       20: '.....KoooooooooK.....'
-    } }
+    } },
+    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, cut: 20, accent: douliamSway }
   ].map(c => {
     const frames = rows => {
       const blank = '.'.repeat(rows[0].length);
@@ -2054,14 +2088,19 @@
     text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
     if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
     const hint = Math.round(H - safe.b - 14);
-    const top = y0 + 72, room = hint - 22 - top;
+    // Une seule rangée de cartes si elle tient, sinon deux rangées de deux.
+    const top = y0 + 72, gap = 6;
+    const cols = CHARS.length * 62 + (CHARS.length - 1) * gap <= W - 8 ? CHARS.length : 2;
+    const nrows = Math.ceil(CHARS.length / cols);
+    const room = (hint - 22 - top - (nrows - 1) * gap) / nrows;
     const s = room >= 70 ? 2 : 1;
-    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8, gap = 6;
-    const mby = Math.min(top + ch + 22, hint - 16);
-    const total = CHARS.length * cw + (CHARS.length - 1) * gap;
-    let x = Math.round(cx - total / 2);
+    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8;
+    const mby = Math.min(top + nrows * (ch + 12) + (nrows - 1) * gap + 10, hint - 16);
+    const total = cols * cw + (cols - 1) * gap;
     cards = [];
     CHARS.forEach((c, i) => {
+      const x = Math.round(cx - total / 2) + (i % cols) * (cw + gap);
+      const top = y0 + 72 + Math.floor(i / cols) * (ch + 12 + gap);
       const sel = i === charIdx;
       ctx.fillStyle = sel ? 'rgba(122, 92, 160, 0.92)' : 'rgba(59, 37, 80, 0.88)';
       ctx.fillRect(x, top, cw, ch + 12);
@@ -2073,7 +2112,6 @@
       ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
-      x += cw + gap;
     });
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
