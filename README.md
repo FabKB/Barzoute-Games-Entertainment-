@@ -51,7 +51,7 @@ Après le 5e monde, on repart au Monde des Glaces.
 
 Toutes les étoiles ramassées s'ajoutent à un trésor, partie après partie (le total s'affiche en haut à gauche de l'écran titre). À **1000 étoiles**, le niveau bonus se débloque et un bouton **BONUS** apparaît sur l'écran titre (touche B au clavier).
 
-C'est une course de 60 secondes dans un pays de sucettes géantes, de sucres d'orge, de cupcakes et de rivières de chocolat : chaque étoile compte double, les trampolines en guimauve font rebondir très haut, et on ne peut pas perdre. Le niveau bonus reste rejouable à volonté.
+C'est une course de 60 secondes dans un pays de sucettes géantes, de sucres d'orge, de cupcakes et de rivières de chocolat : chaque étoile compte double, les trampolines en guimauve font rebondir très haut, et on ne peut pas perdre, sur l'air de Tetris (« Korobeiniki », chanson populaire russe libre de droits, arrangée pour le jeu). Le niveau bonus reste rejouable à volonté.
 
 Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
 

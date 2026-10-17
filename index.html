@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v12';
+  const VERSION = 'v13';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -228,19 +228,22 @@
         bassPat: [0, null, null, null, null, null],
         drums: { kick: [0], hat: 4 }
       }),
-      song({ // Pays des Bonbons (niveau bonus) : boîte à musique rapide et sucrée
-        bpm: 150, lead: MUSICBOX, bass: BASS, arpWave: 'square', arpVol: 0.04, arpEvery: 1,
+      song({ // Pays des Bonbons (niveau bonus) : « Korobeiniki », chanson populaire russe (domaine public),
+        // l'air rendu célèbre par Tetris, dans un arrangement original façon console.
+        bpm: 150, lead: LEAD, bass: BASS, arpWave: 'square', arpVol: 0.035, arpEvery: 2,
         chords: {
-          F: { b: 41, a: [53, 57, 60, 65] }, C: { b: 48, a: [55, 60, 64, 67] }, Dm: { b: 50, a: [57, 62, 65, 69] },
-          Bb: { b: 46, a: [53, 58, 62, 65] }
+          Am: { b: 45, a: [57, 60, 64, 69] }, E: { b: 40, a: [52, 56, 59, 64] },
+          Dm: { b: 50, a: [57, 62, 65, 69] }, C: { b: 48, a: [55, 60, 64, 67] }
         },
-        prog: ['F', 'C', 'Dm', 'Bb', 'F', 'C', 'Bb', 'C'],
+        prog: ['Am', 'Am', 'E', 'Am', 'Dm', 'C', 'E', 'Am', 'Am', 'Am', 'E', 'Am', 'Dm', 'C', 'E', 'Am'],
         mel: [
-          'C6 F6 A6 F6 C6 F6 A6 C7', 'G6 - E6 C6 E6 G6 C7 -', 'A6 - F6 D6 F6 A6 D7 -', 'D7 C7 A#6 F6 D6 F6 A#6 -',
-          'C7 A6 F6 A6 C7 - F7 -', 'E7 D7 C7 G6 E6 G6 C7 -', 'D7 - A#6 F6 D7 - F7 -', 'E7 - G7 - C7 - - -'
+          'E6 - B5 C6 D6 - C6 B5', 'A5 - A5 C6 E6 - D6 C6', 'B5 - - C6 D6 - E6 -', 'C6 - A5 - A5 - - -',
+          'D6 - - F6 A6 - G6 F6', 'E6 - - C6 E6 - D6 C6', 'B5 - B5 C6 D6 - E6 -', 'C6 - A5 - A5 - . .',
+          'E6 - B5 C6 D6 - C6 B5', 'A5 - A5 C6 E6 - D6 C6', 'B5 - - C6 D6 - E6 -', 'C6 - A5 - A5 - - -',
+          'D6 - - F6 A6 - G6 F6', 'E6 - - C6 E6 - D6 C6', 'B5 - B5 C6 D6 - E6 -', 'C6 - A5 - A5 - . .'
         ],
-        bassPat: [0, 12, 0, 12, 0, 12, 7, 12],
-        drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [14] }
+        bassPat: [0, 12, 0, 12, 0, 12, 0, 12],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2 }
       })
     ];
     let cur = SONGS[0];
