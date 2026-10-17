@@ -47,6 +47,12 @@ Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde s
 
 Après le 5e monde, on repart au Monde des Glaces.
 
+### Le niveau bonus : le Pays des Bonbons
+
+Toutes les étoiles ramassées s'ajoutent à un trésor, partie après partie (le total s'affiche en haut à gauche de l'écran titre). À **1000 étoiles**, le niveau bonus se débloque et un bouton **BONUS** apparaît sur l'écran titre (touche B au clavier).
+
+C'est une course de 60 secondes dans un pays de sucettes géantes, de sucres d'orge, de cupcakes et de rivières de chocolat : chaque étoile compte double, les trampolines en guimauve font rebondir très haut, et on ne peut pas perdre. Le niveau bonus reste rejouable à volonté.
+
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
 Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.

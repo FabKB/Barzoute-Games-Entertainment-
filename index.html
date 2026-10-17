@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v11';
+  const VERSION = 'v12';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -127,6 +127,7 @@
     const BRASS = { ratio: 1, index: 3, idxSus: 0.8, idxDecay: 0.08, vol: 0.17, a: 0.02, d: 0.1, sus: 0.8, rel: 0.06 };
     const SLAP = { ratio: 1, index: 6, idxSus: 0.2, idxDecay: 0.06, vol: 0.34, a: 0.003, d: 0.12, sus: 0.4, rel: 0.04 };
     const ORGAN = { ratio: 2, index: 1.6, idxSus: 0.7, idxDecay: 0.1, vol: 0.18, a: 0.005, d: 0.1, sus: 0.75, rel: 0.08 };
+    const MUSICBOX = { ratio: 4, index: 1.2, idxSus: 0.2, idxDecay: 0.15, vol: 0.18, a: 0.002, d: 0.25, sus: 0.2, rel: 0.2 };
     const ACCORDION = { ratio: 1, index: 2.6, idxSus: 0.85, idxDecay: 0.05, vol: 0.13, a: 0.015, d: 0.08, sus: 0.85, rel: 0.06 };
     const STAB = { ratio: 1, index: 2, idxSus: 0.6, idxDecay: 0.05, vol: 0.05, a: 0.005, d: 0.08, sus: 0.5, rel: 0.05 };
 
@@ -226,6 +227,20 @@
         ],
         bassPat: [0, null, null, null, null, null],
         drums: { kick: [0], hat: 4 }
+      }),
+      song({ // Pays des Bonbons (niveau bonus) : boîte à musique rapide et sucrée
+        bpm: 150, lead: MUSICBOX, bass: BASS, arpWave: 'square', arpVol: 0.04, arpEvery: 1,
+        chords: {
+          F: { b: 41, a: [53, 57, 60, 65] }, C: { b: 48, a: [55, 60, 64, 67] }, Dm: { b: 50, a: [57, 62, 65, 69] },
+          Bb: { b: 46, a: [53, 58, 62, 65] }
+        },
+        prog: ['F', 'C', 'Dm', 'Bb', 'F', 'C', 'Bb', 'C'],
+        mel: [
+          'C6 F6 A6 F6 C6 F6 A6 C7', 'G6 - E6 C6 E6 G6 C7 -', 'A6 - F6 D6 F6 A6 D7 -', 'D7 C7 A#6 F6 D6 F6 A#6 -',
+          'C7 A6 F6 A6 C7 - F7 -', 'E7 D7 C7 G6 E6 G6 C7 -', 'D7 - A#6 F6 D7 - F7 -', 'E7 - G7 - C7 - - -'
+        ],
+        bassPat: [0, 12, 0, 12, 0, 12, 7, 12],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [14] }
       })
     ];
     let cur = SONGS[0];
@@ -396,6 +411,8 @@
         ['C6', 'E6', 'G6', 'C7'].forEach((n, i) => fm(sfx, at(4.5 + i * 0.25), mtof(n2m(n)), 0.15, BELL));
       },
       // Souffle des nuages pendant le changement de monde.
+      // Niveau bonus débloqué.
+      unlock() { if (ac) ['C6', 'E6', 'G6', 'C7', 'E7', 'G7', 'C8'].forEach((n, i) => fm(sfx, ac.currentTime + 0.05 + i * 0.09, mtof(n2m(n)), 0.25, BELL)); },
       // Petit son pour l'événement de mi-parcours de chaque monde.
       event(w) {
         if (!ac) return;
@@ -825,6 +842,33 @@
         if ((y - 6) % 6 === 0 || (x + off) % 8 === 0) return '#6f6a62';
         return ['#9a948a', '#a9a397', '#8b857b'][hash((((x + off) / 8) | 0) * 13 + row * 7) % 3];
       }
+    },
+    // Pays des Bonbons (niveau bonus)
+    { // tablette de chocolat
+      top: ['#a0674e', '#7b4b3a', '#5e382b'], deep: '#4e2c21',
+      body(x, y) {
+        if (x % 10 === 0 || (y - 6) % 10 === 0) return '#4e2c21';
+        if (x % 10 === 1 || (y - 6) % 10 === 1) return '#9a6249';
+        return '#7b4b3a';
+      }
+    },
+    { // sucre d'orge rayé
+      top: ['#ffffff', '#ffd6e0', '#e9a3b8'], drip: true, deep: '#c42a40',
+      body(x, y) { return (x + y) % 12 < 6 ? '#e8304a' : '#fff4f4'; }
+    },
+    { // gelée verte
+      top: ['#d9ffd9', '#7fe08a', '#4fb85c'], drip: true, deep: '#3f9a4b',
+      body(x, y) {
+        if (hash(x * 97 + y * 31) % 23 === 0) return '#c9f5cc';
+        return x % 9 === 2 ? '#9be6a4' : '#6fd47c';
+      }
+    },
+    { // trampoline en guimauve
+      top: ['#ffffff', '#ffe3ee', '#f2b8cf'], deep: '#f2b8cf',
+      body(x, y) {
+        if ((y - 6) % 8 === 0) return '#f2b8cf';
+        return x % 16 < 8 ? '#fff4f8' : '#ffe3ee';
+      }
     }
   ];
   const rgbCache = {};
@@ -1234,6 +1278,47 @@
     return lx === 0 ? '#bfa57c' : (fb % 6 === 0 ? '#d2bb93' : '#dfcaa3');
   });
 
+  // Pays des Bonbons : collines de bonbons gélifiés, sucettes géantes, sucres d'orge.
+  const candyFar = paintStrip(480, 100, (x, y) => {
+    const fb = 99 - y;
+    for (const [lx, cA] of [[80, '#e8304a'], [260, '#8a5cf0'], [400, '#2fb36b']]) {
+      const d = Math.hypot(x + 0.5 - lx, fb - 70);
+      if (d <= 18) {
+        if (d > 17) return '#ffffff';
+        const a = Math.atan2(fb - 70, x + 0.5 - lx);
+        return ((((a * 2 + d * 0.45) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) < Math.PI ? cA : '#fff4f8';
+      }
+      if (Math.abs(x + 0.5 - lx) < 1.5 && fb < 52) return '#fff4f8';
+    }
+    for (const cx of [180, 330]) {
+      const inStem = x >= cx && x <= cx + 3 && fb < 50;
+      const hook = Math.hypot(x + 0.5 - (cx - 6), fb - 50);
+      if (inStem || (fb >= 50 && hook >= 6 && hook <= 10 && x <= cx + 4)) return (x + fb) % 6 < 3 ? '#e8304a' : '#ffffff';
+    }
+    const bump = 14 + 9 * Math.abs(Math.sin(Math.PI * x / 30));
+    if (fb < bump) {
+      const k = ((x / 30) | 0) % 4;
+      if (hash(x * 13 + fb * 7) % 11 === 0) return '#ffffff';
+      return ['#ff7fae', '#ffd84a', '#7fe08a', '#9fc4ff'][k];
+    }
+    return null;
+  });
+  // Pays des Bonbons : cupcakes géants et petits bonbons au premier plan.
+  const candyMid = paintStrip(360, 60, (x, y) => {
+    const fb = 59 - y, lx = x % 60, cdx = Math.abs(lx + 0.5 - 30), k = (x / 60) | 0;
+    if (fb < 14 && cdx <= 10 + fb * 0.25) return lx % 3 === 0 ? '#c9a4e8' : '#e3c6f5';
+    if (fb >= 14 && fb < 32) {
+      const tier = (fb - 14) / 6 | 0, half = 15 - tier * 4 - ((fb - 14) % 6) * 0.6;
+      if (cdx <= half) {
+        if (hash(x * 7 + fb * 3) % 9 === 0) return ['#ff4d6d', '#ffe14d', '#4db8ff', '#4ee08a'][hash(x + fb) % 4];
+        return ['#ffb3d9', '#9fe3ff', '#fff1a8'][k % 3];
+      }
+    }
+    if (Math.hypot(lx + 0.5 - 30, fb - 33) <= 3) return '#e8304a';
+    if (lx >= 45 && lx <= 56 && fb < 9 && Math.hypot(lx + 0.5 - 50.5, fb) <= 7) return ['#7fe08a', '#ff7fae', '#ffd84a'][k % 3];
+    return null;
+  });
+
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
   const PLANE = [
     '...................KK.',
@@ -1256,7 +1341,8 @@
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
     { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
     { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
-    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] }
+    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
+    { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] }
   ];
 
   // ---------- Écran ----------
@@ -1585,6 +1671,10 @@
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
+  // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
+  const MAIN_WORLDS = 5, BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
+  let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusT = 0, bonusEnd = false, unlockCard = 0, bonusBtn = null;
+  const bonusUnlocked = () => tresor >= BONUS_COST;
   // Pendant le passage des nuages (et un court moment après), le personnage est protégé.
   const GRACE = 1.2;
   let graceUntil = 0;
@@ -1620,14 +1710,15 @@
     return pl;
   }
   function addGems(last, pl, gap) {
-    if (Math.random() < 0.6) {
+    const rich = genWorld === BONUS_WORLD;
+    if (rich || Math.random() < 0.6) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = last.x + last.w - 6, span = gap + 12;
       for (let k = 1; k <= n; k++) {
         const f = k / (n + 1);
         gems.push({ x: x0 + span * f, y: Math.min(baseTopOf(last), baseTopOf(pl)) - 22 - Math.sin(Math.PI * f) * 24, ph: Math.random() * 6 });
       }
     }
-    if (pl.w >= 60 && Math.random() < 0.5) {
+    if (pl.w >= 60 && (rich || Math.random() < 0.5)) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = pl.x + 20 + Math.random() * Math.max(0, pl.w - 40 - n * 14);
       for (let k = 0; k < n && x0 + k * 14 < pl.x + pl.w - 6; k++) gems.push({ x: x0 + k * 14, y: baseTopOf(pl) - 16, ph: Math.random() * 6 });
     }
@@ -1635,7 +1726,20 @@
   function genNext() {
     const last = lastPlat(), lastTop = baseTopOf(last), r = Math.random();
     // Au tout début, on garde des blocs simples.
-    const kind = last.x + last.w < 700 ? 'block' : r < 0.5 ? 'block' : r < 0.72 ? 'float' : r < 0.86 ? 'bob' : 'steps';
+    const candy = genWorld === BONUS_WORLD;
+    const kind = last.x + last.w < 700 ? 'block'
+      : candy ? (r < 0.42 ? 'block' : r < 0.57 ? 'float' : r < 0.82 ? 'tramp' : r < 0.92 ? 'bob' : 'steps')
+      : r < 0.5 ? 'block' : r < 0.72 ? 'float' : r < 0.86 ? 'bob' : 'steps';
+    if (kind === 'tramp') {
+      // Trampoline en guimauve : il renvoie très haut.
+      const top = clamp(Math.round(lastTop + rand(-10, 30)), -60, 60);
+      const gap = gapFor(top - lastTop);
+      const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(40, 64)), top, depth: 14, tramp: true });
+      pl.s = 18;
+      addGems(last, pl, gap);
+      for (let k = 0; k < 4; k++) gems.push({ x: pl.x + pl.w / 2 + k * 14, y: top - 60 - k * 6, ph: Math.random() * 6 });
+      return;
+    }
     if (kind === 'steps') {
       const dir = Math.random() < 0.5 ? -1 : 1, n = 3;
       let prev = last;
@@ -1680,6 +1784,7 @@
     petals = [];
     if (w === 1) for (let i = 0; i < 26; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6) });
     if (w === 3) for (let i = 0; i < 40; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), rain: true });
+    if (w === BONUS_WORLD) for (let i = 0; i < 30; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), candy: RAINBOW[i % 6] });
   }
   function updateWorld(dt) {
     updateEvent(dt);
@@ -1831,6 +1936,11 @@
             burst(nx, ny, 6, STYLES[pl.s].top, 40, 120);
             Sound.land();
           }
+          if (pl.tramp) {
+            p.vy = -430; p.grounded = false; p.on = null; p.hold = 0;
+            burst(nx, ny, 10, ['#ffffff', '#ffb3d9', '#ffe3ee'], 70, 60);
+            Sound.boing();
+          }
           break;
         }
       }
@@ -1841,7 +1951,7 @@
 
     const nxt = nextPlatformAhead();
     if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) {
-      if (mode === 'play' && gameMode === 'defi' && !shielded()) { die(); return; }
+      if (mode === 'play' && gameMode === 'defi' && !shielded() && !bonus) { die(); return; }
       rescue();
     }
 
@@ -1853,7 +1963,12 @@
       const dx = s.x - p.x, dy = s.y - (p.y - 16);
       if (dx * dx + dy * dy < 169) {
         s.taken = true;
-        if (mode === 'play') starsCount++;
+        if (mode === 'play') {
+          const gain = bonus ? 2 : 1, before = tresor;
+          starsCount += gain;
+          tresor += gain;
+          if (before < BONUS_COST && tresor >= BONUS_COST) { unlockCard = 3.5; Sound.unlock(); store.set('tresor', tresor); }
+        }
         Sound.star(streak);
         streak++; streakT = 1.2;
         burst(s.x, s.y, 8, ['#ffe45c', '#ffffff', '#ffb3d9'], 50, 0);
@@ -1894,14 +2009,20 @@
     updateWorld(dt);
     if (mode === 'play') {
       const dist = Math.floor((p.x - distStart) / 16);
-      const target = Math.floor(dist / WORLD_EVERY) % WORLDS.length;
-      if (target !== genWorld && !trans) startTransition(target);
-      const seg = Math.floor(dist / WORLD_EVERY);
-      if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
-      if (dist > bests[gameMode]) bests[gameMode] = dist;
+      if (!bonus) {
+        const target = Math.floor(dist / WORLD_EVERY) % MAIN_WORLDS;
+        if (target !== genWorld && !trans) startTransition(target);
+        const seg = Math.floor(dist / WORLD_EVERY);
+        if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
+        if (dist > bests[gameMode]) bests[gameMode] = dist;
+      } else {
+        bonusT -= dt;
+        if (bonusT <= 0) { endBonus(); return; }
+      }
       saveT -= dt;
-      if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); }
+      if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
     }
+    if (unlockCard > 0) unlockCard -= dt;
   }
 
   // ---------- Dessin ----------
@@ -2060,7 +2181,7 @@
       drawStrip(londonFar, 0.1, far, '#6f86b0');
       drawWater(far, '#6f86b0', '#c9d6ee');
       drawStrip(londonMid, 0.3, H * 0.88 - vOff * 0.3, '#4a5268');
-    } else {
+    } else if (world === 4) {
       drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
       const far = H * 0.78 - 34 - vOff * 0.12;
@@ -2068,6 +2189,12 @@
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
       drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+    } else {
+      drawBgClouds();
+      const far = H * 0.66 - vOff * 0.12;
+      drawStrip(candyFar, 0.1, far, '#7b4b3a');
+      drawWater(far, '#7b4b3a', '#a8735a');
+      drawStrip(candyMid, 0.3, H * 0.86 - vOff * 0.3, '#f7c6dc');
     }
   }
   const mod = (a, n) => ((a % n) + n) % n;
@@ -2101,6 +2228,7 @@
   function drawPetals() {
     for (const q of petals) {
       if (q.rain) { ctx.fillStyle = '#e6eefa'; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 3); continue; }
+      if (q.candy) { ctx.fillStyle = q.candy; ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); continue; }
       ctx.fillStyle = q.ph > 3 ? '#ffc0d9' : '#ff9ec4';
       if (Math.floor(time * 4 + q.ph) % 2) ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 1);
       else ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 2);
@@ -2175,15 +2303,28 @@
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
     ctx.font = '8px "Press Start 2P", ui-monospace, Menlo, monospace';
-    const bw = Math.ceil(ctx.measureText('< MODE DEFI >').width) + 12, bx = Math.round(cx - bw / 2);
+    const bw = Math.ceil(ctx.measureText('< MODE DEFI >').width) + 12;
+    const unlocked = bonusUnlocked(), bbw = 64;
+    const bx = Math.round(unlocked ? cx - (bw + bbw + 8) / 2 : cx - bw / 2);
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(bx - 1, mby - 4, bw + 2, 16);
     ctx.fillStyle = zen ? '#3f8f78' : '#c83c6e'; ctx.fillRect(bx, mby - 3, bw, 14);
-    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', cx, mby, 8, '#ffffff', 'center');
+    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', bx + Math.round(bw / 2), mby, 8, '#ffffff', 'center');
     modeBtn = { x: bx - 4, y: mby - 8, w: bw + 8, h: 24 };
+    bonusBtn = null;
+    if (unlocked) {
+      // Bouton du niveau bonus, rayé comme un sucre d'orge.
+      const gx = bx + bw + 8;
+      ctx.fillStyle = '#fff4e6'; ctx.fillRect(gx - 1, mby - 4, bbw + 2, 16);
+      for (let k = 0; k < bbw; k++) { ctx.fillStyle = (k + Math.floor(time * 12)) % 8 < 4 ? '#e8304a' : '#ff7fae'; ctx.fillRect(gx + k, mby - 3, 1, 14); }
+      text('BONUS', gx + bbw / 2, mby, 8, Math.floor(time * 3) % 2 ? '#fff3b0' : '#ffffff', 'center');
+      bonusBtn = { x: gx - 2, y: mby - 8, w: bbw + 6, h: 24 };
+    }
     const tip = Math.floor(time / 2.5) % 2 === 0 ? 'TAP = SAUT  2E TAP = DOUBLE'
       : (zen ? 'ZEN : UN NUAGE TE RATTRAPE' : 'DEFI : UNE CHUTE = GAME OVER');
     text(tip, cx, hint, 8, '#ffffff', 'center');
     if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
+    ctx.drawImage(sprStar, Math.round(6 + safe.l), Math.round(18 + safe.t));
+    text(unlocked ? tresor + ' BONUS !' : tresor + '/' + BONUS_COST, Math.round(17 + safe.l), Math.round(18 + safe.t), 8, '#fff3b0');
     text(VERSION, Math.round(W - 6 - safe.r), Math.round(safe.t + 8 + 56 / SCALE), 8, '#d6fff0', 'right');
   }
 
@@ -2202,21 +2343,29 @@
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
     ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
     y += 8;
-    rainbowText('GAME OVER', cx, y, 16);
+    rainbowText(bonusEnd ? 'BONUS FINI' : 'GAME OVER', cx, y, 16);
     y += 18;
-    if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
+    if (bonusEnd) text('QUEL FESTIN !', cx, y, 8, '#fff3b0', 'center');
+    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
     y += 14;
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
     ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
     if (Math.floor(time * 4) % 2) { ctx.drawImage(sprStar, cx - 30, y + 6); ctx.drawImage(sprStar, cx + 23, y + 14); }
     else { ctx.drawImage(sprStar, cx - 26, y + 14); ctx.drawImage(sprStar, cx + 19, y + 6); }
     y += heroH + 8;
-    const dist = Math.floor((player.x - distStart) / 16);
-    text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
-    ctx.drawImage(sprStar, cx + 2, y);
-    text(String(starsCount), cx + 13, y, 8, '#ffffff');
-    y += 12;
-    text('RECORD ' + bests[gameMode] + ' M', cx, y, 8, '#d6fff0', 'center');
+    if (bonusEnd) {
+      ctx.drawImage(sprStar, cx - 40, y);
+      text('+' + starsCount + ' ETOILES', cx - 28, y, 8, '#ffffff');
+      y += 12;
+      text('TRESOR ' + tresor, cx, y, 8, '#d6fff0', 'center');
+    } else {
+      const dist = Math.floor((player.x - distStart) / 16);
+      text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
+      ctx.drawImage(sprStar, cx + 2, y);
+      text(String(starsCount), cx + 13, y, 8, '#ffffff');
+      y += 12;
+      text('RECORD ' + bests[gameMode] + ' M', cx, y, 8, '#d6fff0', 'center');
+    }
     y += 18;
     const bw = Math.min(90, Math.floor((pw - 24) / 2)), bh = 20;
     goButtons = [
@@ -2274,12 +2423,17 @@
       const x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
       ctx.drawImage(sprStar, x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
-      text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
-      if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
+      if (bonus) {
+        const sec = Math.max(0, Math.ceil(bonusT));
+        text('BONUS 0:' + String(sec).padStart(2, '0'), x, y + 13, 8, sec <= 10 && Math.floor(time * 4) % 2 ? '#ff4d6d' : '#fff7d6');
+      } else {
+        text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
+        if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
+      }
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
-        rainbowText('MONDE ' + (world + 1), cx, cy, 16);
+        rainbowText(bonus ? 'BONUS' : 'MONDE ' + (world + 1), cx, cy, 16);
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
@@ -2287,6 +2441,14 @@
       drawGameOver(cx);
     } else {
       drawTitle(cx);
+    }
+    if (unlockCard > 0) {
+      ctx.globalAlpha = clamp(unlockCard / 0.5, 0, 1);
+      const cy = Math.round(Math.max(safe.t + 40, H * 0.22));
+      rainbowText('BONUS', cx, cy, 16);
+      text('DEBLOQUE !', cx, cy + 20, 8, '#fff3b0', 'center');
+      text('PAYS DES BONBONS', cx, cy + 32, 8, '#ffffff', 'center');
+      ctx.globalAlpha = 1;
     }
     if (paused) {
       ctx.fillStyle = 'rgba(31, 21, 51, 0.55)';
@@ -2329,7 +2491,27 @@
     charIdx = (i + CHARS.length) % CHARS.length;
     store.set('perso', charIdx);
   }
+  function startBonus() {
+    resetWorld();
+    world = genWorld = BONUS_WORLD;
+    for (const pl of platforms) { pl.s = BONUS_WORLD * 3 + (pl.s % 3); pl.img = null; }
+    switchWorld(BONUS_WORLD);
+    plane = null; worldCard = 3;
+    Sound.setSong(BONUS_WORLD);
+    mode = 'play'; bonus = true; bonusEnd = false; bonusT = BONUS_TIME;
+    distStart = player.x; starsCount = 0; speed = 95; streak = 0; evSeg = -1;
+    btnPause.hidden = false; btnHome.hidden = false;
+    Sound.start();
+  }
+  function endBonus() {
+    store.set('tresor', tresor);
+    Sound.stop();
+    bonusEnd = true;
+    btnPause.hidden = true; btnHome.hidden = true;
+    gameOver();
+  }
   function startGame() {
+    bonus = false; bonusEnd = false;
     mode = 'play';
     distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode]; evSeg = -1;
     if (genWorld !== 0) { if (!trans) startTransition(0); }
@@ -2340,6 +2522,7 @@
   function goTitle() {
     if (mode !== 'play') return;
     if (paused) setPaused(false);
+    if (bonus) { bonus = false; store.set('tresor', tresor); backToMenu(); return; }
     mode = 'title'; speed = 70; holding = false;
     btnPause.hidden = true; btnHome.hidden = true;
   }
@@ -2349,10 +2532,12 @@
     Sound.jump();
   }
   function restart() {
+    if (bonusEnd) { startBonus(); return; }
     resetWorld();
     startGame();
   }
   function backToMenu() {
+    bonus = false; bonusEnd = false;
     resetWorld();
     mode = 'title'; speed = 70;
     btnPause.hidden = true; btnHome.hidden = true;
@@ -2371,6 +2556,7 @@
     }
     if (mode === 'title') {
       if (e && hit(modeBtn, lx, ly)) { toggleMode(); return; }
+      if (e && hit(bonusBtn, lx, ly)) { startBonus(); return; }
       if (e) {
         const i = cards.findIndex(c => hit(c, lx, ly));
         if (i >= 0) pick(i);
@@ -2406,6 +2592,8 @@
       if (!e.repeat) press();
     } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
+    } else if (mode === 'title' && e.code === 'KeyB' && bonusUnlocked()) {
+      Sound.init(); startBonus();
     } else if (mode === 'title' && e.code === 'ArrowDown') {
       toggleMode();
     } else if (mode === 'gameover' && e.code === 'Escape') {
@@ -2425,7 +2613,7 @@
   btnHome.addEventListener('click', () => { Sound.init(); goTitle(); });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { setPaused(true); Sound.suspend(); store.set(BEST_KEY[gameMode], bests[gameMode]); }
+    if (document.hidden) { setPaused(true); Sound.suspend(); store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
   });
   window.addEventListener('resize', resize);
 
