@@ -25,7 +25,7 @@ Chaque mode garde son propre record.
 
 ### Les mondes
 
-Tous les 500 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
+Tous les 200 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
 
 1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
 2. **Voyage au Japon** : mont Fuji, soleil levant, allée de torii comme à Fushimi Inari, pétales de cerisier ; musique pentatonique avec koto et taiko.
