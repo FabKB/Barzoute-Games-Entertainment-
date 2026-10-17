@@ -331,6 +331,26 @@
       land() { if (ac) nz(ac.currentTime, 0.05, 0.08, 'lowpass', 700, 0, sfx); },
       star(n) { if (ac) fm(sfx, ac.currentTime, mtof(72 + PENTA[n % 5] + 12 * Math.min(2, (n / 5) | 0)), 0.12, BELL); },
       boing() { if (ac) fm(sfx, ac.currentTime, 180, 0.3, Object.assign({}, BASS, { vol: 0.25, glide: 3 })); },
+      die() { sweep(700, 110, 0.6, 0.08); },
+      // Petite fanfare de fin (composition originale, esprit « victoire » des RPG 16 bits).
+      fanfare() {
+        if (!ac) return;
+        const t0 = ac.currentTime + 0.05, q = 0.34;
+        const brass = Object.assign({}, BRASS, { vol: 0.22, sus: 0.85 });
+        const pad = Object.assign({}, BRASS, { vol: 0.07, sus: 0.9 });
+        const at = beats => t0 + beats * q;
+        [[0, 1 / 6, 'G4'], [1 / 6, 1 / 6, 'C5'], [2 / 6, 1 / 6, 'E5'], [0.5, 1, 'G5'],
+          [1.5, 0.5, 'E5'], [2, 0.5, 'F5'], [2.5, 0.5, 'G5'],
+          [3, 1 / 3, 'A5'], [3 + 1 / 3, 1 / 3, 'G5'], [3 + 2 / 3, 1 / 3, 'A5'], [4, 2, 'C6']]
+          .forEach(([b, d, n]) => fm(music, at(b), mtof(n2m(n)), d * q * 0.95, brass).connect(sendFx));
+        [[0.5, 1, ['C4', 'E4', 'G4']], [1.5, 1.5, ['F4', 'A4', 'C5']], [3, 1, ['G4', 'B4', 'D5']], [4, 2, ['C4', 'E4', 'G4', 'C5']]]
+          .forEach(([b, d, ns]) => ns.forEach(n => fm(music, at(b), mtof(n2m(n)), d * q, pad)));
+        [[0.5, 'C3'], [1.5, 'F2'], [3, 'G2'], [4, 'C3']].forEach(([b, n]) => fm(music, at(b), mtof(n2m(n)), q * 0.9, SLAP));
+        [0, 1 / 6, 2 / 6].forEach(b => nz(at(b), 0.08, 0.12, 'bandpass', 1800, 0.8));
+        [0.5, 1.5, 3, 4].forEach(b => drum(at(b), 160, 42, 0.2, 0.6));
+        nz(at(4), 1.4, 0.14, 'highpass', 5000);
+        ['C6', 'E6', 'G6', 'C7'].forEach((n, i) => fm(sfx, at(4.5 + i * 0.25), mtof(n2m(n)), 0.15, BELL));
+      },
       // Souffle des nuages pendant le changement de monde.
       whoosh() {
         if (!ac) return;
@@ -863,7 +883,11 @@
   let camX = 0, camY = 0, speed = 70, time = 0;
   let mode = 'title', paused = false, holding = false, jumpBuffer = 0;
   let distStart = 0, starsCount = 0, streak = 0, streakT = 0, sparkT = 0;
-  let best = +store.get('best', '0') || 0, saveT = 0;
+  // Modes : « zen » (un nuage rattrape le personnage) ou « defi » (une chute = game over).
+  const BEST_KEY = { zen: 'best', defi: 'best-defi' };
+  const bests = { zen: +store.get('best', '0') || 0, defi: +store.get('best-defi', '0') || 0 };
+  let gameMode = store.get('mode', 'zen') === 'defi' ? 'defi' : 'zen', saveT = 0;
+  let deathT = 0, goT = 0, newRecord = false, runBest = 0, confetti = [], goButtons = [], modeBtn = null;
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
   const WORLD_EVERY = 500, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
@@ -874,6 +898,8 @@
     player = { x: 40, y: 0, vy: 0, grounded: true, canDouble: true, coyote: 0, hold: 0, lastTop: 0 };
     camX = player.x - W * 0.28;
     camY = camBase();
+    world = 0; genWorld = 0; trans = null; plane = null; worldCard = 0; petals = [];
+    Sound.setSong(0);
     while (lastPlat().x + lastPlat().w < camX + W + 200) genNext();
   }
   const lastPlat = () => platforms[platforms.length - 1];
@@ -932,6 +958,48 @@
     }
   }
 
+  // Mode Défi : le personnage se fige, saute la tête en bas et tombe, puis l'écran de fin arrive.
+  function die() {
+    mode = 'dying'; deathT = 0; holding = false; jumpBuffer = 0;
+    player.vy = 0; player.deadJump = false;
+    btnPause.hidden = true; btnHome.hidden = true;
+    Sound.stop(); Sound.die();
+    burst(player.x, player.y - 16, 16, ['#ffe45c', '#ffffff', '#ff9ecf'], 80, 0);
+    store.set(BEST_KEY[gameMode], bests[gameMode]);
+  }
+  function gameOver() {
+    mode = 'gameover'; goT = 0;
+    const dist = Math.floor((player.x - distStart) / 16);
+    newRecord = dist > runBest && dist > 0;
+    confetti = [];
+    for (let i = 0; i < 70; i++) confetti.push({ x: rand(0, W), y: rand(-H, 0), vy: rand(20, 45), ph: rand(0, 6), col: RAINBOW[i % 6] });
+    Sound.fanfare();
+  }
+  function updateEnd(dt) {
+    const p = player;
+    if (mode === 'dying') {
+      deathT += dt;
+      if (deathT > 0.45) {
+        if (!p.deadJump) { p.deadJump = true; p.vy = -280; }
+        p.vy += G * 0.8 * dt;
+        p.y += p.vy * dt;
+      }
+      if (deathT > 2) gameOver();
+    } else {
+      goT += dt;
+      for (const q of confetti) {
+        q.y += q.vy * dt;
+        q.x += Math.sin(time * 2 + q.ph) * 10 * dt;
+        if (q.y > H + 4) { q.y = -4; q.x = rand(0, W); }
+      }
+    }
+    updateWorld(dt);
+    for (const q of particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; q.life -= dt; }
+    particles = particles.filter(q => q.life > 0);
+    for (const q of popups) { q.y -= 14 * dt; q.life -= dt * 0.8; }
+    popups = popups.filter(q => q.life > 0);
+  }
+
   function burst(x, y, n, colors, spd, grav) {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2, v = rand(spd * 0.4, spd);
@@ -965,6 +1033,7 @@
 
   function step(dt) {
     time += dt;
+    if (mode === 'dying' || mode === 'gameover') { updateEnd(dt); return; }
     const p = player;
     if (mode === 'play') speed = Math.min(135, speed + dt * 0.45);
 
@@ -1024,7 +1093,10 @@
     p.coyote = p.grounded ? 0.1 : p.coyote - dt;
 
     const nxt = nextPlatformAhead();
-    if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) rescue();
+    if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) {
+      if (mode === 'play' && gameMode === 'defi') { die(); return; }
+      rescue();
+    }
 
     // Étoiles à ramasser.
     streakT -= dt;
@@ -1077,9 +1149,9 @@
       const dist = Math.floor((p.x - distStart) / 16);
       const target = Math.floor(dist / WORLD_EVERY) % WORLDS.length;
       if (target !== genWorld && !trans) startTransition(target);
-      if (dist > best) best = dist;
+      if (dist > bests[gameMode]) bests[gameMode] = dist;
       saveT -= dt;
-      if (saveT <= 0) { saveT = 2; store.set('best', best); }
+      if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); }
     }
   }
 
@@ -1167,6 +1239,17 @@
   }
   function drawPlayer() {
     const p = player;
+    if (mode === 'dying') {
+      // Yeux fermés, puis la tête en bas pendant la chute.
+      const spr = hero().framesB[0];
+      if (!p.deadJump) { ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height); return; }
+      ctx.save();
+      ctx.translate(Math.round(p.x), Math.round(p.y) - spr.height);
+      ctx.scale(1, -1);
+      ctx.drawImage(spr, -(spr.width >> 1), -spr.height);
+      ctx.restore();
+      return;
+    }
     const spr = idleSprite(hero(), (time % 3.2) < 0.12);
     ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height);
   }
@@ -1271,9 +1354,10 @@
     text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
     if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
     const hint = Math.round(H - safe.b - 14);
-    const top = y0 + 72, room = hint - 14 - top;
+    const top = y0 + 72, room = hint - 22 - top;
     const s = room >= 70 ? 2 : 1;
     const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8, gap = 6;
+    const mby = Math.min(top + ch + 22, hint - 16);
     const total = CHARS.length * cw + (CHARS.length - 1) * gap;
     let x = Math.round(cx - total / 2);
     cards = [];
@@ -1291,8 +1375,63 @@
       cards.push({ x, y: top, w: cw, h: ch + 12 });
       x += cw + gap;
     });
-    text('TAP = SAUT  2E TAP = DOUBLE', cx, hint, 8, '#ffffff', 'center');
-    if (best > 0) text('RECORD ' + best + ' M', Math.round(6 + safe.l), Math.round(H - safe.b - 28), 8, '#d6fff0');
+    // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
+    const zen = gameMode === 'zen';
+    ctx.font = '8px "Press Start 2P", ui-monospace, Menlo, monospace';
+    const bw = Math.ceil(ctx.measureText('< MODE DEFI >').width) + 12, bx = Math.round(cx - bw / 2);
+    ctx.fillStyle = '#fff4e6'; ctx.fillRect(bx - 1, mby - 4, bw + 2, 16);
+    ctx.fillStyle = zen ? '#3f8f78' : '#c83c6e'; ctx.fillRect(bx, mby - 3, bw, 14);
+    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', cx, mby, 8, '#ffffff', 'center');
+    modeBtn = { x: bx - 4, y: mby - 8, w: bw + 8, h: 24 };
+    const tip = Math.floor(time / 2.5) % 2 === 0 ? 'TAP = SAUT  2E TAP = DOUBLE'
+      : (zen ? 'ZEN : UN NUAGE TE RATTRAPE' : 'DEFI : UNE CHUTE = GAME OVER');
+    text(tip, cx, hint, 8, '#ffffff', 'center');
+    if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
+  }
+
+  // Écran de fin joyeux : confettis, personnage qui danse, score et deux boutons.
+  function drawGameOver(cx) {
+    ctx.fillStyle = 'rgba(31, 21, 51, 0.45)';
+    ctx.fillRect(0, 0, W, H);
+    for (const q of confetti) {
+      ctx.fillStyle = q.col;
+      ctx.fillRect(Math.round(q.x), Math.round(q.y), Math.floor(time * 6 + q.ph) % 2 ? 2 : 1, 2);
+    }
+    const s = H >= 230 ? 2 : 1, heroH = 32 * s;
+    const ph = 8 + 18 + 14 + heroH + 8 + 12 + 12 + 6 + 20 + 8, pw = Math.min(W - 16, 228);
+    const px = Math.round(cx - pw / 2);
+    let y = Math.round(Math.max(safe.t + 4, (H - ph) / 2));
+    ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
+    ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
+    y += 8;
+    rainbowText('GAME OVER', cx, y, 16);
+    y += 18;
+    if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
+    y += 14;
+    const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
+    ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
+    if (Math.floor(time * 4) % 2) { ctx.drawImage(sprStar, cx - 30, y + 6); ctx.drawImage(sprStar, cx + 23, y + 14); }
+    else { ctx.drawImage(sprStar, cx - 26, y + 14); ctx.drawImage(sprStar, cx + 19, y + 6); }
+    y += heroH + 8;
+    const dist = Math.floor((player.x - distStart) / 16);
+    text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
+    ctx.drawImage(sprStar, cx + 2, y);
+    text(String(starsCount), cx + 13, y, 8, '#ffffff');
+    y += 12;
+    text('RECORD ' + bests[gameMode] + ' M', cx, y, 8, '#d6fff0', 'center');
+    y += 18;
+    const bw = Math.min(90, Math.floor((pw - 24) / 2)), bh = 20;
+    goButtons = [
+      { x: cx - bw - 4, y, w: bw, h: bh, act: 'replay', label: 'REJOUER', col: '#ff5fa2' },
+      { x: cx + 4, y, w: bw, h: bh, act: 'menu', label: 'MENU', col: '#4db8ff' }
+    ];
+    ctx.globalAlpha = goT > 0.8 ? 1 : 0.5;
+    for (const b of goButtons) {
+      ctx.fillStyle = '#fff4e6'; ctx.fillRect(b.x - 1, b.y - 1, b.w + 2, b.h + 2);
+      ctx.fillStyle = b.col; ctx.fillRect(b.x, b.y, b.w, b.h);
+      text(b.label, Math.round(b.x + b.w / 2), b.y + 6, 8, '#ffffff', 'center');
+    }
+    ctx.globalAlpha = 1;
   }
 
   function draw() {
@@ -1328,11 +1467,12 @@
     ctx.restore();
 
     const cx = Math.round(W / 2);
-    if (mode === 'play') {
+    if (mode === 'play' || mode === 'dying') {
       const x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
       ctx.drawImage(sprStar, x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
       text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
+      if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
@@ -1340,6 +1480,8 @@
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
+    } else if (mode === 'gameover') {
+      drawGameOver(cx);
     } else {
       drawTitle(cx);
     }
@@ -1386,7 +1528,7 @@
   }
   function startGame() {
     mode = 'play';
-    distStart = player.x; starsCount = 0; speed = 80; streak = 0;
+    distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode];
     if (genWorld !== 0) { if (!trans) startTransition(0); }
     else if (!trans) worldCard = 3;
     btnPause.hidden = false; btnHome.hidden = false;
@@ -1398,12 +1540,36 @@
     mode = 'title'; speed = 70; holding = false;
     btnPause.hidden = true; btnHome.hidden = true;
   }
+  function toggleMode() {
+    gameMode = gameMode === 'zen' ? 'defi' : 'zen';
+    store.set('mode', gameMode);
+    Sound.jump();
+  }
+  function restart() {
+    resetWorld();
+    startGame();
+  }
+  function backToMenu() {
+    resetWorld();
+    mode = 'title'; speed = 70;
+    btnPause.hidden = true; btnHome.hidden = true;
+  }
+  const hit = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
   function press(e) {
     Sound.init();
+    const lx = e ? e.clientX / SCALE : -1, ly = e ? e.clientY / SCALE : -1;
+    if (mode === 'dying') return;
+    if (mode === 'gameover') {
+      if (goT < 0.8) return;
+      const b = e ? goButtons.find(r => hit(r, lx, ly)) : goButtons[0];
+      if (!b) return;
+      if (b.act === 'replay') restart(); else backToMenu();
+      return;
+    }
     if (mode === 'title') {
+      if (e && hit(modeBtn, lx, ly)) { toggleMode(); return; }
       if (e) {
-        const lx = e.clientX / SCALE, ly = e.clientY / SCALE;
-        const i = cards.findIndex(c => lx >= c.x && lx < c.x + c.w && ly >= c.y && ly < c.y + c.h);
+        const i = cards.findIndex(c => hit(c, lx, ly));
         if (i >= 0) pick(i);
       }
       startGame();
@@ -1437,6 +1603,10 @@
       if (!e.repeat) press();
     } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
+    } else if (mode === 'title' && e.code === 'ArrowDown') {
+      toggleMode();
+    } else if (mode === 'gameover' && e.code === 'Escape') {
+      if (goT >= 0.8) backToMenu();
     } else if (e.code === 'KeyP' || e.code === 'Escape') {
       setPaused(!paused);
     } else if (e.code === 'KeyM') {
@@ -1452,7 +1622,7 @@
   btnHome.addEventListener('click', () => { Sound.init(); goTitle(); });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { setPaused(true); Sound.suspend(); store.set('best', best); }
+    if (document.hidden) { setPaused(true); Sound.suspend(); store.set(BEST_KEY[gameMode], bests[gameMode]); }
   });
   window.addEventListener('resize', resize);
 

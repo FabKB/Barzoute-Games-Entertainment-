@@ -14,6 +14,15 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
 
+### Deux modes de jeu
+
+Sur l'écran titre, touche le bouton **MODE** pour choisir :
+
+- **ZEN** : si tu tombes, un nuage te rattrape. On ne perd jamais.
+- **DÉFI** : une chute et c'est game over ! Le personnage fait une petite pirouette la tête en bas, puis un écran de fin joyeux s'affiche avec une fanfare, des confettis, ta distance et ton record. Touche **REJOUER** pour recommencer ou **MENU** pour revenir au choix du personnage.
+
+Chaque mode garde son propre record.
+
 ### Les mondes
 
 Tous les 500 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
