@@ -1674,7 +1674,11 @@
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
   const MAIN_WORLDS = 5, BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
   let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusT = 0, bonusEnd = false, unlockCard = 0, bonusBtn = null;
-  const bonusUnlocked = () => tresor >= BONUS_COST;
+  // Pour tester sans attendre : le lien se terminant par #bonus, ou 5 touchers sur le numéro de version.
+  // Ce déblocage de test ne modifie pas le vrai trésor et s'arrête quand on recharge la page.
+  let testUnlock = false, versionTaps = 0, versionTapT = 0, versionBtn = null;
+  try { testUnlock = location.hash === '#bonus'; } catch (e) { testUnlock = false; }
+  const bonusUnlocked = () => tresor >= BONUS_COST || testUnlock;
   // Pendant le passage des nuages (et un court moment après), le personnage est protégé.
   const GRACE = 1.2;
   let graceUntil = 0;
@@ -2324,8 +2328,10 @@
     text(tip, cx, hint, 8, '#ffffff', 'center');
     if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
     ctx.drawImage(sprStar, Math.round(6 + safe.l), Math.round(18 + safe.t));
-    text(unlocked ? tresor + ' BONUS !' : tresor + '/' + BONUS_COST, Math.round(17 + safe.l), Math.round(18 + safe.t), 8, '#fff3b0');
-    text(VERSION, Math.round(W - 6 - safe.r), Math.round(safe.t + 8 + 56 / SCALE), 8, '#d6fff0', 'right');
+    text(tresor >= BONUS_COST ? tresor + ' BONUS !' : tresor + '/' + BONUS_COST + (testUnlock ? ' TEST' : ''), Math.round(17 + safe.l), Math.round(18 + safe.t), 8, '#fff3b0');
+    const vy = Math.round(safe.t + 8 + 56 / SCALE);
+    text(VERSION, Math.round(W - 6 - safe.r), vy, 8, '#d6fff0', 'right');
+    versionBtn = { x: W - 50 - safe.r, y: vy - 8, w: 50, h: 24 };
   }
 
   // Écran de fin joyeux : confettis, personnage qui danse, score et deux boutons.
@@ -2557,6 +2563,12 @@
     if (mode === 'title') {
       if (e && hit(modeBtn, lx, ly)) { toggleMode(); return; }
       if (e && hit(bonusBtn, lx, ly)) { startBonus(); return; }
+      if (e && hit(versionBtn, lx, ly)) {
+        versionTaps = performance.now() - versionTapT < 1500 ? versionTaps + 1 : 1;
+        versionTapT = performance.now();
+        if (versionTaps >= 5 && !testUnlock) { testUnlock = true; unlockCard = 3.5; Sound.unlock(); }
+        return;
+      }
       if (e) {
         const i = cards.findIndex(c => hit(c, lx, ly));
         if (i >= 0) pick(i);

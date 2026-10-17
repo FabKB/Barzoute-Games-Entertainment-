@@ -53,6 +53,8 @@ Toutes les étoiles ramassées s'ajoutent à un trésor, partie après partie (l
 
 C'est une course de 60 secondes dans un pays de sucettes géantes, de sucres d'orge, de cupcakes et de rivières de chocolat : chaque étoile compte double, les trampolines en guimauve font rebondir très haut, et on ne peut pas perdre. Le niveau bonus reste rejouable à volonté.
 
+Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
+
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
 Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.
