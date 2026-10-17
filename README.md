@@ -28,10 +28,10 @@ Chaque mode garde son propre record.
 Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
 
 1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
-2. **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, allée de torii comme à Fushimi Inari, pétales de cerisier ; musique pentatonique avec koto et taiko.
+2. **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
 3. **La Grosse Pomme** : Empire State Building, Chrysler Building, pont de Brooklyn, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
-4. **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées sous des guirlandes de fanions ; pop anglaise des années 60.
-5. **Bonjour Paris** : tour Eiffel qui scintille, Notre-Dame, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
+4. **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées ; pop anglaise des années 60.
+5. **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 

@@ -769,7 +769,7 @@
         if (cx >= 4 && cx <= 9 && cy >= 4 && cy <= 12) return cy === 4 ? '#8fa3c8' : '#5d6f96';
         if (cy === 14 && cx >= 3 && cx <= 10) return '#2a2433';
         if (cy === 13 && cx >= 3 && cx <= 10 && cx % 2 === 1) return '#2a2433';
-        return cy === 0 ? '#dccfb5' : '#efe3cc';
+        return cy === 0 ? '#c4ab82' : ((y - 6) % 6 === 0 ? '#d2bb93' : '#dfcaa3');
       }
     },
     { // pile de macarons
@@ -870,16 +870,37 @@
     return null;
   });
   // Japon : l'allée de torii vermillon de Fushimi Inari.
-  const toriiStrip = paintStrip(80, 34, (x, y) => {
-    const lx = x % 20, fb = 33 - y;
-    if (fb === 31 && (lx === 1 || lx === 18)) return '#2a2433';
-    if (fb >= 28 && fb <= 30 && lx >= 1 && lx <= 18) return fb === 30 ? '#2a2433' : '#e4572e';
-    if (fb === 23 && lx >= 3 && lx <= 16) return '#e4572e';
-    if ((lx >= 4 && lx <= 5) || (lx >= 14 && lx <= 15)) {
-      if (fb > 27) return null;
-      if (fb < 3) return '#2a2433';
-      return (lx === 5 || lx === 15) ? '#b8401f' : '#e4572e';
+  // Japon : forêt de bambous (deux profondeurs) avec de petits torii vermillon.
+  const bambooStalks = (() => {
+    const out = [];
+    for (let x = 0, i = 0; x < 160; i++) {
+      out.push({ x, w: 2 + (hash(i * 5 + 1) % 3 === 0 ? 1 : 0), h: 40 + hash(i * 7 + 3) % 17, col: ['#6fa85a', '#5e9a4c', '#86b86a'][hash(i * 11) % 3] });
+      x += 5 + hash(i * 13 + 2) % 4;
     }
+    return out;
+  })();
+  const bambooStrip = paintStrip(160, 64, (x, y) => {
+    const fb = 63 - y;
+    // Petit torii, à l'échelle de la forêt.
+    const tx = x - 60;
+    if (tx >= 0 && tx <= 17) {
+      if (fb === 18 && (tx === 0 || tx === 17)) return '#2a2433';
+      if (fb >= 15 && fb <= 17) return fb === 17 ? '#2a2433' : '#e4572e';
+      if (fb === 11 && tx >= 2 && tx <= 15) return '#e4572e';
+      if ((tx === 3 || tx === 4 || tx === 13 || tx === 14) && fb < 15) return fb < 2 ? '#2a2433' : (tx === 4 || tx === 14 ? '#b8401f' : '#e4572e');
+      if (fb < 15 && tx > 4 && tx < 13) return fb < 1 ? '#a39b86' : null;
+    }
+    // Bambous du premier plan : tiges à nœuds, feuillage en haut.
+    for (const st of bambooStalks) {
+      const lx = x - st.x;
+      if (lx >= 0 && lx < st.w && fb < st.h) {
+        if (fb % 7 === 0) return '#3f6b3a';
+        return lx === 0 ? '#a6d48c' : st.col;
+      }
+      if (Math.abs(lx - 1) <= 6 && Math.abs(fb - st.h) <= 4 && hash(x * 31 + y * 17) % 3 === 0) return fb > st.h ? '#7fbf6a' : '#4f8a45';
+    }
+    // Bambous du fond, plus sombres.
+    if ((x + 2) % 4 === 0 && fb < 46 + hash(x) % 14) return fb % 6 === 0 ? '#2f5a3c' : '#4b7a52';
     return null;
   });
 
@@ -1082,7 +1103,7 @@
     return lx === 0 ? '#5a5f75' : b.col;
   });
 
-  // Paris : Notre-Dame, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
+  // Paris : l'Opéra Garnier, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
   const parisFar = paintStrip(640, 110, (x, y) => {
     const fb = 109 - y, S = '#6a6fa8', IRON = '#5a4f8a';
     // Tour Eiffel
@@ -1100,10 +1121,21 @@
       if (dx <= Math.max(4 - (fb - 60) * 0.09, 0.6)) return IRON;
       if (fb >= 88 && dx <= 2) return IRON;
     } else if (fb < 101 && dx < 1) return IRON;
-    // Notre-Dame
-    if ((x >= 64 && x <= 72) || (x >= 88 && x <= 96)) { if (fb < 40) return (x % 3 === 1 && fb % 6 === 3 && fb > 8) ? '#9aa3cc' : S; }
-    if (x > 72 && x < 88 && fb < 28) return Math.hypot(x - 80, fb - 20) <= 3 ? '#c9b6f2' : S;
-    if (x === 80 && fb >= 28 && fb < 52) return S;
+    // Opéra Garnier : arcades, colonnade, dôme vert-de-gris et statues dorées.
+    if (fb < 52 && x >= 50 && x <= 110) {
+      const ox = x - 80, oad = Math.abs(ox);
+      if ((x === 54 || x === 55 || x === 105 || x === 106) && fb >= 28 && fb < 35) return '#f2c94c';
+      if (x === 80 && fb >= 44 && fb < 50) return '#f2c94c';
+      if (fb >= 32 && ((x - 80) / 14) ** 2 + ((fb - 32) / 12) ** 2 <= 1) return x % 4 === 0 ? '#4f8f84' : '#6fb3a3';
+      if (fb >= 32 && fb < 40 && oad <= 18 - (fb - 32) * 2) return '#7d84b8';
+      if (x >= 52 && x <= 108 && fb < 28) {
+        if (fb >= 26) return '#c7c3e0';
+        if (fb < 8) return ((x - 52) % 8 >= 2 && (x - 52) % 8 <= 5 && fb < 6) ? '#4f5590' : '#a59fc8';
+        if (fb >= 10 && fb <= 22) return x % 4 === 0 ? '#c7c3e0' : (fb >= 13 && fb <= 19 && x % 4 === 2 ? '#4f5590' : '#8f8ac0');
+        return '#a59fc8';
+      }
+      if (x >= 54 && x <= 106 && fb >= 28 && fb < 32) return '#8f8ac0';
+    }
     // Arc de Triomphe
     if (x >= 380 && x <= 412 && fb < 34) {
       if (Math.abs(x - 396) < 6 && fb < 20 - (x - 396) ** 2 / 6) return null;
@@ -1142,17 +1174,17 @@
     if (fb >= h) return null;
     if (fb === h - 1) return '#4b5670';
     if (fb >= h - 7) {
-      if (lx % 9 >= 3 && lx % 9 <= 5 && fb >= h - 5 && fb <= h - 3) return lx % 9 === 4 && fb <= h - 4 ? '#5d6f96' : '#efe3cc';
+      if (lx % 9 >= 3 && lx % 9 <= 5 && fb >= h - 5 && fb <= h - 3) return lx % 9 === 4 && fb <= h - 4 ? '#5d6f96' : '#dfcaa3';
       return '#6d7a96';
     }
     if (fb < 1) return '#bdb9b0';
     if (b.awning && fb >= 8 && fb <= 10) return fb === 8 && lx % 3 === 0 ? null : (lx % 4 < 2 ? b.awning : '#fff4e6');
-    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#efe3cc';
+    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#d2bb93';
     const cy = (fb - 12) % 9, cx = lx % 7;
     if (fb >= 12 && cy === 0 && cx >= 1 && cx <= 5) return '#2a2433';
     if (fb >= 12 && cy === 1 && cx >= 2 && cx <= 4 && hash(b.x) % 2 === 0) return cx === 3 ? '#e8392b' : '#2e8b57';
     if (fb >= 12 && cx >= 2 && cx <= 4 && cy >= 2 && cy <= 7) return cy === 7 ? '#8fa3c8' : '#5d6f96';
-    return lx === 0 ? '#cbbfa8' : '#efe3cc';
+    return lx === 0 ? '#bfa57c' : (fb % 6 === 0 ? '#d2bb93' : '#dfcaa3');
   });
 
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
@@ -1284,8 +1316,10 @@
   const gorillaFrames = [0, 1].map(f => outlinedSprite(24, 22, (x, y) => {
     const DK = '#3a3036';
     if (f === 1 && (ell(x, y, 9, 12, 3, 3) || ell(x, y, 15, 12, 3, 3))) return DK;
-    if ((x >= 10.5 && x <= 11.5 || x >= 12.5 && x <= 13.5) && y >= 4.5 && y <= 5.5) return '#1d171b';
-    if (ell(x, y, 12, 6, 2.6, 2)) return '#8a7a7f';
+    if ((x >= 9 && x <= 10 || x >= 14 && x <= 15) && y >= 5 && y <= 6) return '#ffffff';
+    if ((x >= 10 && x <= 11 || x >= 13 && x <= 14) && y >= 5 && y <= 6) return '#1d171b';
+    if (x >= 8.5 && x <= 15.5 && y >= 4 && y <= 5) return '#1d171b';
+    if (ell(x, y, 12, 6.5, 3.6, 2.8)) return '#a08f94';
     if (ell(x, y, 12, 14, 4, 4)) return '#6b5a60';
     const arms = f === 0 ? (ell(x, y, 3, 8, 2.5, 5) || ell(x, y, 21, 8, 2.5, 5)) : false;
     if (ell(x, y, 12, 13, 7, 7) || ell(x, y, 12, 5, 4, 4) || ell(x, y, 8, 19, 3, 3) || ell(x, y, 16, 19, 3, 3) || arms) return DK;
@@ -1893,7 +1927,7 @@
       drawDisc(sunC, W * 0.7, H * 0.3);
       drawBgClouds();
       drawStrip(fujiStrip, 0.1, H * 0.66 - vOff * 0.12, '#8f7bb9');
-      drawStrip(toriiStrip, 0.3, H * 0.82 - vOff * 0.3, '#4f7d5c');
+      drawStrip(bambooStrip, 0.3, H * 0.84 - vOff * 0.3, '#2f5a3c');
     } else if (world === 2) {
       drawDisc(moonC, W * 0.78, H * 0.2);
       drawBgClouds();
@@ -1906,7 +1940,6 @@
       drawStrip(londonFar, 0.1, far, '#6f86b0');
       drawWater(far, '#6f86b0', '#c9d6ee');
       drawStrip(londonMid, 0.3, H * 0.88 - vOff * 0.3, '#4a5268');
-      drawBunting(H * 0.88 - vOff * 0.3 - 40);
     } else {
       drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
@@ -1927,19 +1960,6 @@
       const y = top + 2 + hash(i * 7 + 3) % Math.min(h, 40);
       const x = mod(hash(i * 13 + 1) - camX * 0.2 + time * 6, W + 40) - 20;
       ctx.fillRect(Math.round(x), y, 2 + hash(i) % 4, 1);
-    }
-  }
-  // Guirlandes de fanions rouge, blanc, bleu entre les maisons londoniennes.
-  function drawBunting(base) {
-    const off = Math.round(camX * 0.3), span = 64, cols = ['#d7263d', '#ffffff', '#1f3c88'];
-    for (let x = 0; x < W; x += 3) {
-      const wx = x + off, k = mod(wx, span);
-      const y = Math.round(base + Math.sin(Math.PI * k / span) * 8);
-      ctx.fillStyle = '#5a5f75'; ctx.fillRect(x, y, 3, 1);
-      if (mod(Math.floor(wx / 3), 2) === 0) {
-        ctx.fillStyle = cols[mod(Math.floor(wx / 6), 3)];
-        ctx.fillRect(x, y + 1, 3, 2); ctx.fillRect(x + 1, y + 3, 1, 1);
-      }
     }
   }
   // La tour Eiffel qui scintille au coucher du soleil.
