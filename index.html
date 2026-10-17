@@ -444,7 +444,7 @@
     return Object.assign(c, { frames: frames(c.rows), framesB: frames(c.blink) });
   });
   const IDLE_FPS = 5;
-  const idleSprite = (c, blink) => (blink ? c.framesB : c.frames)[Math.floor(time * IDLE_FPS) % 4];
+  const idleSprite = (c, blink, offset = 0) => (blink ? c.framesB : c.frames)[(Math.floor(time * IDLE_FPS) + offset) % 4];
   let charIdx = clamp(parseInt(store.get('perso', '0'), 10) || 0, 0, CHARS.length - 1);
   const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
@@ -895,7 +895,8 @@
       ctx.fillStyle = sel ? '#fff3b0' : '#ffffff';
       ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + 11, cw, 1);
       ctx.fillRect(x, top, 1, ch + 12); ctx.fillRect(x + cw - 1, top, 1, ch + 12);
-      const spr = sel ? idleSprite(c, (time % 3.2) < 0.12) : c.frames[0];
+      // Tous animés, décalés pour ne pas bouger ni cligner en même temps.
+      const spr = idleSprite(c, ((time + i * 1.1) % 3.2) < 0.12, i);
       ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
