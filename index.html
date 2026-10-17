@@ -889,7 +889,7 @@
   let gameMode = store.get('mode', 'zen') === 'defi' ? 'defi' : 'zen', saveT = 0;
   let deathT = 0, goT = 0, newRecord = false, runBest = 0, confetti = [], goButtons = [], modeBtn = null;
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
-  const WORLD_EVERY = 500, TRANS_DUR = 2.4, PLANE_DUR = 6;
+  const WORLD_EVERY = 200, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
 
   function resetWorld() {
