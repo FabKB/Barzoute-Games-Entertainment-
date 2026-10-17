@@ -393,6 +393,34 @@
         ['C6', 'E6', 'G6', 'C7'].forEach((n, i) => fm(sfx, at(4.5 + i * 0.25), mtof(n2m(n)), 0.15, BELL));
       },
       // Souffle des nuages pendant le changement de monde.
+      // Petit son pour l'événement de mi-parcours de chaque monde.
+      event(w) {
+        if (!ac) return;
+        const t = ac.currentTime + 0.05;
+        const noiseSweep = (t0, dur, f0, f1, vol, type) => {
+          const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+          src.buffer = noise; src.loop = true;
+          f.type = type || 'bandpass'; f.Q.value = 0.7;
+          f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur * 0.6);
+          g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(vol, t0 + dur * 0.3);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          src.connect(f); f.connect(g); g.connect(sfx); src.start(t0); src.stop(t0 + dur + 0.05);
+        };
+        if (w === 0) {
+          ['C6', 'E6', 'G6', 'C7', 'E7', 'G7'].forEach((n, i) => fm(sfx, t + i * 0.12, mtof(n2m(n)), 0.2, BELL));
+        } else if (w === 1) {
+          drum(t, 60, 35, 1.2, 0.5);
+          fm(sfx, t + 1.6, 110, 1.2, Object.assign({}, SLAP, { vol: 0.18, glide: 0.6, sus: 0.8 }));
+          noiseSweep(t + 1.6, 3, 400, 1800, 0.12, 'bandpass');
+        } else if (w === 2) {
+          for (let c = 0; c * 1.6 < EVENT_DUR[2] - 1; c++) [0.15, 0.45, 0.75].forEach(b => drum(t + c * 1.6 + b, 95, 55, 0.25, 0.4));
+        } else if (w === 3) {
+          noiseSweep(t, 3, 900, 1500, 0.1, 'bandpass');
+          for (let k = 0; k < 14; k++) nz(t + rand(0.1, 2.4), 0.04, 0.06, 'highpass', 2500, 0, sfx);
+        } else {
+          noiseSweep(t + 0.8, 3.5, 300, 2200, 0.16, 'lowpass');
+        }
+      },
       whoosh() {
         if (!ac) return;
         const t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
@@ -422,7 +450,11 @@
     f: '#fbf7f0', h: '#e08a4a', e: '#eadfce', u: '#f3ead9', n: '#e07a52', b: '#8a4a2a',
     v: '#3d4660', z: '#f4f1ea', o: '#4a5062', q: '#33384a', T: '#c2603a', t: '#953f22',
     // Hélice de l'avion
-    A: '#a3a9bb'
+    A: '#a3a9bb',
+    // Licorne volante, reine, avions de la patrouille
+    m: '#ff9ecf', M: '#b48be8', V: '#a46bff', U: '#8fb7e8', j: '#f2f2f2', i: '#f3d3b8', x: '#3c4f7a',
+    // Douliam, le doudou en tricot vert d'eau
+    Q: '#a8d8b0', X: '#86bf91', Z: '#c6ead0', D: '#79b386', F: '#f4f1ea'
   };
   // La glace licorne, d'après le dessin : corne, oreilles de chat, grands yeux, cornet gaufré.
   const SCOOP = [
@@ -553,6 +585,37 @@
     });
     return c;
   }
+  // Douliam : nid d'ange en tricot vert d'eau, col roulé, torsades et petite étiquette.
+  const DOULIAM = (() => {
+    const rows = [], w = 18, c = 9;
+    for (let y = 0; y < 30; y++) {
+      // Col roulé plus large, bande de torsades, puis une poche arrondie qui finit en petite pointe.
+      const half = y < 5 ? 9 : y < 12 ? 7.5 : y < 28 ? Math.max(1.5, 7.5 * Math.sqrt(Math.max(0, 1 - ((y - 12) / 17.5) ** 2))) : 1.2;
+      let r = '';
+      for (let x = 0; x < w; x++) {
+        const d = Math.abs(x + 0.5 - c);
+        if (d > half) { r += '.'; continue; }
+        if (d > half - 1 || y === 0) { r += 'K'; continue; }
+        let ch;
+        if (y <= 4) ch = y === 4 ? 'D' : y <= 1 ? 'Z' : ((x + y) % 2 ? 'Q' : 'Z');
+        else if (y <= 11) {
+          const k = x % 4;
+          ch = k === 3 ? 'X' : (k === 0 || k === 1) ? (((y + k) % 2 === 0) ? 'Z' : 'D') : 'Q';
+        } else ch = (x + 0.5 > c + half - 2) ? 'X' : ((x + y) % 3 === 0 ? 'X' : 'Q');
+        r += ch;
+      }
+      rows.push(r);
+    }
+    const put = (x, y, ch) => { rows[y] = rows[y].slice(0, x) + ch + rows[y].slice(x + 1); };
+    put(13, 8, 'F'); put(14, 8, 'F'); put(13, 9, 'F'); put(14, 9, 'F');
+    put(6, 15, 'K'); put(11, 15, 'K'); put(4, 17, 'R'); put(13, 17, 'R'); put(8, 18, 'K'); put(9, 18, 'K');
+    return rows;
+  })();
+  const DOULIAM_BLINK = DOULIAM.map((r, y) => y === 15 ? r.slice(0, 6) + 'X' + r.slice(7, 11) + 'X' + r.slice(12) : r);
+  // Accent : la petite pointe se balance.
+  const douliamSway = {};
+  for (let y = 24; y < 30; y++) douliamSway[y] = '.' + DOULIAM[y].slice(0, -1);
+
   // trail : hauteur (depuis les pieds) où part l'arc-en-ciel.
   // Animation d'attente en boucle, indépendante du saut :
   // normal → tassé (on retire la ligne « cut », le haut descend d'1 px) → normal → petit détail (accent).
@@ -572,7 +635,8 @@
       18: '.TTTKKoooqoooooKK....',
       19: '...TTKoooooooooK.....',
       20: '.....KoooooooooK.....'
-    } }
+    } },
+    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, cut: 20, accent: douliamSway }
   ].map(c => {
     const frames = rows => {
       const blank = '.'.repeat(rows[0].length);
@@ -739,7 +803,7 @@
         if (cx >= 4 && cx <= 9 && cy >= 4 && cy <= 12) return cy === 4 ? '#8fa3c8' : '#5d6f96';
         if (cy === 14 && cx >= 3 && cx <= 10) return '#2a2433';
         if (cy === 13 && cx >= 3 && cx <= 10 && cx % 2 === 1) return '#2a2433';
-        return cy === 0 ? '#dccfb5' : '#efe3cc';
+        return cy === 0 ? '#c4ab82' : ((y - 6) % 6 === 0 ? '#d2bb93' : '#dfcaa3');
       }
     },
     { // pile de macarons
@@ -807,6 +871,29 @@
   // Japon : collines et mont Fuji enneigé.
   const fujiStrip = paintStrip(640, 80, (x, y) => {
     const fb = 79 - y;
+    // Pagode de Chureito devant le Fuji : cinq toits, une flèche dorée.
+    const pdx = x - 250, pad = Math.abs(pdx);
+    if (pad <= 13) {
+      if (fb >= 55 && fb < 64 && pdx === 0) return fb >= 61 ? '#e0c27a' : '#3b2f4a';
+      if (fb < 55) {
+        const tier = (fb / 11) | 0, ly = fb % 11, rw = 13 - tier * 1.6, ww = 6 - tier;
+        if (ly >= 7) { if (pad <= rw - (ly - 7) * 2.2) return ly === 7 ? '#5a4e6e' : '#3b2f4a'; }
+        else if (pad <= ww) return (pdx === 0 && ly >= 2 && ly <= 4) ? '#2a2433' : (pad === ww ? '#a8361f' : '#c8442b');
+      }
+    }
+    // Château de Himeji : murs blancs, toits gris-vert, base en pierre.
+    const cdx = x - 480, cad = Math.abs(cdx);
+    if (cad <= 22 && fb < 50) {
+      if (fb < 10) { if (cad <= 20 - fb * 0.4) return fb % 3 === 0 ? '#7d7d8e' : '#8d8d9e'; }
+      else {
+        const lv = ((fb - 10) / 10) | 0, ly = (fb - 10) % 10, wall = 14 - lv * 4, roof = wall + 4 - (ly - 6) * 1.5;
+        if (ly < 6 && cad <= wall) return (ly === 3 && cad % 4 === 1) ? '#3b3f5c' : '#f4f1ea';
+        if (ly >= 6 && cad <= roof) {
+          if (lv === 3 && ly === 9 && cad >= roof - 1) return '#e0c27a';
+          return ly === 6 ? '#8796a6' : '#5d6b7a';
+        }
+      }
+    }
     const hills = 14 + 6 * Math.abs(Math.sin(TAU * x * 3 / 640)) + 4 * Math.abs(Math.sin(TAU * x * 7 / 640 + 1));
     if (fb < hills) return fb >= hills - 2 ? '#b9a6d8' : '#8f7bb9';
     const fuji = Math.min(66, 72 - Math.abs(x - 320) * 0.5);
@@ -817,16 +904,37 @@
     return null;
   });
   // Japon : l'allée de torii vermillon de Fushimi Inari.
-  const toriiStrip = paintStrip(80, 34, (x, y) => {
-    const lx = x % 20, fb = 33 - y;
-    if (fb === 31 && (lx === 1 || lx === 18)) return '#2a2433';
-    if (fb >= 28 && fb <= 30 && lx >= 1 && lx <= 18) return fb === 30 ? '#2a2433' : '#e4572e';
-    if (fb === 23 && lx >= 3 && lx <= 16) return '#e4572e';
-    if ((lx >= 4 && lx <= 5) || (lx >= 14 && lx <= 15)) {
-      if (fb > 27) return null;
-      if (fb < 3) return '#2a2433';
-      return (lx === 5 || lx === 15) ? '#b8401f' : '#e4572e';
+  // Japon : forêt de bambous (deux profondeurs) avec de petits torii vermillon.
+  const bambooStalks = (() => {
+    const out = [];
+    for (let x = 0, i = 0; x < 160; i++) {
+      out.push({ x, w: 2 + (hash(i * 5 + 1) % 3 === 0 ? 1 : 0), h: 40 + hash(i * 7 + 3) % 17, col: ['#6fa85a', '#5e9a4c', '#86b86a'][hash(i * 11) % 3] });
+      x += 5 + hash(i * 13 + 2) % 4;
     }
+    return out;
+  })();
+  const bambooStrip = paintStrip(160, 64, (x, y) => {
+    const fb = 63 - y;
+    // Petit torii, à l'échelle de la forêt.
+    const tx = x - 60;
+    if (tx >= 0 && tx <= 17) {
+      if (fb === 18 && (tx === 0 || tx === 17)) return '#2a2433';
+      if (fb >= 15 && fb <= 17) return fb === 17 ? '#2a2433' : '#e4572e';
+      if (fb === 11 && tx >= 2 && tx <= 15) return '#e4572e';
+      if ((tx === 3 || tx === 4 || tx === 13 || tx === 14) && fb < 15) return fb < 2 ? '#2a2433' : (tx === 4 || tx === 14 ? '#b8401f' : '#e4572e');
+      if (fb < 15 && tx > 4 && tx < 13) return fb < 1 ? '#a39b86' : null;
+    }
+    // Bambous du premier plan : tiges à nœuds, feuillage en haut.
+    for (const st of bambooStalks) {
+      const lx = x - st.x;
+      if (lx >= 0 && lx < st.w && fb < st.h) {
+        if (fb % 7 === 0) return '#3f6b3a';
+        return lx === 0 ? '#a6d48c' : st.col;
+      }
+      if (Math.abs(lx - 1) <= 6 && Math.abs(fb - st.h) <= 4 && hash(x * 31 + y * 17) % 3 === 0) return fb > st.h ? '#7fbf6a' : '#4f8a45';
+    }
+    // Bambous du fond, plus sombres.
+    if ((x + 2) % 4 === 0 && fb < 46 + hash(x) % 14) return fb % 6 === 0 ? '#2f5a3c' : '#4b7a52';
     return null;
   });
 
@@ -855,6 +963,30 @@
   })();
   const skylineStrip = paintStrip(640, 112, (x, y) => {
     const fb = 111 - y, lx = x - 500, ly = y - (112 - LIBERTY.length);
+    // Pont de Brooklyn : deux tours gothiques, câbles et suspentes.
+    for (const tx of [70, 160]) {
+      if (x >= tx && x < tx + 10 && fb >= 26 && fb < 72) {
+        const ax = x - tx;
+        if (fb >= 44 && fb < 62 && (ax === 2 || ax === 3 || ax === 6 || ax === 7) && fb < 62 - (ax === 2 || ax === 7 ? 1 : 0)) return null;
+        return fb >= 70 ? '#a79cba' : '#8a7f9e';
+      }
+    }
+    if (x >= 15 && x <= 235 && fb >= 26 && fb <= 28) return '#6b6f9e';
+    if (x >= 80 && x <= 160) {
+      const cy = 32 + 38 * ((x - 120) / 40) ** 2;
+      if (Math.abs(fb - cy) < 0.7) return '#c3cbe0';
+      if (x % 4 === 0 && fb > 28 && fb < cy) return '#9aa3c8';
+    }
+    if (x >= 15 && x < 70 && Math.abs(fb - (29 + (x - 15) * 41 / 55)) < 0.7) return '#c3cbe0';
+    if (x > 170 && x <= 235 && Math.abs(fb - (70 - (x - 170) * 41 / 65)) < 0.7) return '#c3cbe0';
+    // Chrysler Building : couronne Art déco en arches et flèche argentée.
+    const chx = x - 338, chad = Math.abs(chx);
+    if (chad <= 7 && fb < 70) return (x % 3 === 1 && fb % 4 === 2) ? '#e8ecf8' : '#7c84c4';
+    if (chad <= 7 && fb >= 70 && fb < 92) {
+      const k = ((fb - 70) / 5) | 0, ly2 = (fb - 70) % 5, half = 7 - k * 1.5 - ly2 * 0.3;
+      if (chad <= half) return (ly2 === 2 && chad % 2 === 0) ? '#2a2f5a' : '#d8dcef';
+    }
+    if (chx === 0 && fb >= 92 && fb < 108) return '#d8dcef';
     if (lx >= 0 && lx < 13 && ly >= 0) {
       const ch = LIBERTY[ly][lx];
       if (ch !== '.') return LIB_PAL[ch];
@@ -1005,7 +1137,7 @@
     return lx === 0 ? '#5a5f75' : b.col;
   });
 
-  // Paris : Notre-Dame, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
+  // Paris : l'Opéra Garnier, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
   const parisFar = paintStrip(640, 110, (x, y) => {
     const fb = 109 - y, S = '#6a6fa8', IRON = '#5a4f8a';
     // Tour Eiffel
@@ -1023,10 +1155,21 @@
       if (dx <= Math.max(4 - (fb - 60) * 0.09, 0.6)) return IRON;
       if (fb >= 88 && dx <= 2) return IRON;
     } else if (fb < 101 && dx < 1) return IRON;
-    // Notre-Dame
-    if ((x >= 64 && x <= 72) || (x >= 88 && x <= 96)) { if (fb < 40) return (x % 3 === 1 && fb % 6 === 3 && fb > 8) ? '#9aa3cc' : S; }
-    if (x > 72 && x < 88 && fb < 28) return Math.hypot(x - 80, fb - 20) <= 3 ? '#c9b6f2' : S;
-    if (x === 80 && fb >= 28 && fb < 52) return S;
+    // Opéra Garnier : arcades, colonnade, dôme vert-de-gris et statues dorées.
+    if (fb < 52 && x >= 50 && x <= 110) {
+      const ox = x - 80, oad = Math.abs(ox);
+      if ((x === 54 || x === 55 || x === 105 || x === 106) && fb >= 28 && fb < 35) return '#f2c94c';
+      if (x === 80 && fb >= 44 && fb < 50) return '#f2c94c';
+      if (fb >= 32 && ((x - 80) / 14) ** 2 + ((fb - 32) / 12) ** 2 <= 1) return x % 4 === 0 ? '#4f8f84' : '#6fb3a3';
+      if (fb >= 32 && fb < 40 && oad <= 18 - (fb - 32) * 2) return '#7d84b8';
+      if (x >= 52 && x <= 108 && fb < 28) {
+        if (fb >= 26) return '#c7c3e0';
+        if (fb < 8) return ((x - 52) % 8 >= 2 && (x - 52) % 8 <= 5 && fb < 6) ? '#4f5590' : '#a59fc8';
+        if (fb >= 10 && fb <= 22) return x % 4 === 0 ? '#c7c3e0' : (fb >= 13 && fb <= 19 && x % 4 === 2 ? '#4f5590' : '#8f8ac0');
+        return '#a59fc8';
+      }
+      if (x >= 54 && x <= 106 && fb >= 28 && fb < 32) return '#8f8ac0';
+    }
     // Arc de Triomphe
     if (x >= 380 && x <= 412 && fb < 34) {
       if (Math.abs(x - 396) < 6 && fb < 20 - (x - 396) ** 2 / 6) return null;
@@ -1051,7 +1194,7 @@
     let x = 0, i = 0;
     while (x < 480) {
       const w = Math.min(28 + hash(i * 7 + 5) % 11, 480 - x);
-      out.push({ x, w, h: 29 + hash(i * 11 + 3) % 8, awning: ['#d7263d', '#2e8b57', null][hash(i * 5 + 1) % 3] });
+      out.push({ x, w, h: 40 + hash(i * 11 + 3) % 9, awning: ['#d7263d', '#2e8b57', null][hash(i * 5 + 1) % 3] });
       x += w; i++;
     }
     return out;
@@ -1065,16 +1208,17 @@
     if (fb >= h) return null;
     if (fb === h - 1) return '#4b5670';
     if (fb >= h - 7) {
-      if (lx % 9 >= 3 && lx % 9 <= 5 && fb >= h - 5 && fb <= h - 3) return lx % 9 === 4 && fb <= h - 4 ? '#5d6f96' : '#efe3cc';
+      if (lx % 9 >= 3 && lx % 9 <= 5 && fb >= h - 5 && fb <= h - 3) return lx % 9 === 4 && fb <= h - 4 ? '#5d6f96' : '#dfcaa3';
       return '#6d7a96';
     }
     if (fb < 1) return '#bdb9b0';
     if (b.awning && fb >= 8 && fb <= 10) return fb === 8 && lx % 3 === 0 ? null : (lx % 4 < 2 ? b.awning : '#fff4e6');
-    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#efe3cc';
+    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#d2bb93';
     const cy = (fb - 12) % 9, cx = lx % 7;
     if (fb >= 12 && cy === 0 && cx >= 1 && cx <= 5) return '#2a2433';
+    if (fb >= 12 && cy === 1 && cx >= 2 && cx <= 4 && hash(b.x) % 2 === 0) return cx === 3 ? '#e8392b' : '#2e8b57';
     if (fb >= 12 && cx >= 2 && cx <= 4 && cy >= 2 && cy <= 7) return cy === 7 ? '#8fa3c8' : '#5d6f96';
-    return lx === 0 ? '#cbbfa8' : '#efe3cc';
+    return lx === 0 ? '#bfa57c' : (fb % 6 === 0 ? '#d2bb93' : '#dfcaa3');
   });
 
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
@@ -1160,6 +1304,259 @@
     buildRainbow();
   }
 
+  // ---------- Événements de mi-parcours (décor uniquement, sans effet sur le jeu) ----------
+  // Petit outil : dessine une forme pixel par pixel et ajoute un contour sombre autour.
+  function outlinedSprite(w, h, fn, outline) {
+    const grid = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) grid.push(fn(x + 0.5, y + 0.5));
+    const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? null : grid[y * w + x];
+    const c = mk(w, h), g = c.getContext('2d');
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const col = at(x, y);
+        if (!col) continue;
+        const edge = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
+        g.fillStyle = edge ? outline : col;
+        g.fillRect(x, y, 1, 1);
+      }
+    }
+    return c;
+  }
+  const ell = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+  const segDist = (x, y, ax, ay, bx, by) => {
+    const vx = bx - ax, vy = by - ay, t = clamp(((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy), 0, 1);
+    return [Math.hypot(x - (ax + vx * t), y - (ay + vy * t)), t];
+  };
+
+  // Japon : le monstre géant (tourné vers la gauche), bouche fermée ou ouverte.
+  const kaijuFrames = [false, true].map(open => outlinedSprite(40, 56, (x, y) => {
+    const BODY = '#4f7062', BELLY = '#86a493';
+    if (x >= 6.5 && x <= 8.5 && y >= 9 && y <= 10) return '#ffd84a';
+    if (open && x >= 3 && x <= 12 && y >= 15.5 && y <= 18) return '#e8392b';
+    const head = ell(x, y, 11, 11, 8, 6) || (x >= 3 && x <= 13 && y >= 12 && y <= (open ? 15.5 : 17)) || (open && x >= 4 && x <= 13 && y >= 18 && y <= 20.5);
+    const body = ell(x, y, 17, 19, 7, 8) || ell(x, y, 22, 34, 11, 14) || ell(x, y, 11, 26, 3, 2)
+      || ell(x, y, 17, 47, 5, 7) || ell(x, y, 28, 47, 5, 7) || (y >= 52 && y <= 55 && ((x >= 11 && x <= 22) || (x >= 24 && x <= 34)));
+    const [td, tt] = segDist(x, y, 30, 38, 39, 55);
+    const tail = td < 4 - tt * 3;
+    if (head || body || tail) return ell(x, y, 17, 34, 6, 11) ? BELLY : BODY;
+    for (let k = 0; k <= 6; k++) {
+      const sx = 24 + 13 * k / 6, sy = 7 + 30 * k / 6;
+      if (Math.abs(x - sx) + Math.abs(y - sy) <= 2.6) return '#d9eef2';
+    }
+    return null;
+  }, '#1f2e28'));
+
+  // New York : le gorille géant, bras écartés puis poings sur la poitrine.
+  const gorillaFrames = [0, 1].map(f => outlinedSprite(24, 22, (x, y) => {
+    const DK = '#3a3036';
+    if (f === 1 && (ell(x, y, 9, 12, 3, 3) || ell(x, y, 15, 12, 3, 3))) return DK;
+    if ((x >= 9 && x <= 10 || x >= 14 && x <= 15) && y >= 5 && y <= 6) return '#ffffff';
+    if ((x >= 10 && x <= 11 || x >= 13 && x <= 14) && y >= 5 && y <= 6) return '#1d171b';
+    if (x >= 8.5 && x <= 15.5 && y >= 4 && y <= 5) return '#1d171b';
+    if (ell(x, y, 12, 6.5, 3.6, 2.8)) return '#a08f94';
+    if (ell(x, y, 12, 14, 4, 4)) return '#6b5a60';
+    const arms = f === 0 ? (ell(x, y, 3, 8, 2.5, 5) || ell(x, y, 21, 8, 2.5, 5)) : false;
+    if (ell(x, y, 12, 13, 7, 7) || ell(x, y, 12, 5, 4, 4) || ell(x, y, 8, 19, 3, 3) || ell(x, y, 16, 19, 3, 3) || arms) return DK;
+    return null;
+  }, '#1d171b'));
+
+  // Glaces : la licorne volante (tournée vers la droite), crinière rose et queue arc-en-ciel.
+  const UNICORN = [
+    '.....................Y',
+    '....................YK',
+    '...............mM..YK',
+    '..............mMmKKwwK',
+    '.............mMmKwwwwwK',
+    '............mMmKwwKwwwwK',
+    '...........mMmKwwwwwwwwwK',
+    '..RO.......mMKwwwwwKKKKK',
+    '.ROYG.....mMKwwwwwK',
+    'ROYGB.KKKKKKwwwwwwK',
+    '.YGBVKwwwwwwwwwwwK',
+    '..BV.KwwwwwwwwwwwK',
+    '.....KwwwwwwwwwwK',
+    '....KwK.KwK.KwK.KwK',
+    '...KwK...KwK..KwK..KwK',
+    '...KK.....KK...KK....KK'
+  ];
+  // Londres : la reine qui salue (deux positions du bras).
+  const QUEEN_A = [
+    '..UUUU....', '.UUUUUU..i', 'UUUUUUUU.i', '.jiiiij..U', '.jiKiKj..U', '..iiRii.U.', '..UwwwUUU.',
+    '.UUUUUUU..', '.UUUUUU...', '.UUUUUUK..', '.UUUUUUKK.', '.UUUUUU...', '..UUUU....', '..N..N....'
+  ];
+  const QUEEN_B = QUEEN_A.slice();
+  QUEEN_B[1] = '.UUUUUU...'; QUEEN_B[2] = 'UUUUUUUU..'; QUEEN_B[3] = '.jiiiij.i.'; QUEEN_B[4] = '.jiKiKj.U.';
+  // Paris : un avion de la patrouille, tourné vers la droite.
+  const JET = ['K', 'KK', 'KxxxxxxxxK', '.KxxxxxxxxxK', '..KKxxKKK'];
+  const padRows = rows => { const w = Math.max(...rows.map(r => r.length)); return rows.map(r => r.padEnd(w, '.')); };
+  const unicornSpr = makeSprite(padRows(UNICORN));
+  const queenFrames = [makeSprite(padRows(QUEEN_A)), makeSprite(padRows(QUEEN_B))];
+  const jetSpr = makeSprite(padRows(JET));
+  // Drapeau britannique.
+  const unionJack = paintStrip(12, 8, (x, y) => {
+    const dx = Math.abs(x + 0.5 - 6), dy = Math.abs(y + 0.5 - 4);
+    if (dx < 1 || dy < 1) return '#c8102e';
+    if (dx < 2 || dy < 2) return '#ffffff';
+    const d1 = Math.abs((x + 0.5) * 8 / 12 - (y + 0.5)), d2 = Math.abs((x + 0.5) * 8 / 12 - (8 - y - 0.5));
+    if (d1 < 0.9 || d2 < 0.9) return '#ffffff';
+    return '#1f3c88';
+  });
+
+  // Décors fixes des scènes : l'Empire State Building et Buckingham Palace (dessinés une fois).
+  const esC = paintStrip(40, 101, (x, y) => {
+    const fb = 100 - y, ax = Math.abs(x + 0.5 - 20.5);
+    if (x === 20 && fb < 100) return '#eef1f8';
+    for (const [hw, h] of [[18, 52], [13, 68], [9, 77], [5, 83], [2, 89]]) {
+      if (fb < h && ax <= hw) {
+        if (x % 3 === 1 && fb % 5 === 2 && fb < h - 2 && hash(x * 7 + fb * 13) % 3 === 0) return '#ffe9a8';
+        return ax > hw - 1 ? '#3d4170' : (x % 2 ? '#a3a8dc' : '#959bd2');
+      }
+    }
+    return null;
+  });
+  const palaceC = paintStrip(160, 80, (x, y) => {
+    const fb = 79 - y, ax = Math.abs(x + 0.5 - 80.5);
+    if (x === 80 && fb >= 66 && fb <= 82) return '#5a5f75';
+    if (ax <= 20 && fb >= 58 && fb <= 66 && ax <= 20 - (fb - 58) * 2.5) return fb === 58 || ax > 19 - (fb - 58) * 2.5 ? '#cfc7b6' : '#efe8da';
+    if (x < 5 || x > 154) return null;
+    if (fb >= 60 && fb <= 62) return x % 3 === 0 ? '#cfc7b6' : null;
+    if (fb === 58 || fb === 59) return '#f4efe4';
+    if (fb >= 58) return null;
+    if (ax <= 20) return ((x - 62) % 6 === 0 || (x - 62) % 6 === 1) ? '#cfc7b6' : '#efe8da';
+    for (const wy of [7, 23, 39]) if (fb >= wy && fb <= wy + 6 && x % 8 >= 4 && x % 8 <= 6) return '#5d6f96';
+    return '#e3dccd';
+  });
+
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5];
+  let ev = null, evSeg = -1, evFx = [], shake = 0;
+  let reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
+  const groundY = () => (world >= 3 ? H * 0.88 : H * 0.84) - (camY - camBase()) * 0.3;
+  const evK = () => (H >= 260 ? 2 : 1);
+  const ease = u => u * u * (3 - 2 * u);
+  const unicornPos = (t, dur) => {
+    const u = t / dur;
+    return [-60 + u * (W + 120), H * 0.3 - Math.sin(u * Math.PI) * H * 0.12];
+  };
+
+  function startEvent(w) {
+    ev = { w, t: 0, path: [] };
+    evFx = [];
+    Sound.event(w);
+  }
+  function updateEvent(dt) {
+    shake *= Math.exp(-dt * 10);
+    for (const q of evFx) { q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
+    evFx = evFx.filter(q => q.life > 0);
+    if (!ev) return;
+    ev.t += dt;
+    const dur = EVENT_DUR[ev.w], s = evK() + 1;
+    if (ev.t >= dur) { ev = null; return; }
+    if (ev.w === 0) {
+      const [x, y] = unicornPos(ev.t, dur), last = ev.path[ev.path.length - 1];
+      if (!last || x - last.x >= 2) ev.path.push({ x: x + 2 * s, y: y + 8 * s });
+    } else if (ev.w === 2) {
+      // Une secousse à chaque coup sur la poitrine, plus forte quand le gorille passe devant le personnage.
+      const phase = ev.t % 1.6, frame = phase < 0.9 ? Math.floor(phase / 0.15) % 2 : 0;
+      const cx = W + 50 * evK() - (ev.t / dur) * (W + 120 * evK());
+      if (frame === 1 && ev.lastFrame === 0 && cx > -20 && cx < W + 20) shake = Math.max(shake, Math.abs(cx - W * 0.28) < 70 ? 3.5 : 1.8);
+      ev.lastFrame = frame;
+    } else if (ev.w === 1 && (ev.t < 1.2 || ev.t > dur - 1.2)) {
+      shake = Math.max(shake, 0.8);
+    }
+    if (ev && ev.w === 1 && ev.t > 1.6 && ev.t < 4.6) {
+      shake = Math.max(shake, 1.8);
+      const spr = kaijuFrames[1];
+      const mx = W * 0.74 - spr.width * s / 2 + 3 * s, my = groundY() - spr.height * s + 17 * s;
+      for (let i = 0; i < 3; i++) {
+        evFx.push({ x: mx, y: my + rand(-2, 2) * s, vx: -rand(70, 130) * s, vy: rand(-12, 12) * s, life: rand(0.5, 0.9), max: 0.9, s });
+      }
+    }
+  }
+  function drawEvent() {
+    if (!ev) { drawEventFx(); return; }
+    const t = ev.t, dur = EVENT_DUR[ev.w], u = t / dur, K = evK(), gy = Math.round(groundY()), gyBase = gy;
+    const fade = clamp((dur - t) / 1, 0, 1);
+    if (ev.w === 0) {
+      // La licorne vole en laissant un grand arc-en-ciel.
+      const s = K + 1;
+      ctx.globalAlpha = fade;
+      for (const p of ev.path) for (let i = 0; i < 6; i++) { ctx.fillStyle = RAINBOW[i]; ctx.fillRect(Math.round(p.x), Math.round(p.y) + i * s, 2, s); }
+      ctx.globalAlpha = 1;
+      const [x, y] = unicornPos(t, dur);
+      ctx.drawImage(unicornSpr, Math.round(x), Math.round(y + Math.sin(t * 8) * s), unicornSpr.width * s, unicornSpr.height * s);
+    } else if (ev.w === 1) {
+      // Le monstre sort de terre, crache du feu, puis redescend.
+      const s = K + 1, spr = kaijuFrames[t > 1.6 && t < 4.6 ? 1 : 0];
+      const rise = t < 1.2 ? ease(t / 1.2) : (t > dur - 1.2 ? ease((dur - t) / 1.2) : 1);
+      const shake = t < 1.2 || t > dur - 1.2 ? Math.round(Math.sin(t * 60)) : 0;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, W, gy); ctx.clip();
+      ctx.drawImage(spr, Math.round(W * 0.74 - spr.width * s / 2) + shake, Math.round(gy - spr.height * s * rise), spr.width * s, spr.height * s);
+      ctx.restore();
+    } else if (ev.w === 2) {
+      // L'Empire State Building défile, le gorille tape sur sa poitrine tout en haut.
+      const cx = Math.round(W + 50 * K - u * (W + 120 * K));
+      ctx.drawImage(esC, cx - 20 * K, gy - 101 * K, 40 * K, 101 * K);
+      const phase = t % 1.6, frame = phase < 0.9 ? Math.floor(phase / 0.15) % 2 : 0;
+      const g = gorillaFrames[frame], gs = K + 1;
+      ctx.drawImage(g, cx - Math.round(g.width * gs / 2), gy - 83 * K - g.height * gs + 2 * gs, g.width * gs, g.height * gs);
+    } else if (ev.w === 3) {
+      // Buckingham Palace défile : la reine salue la foule depuis le balcon.
+      const cx = Math.round(W + 90 * K - u * (W + 180 * K)), gy = gyBase - 30 * K;
+      // La cour devant le palais descend jusqu'en bas de l'écran : le palais repose sur le sol.
+      ctx.fillStyle = '#bdb39d'; ctx.fillRect(cx - 92 * K, gy, 184 * K, H - gy);
+      ctx.fillStyle = '#d8cfbd'; ctx.fillRect(cx - 88 * K, gy, 176 * K, H - gy);
+      ctx.fillStyle = '#c9bfa9';
+      for (let y = gy + 4 * K; y < H; y += 5 * K) ctx.fillRect(cx - 88 * K, y, 176 * K, K);
+      ctx.drawImage(palaceC, cx - 80 * K, gy - 80 * K, 160 * K, 80 * K);
+      ctx.fillStyle = '#2a2433';
+      ctx.fillRect(cx - 92 * K, gy - 7 * K, 184 * K, K);
+      for (let x = cx - 92 * K; x < cx + 92 * K; x += 2 * K) ctx.fillRect(x, gy - 8 * K, K, 8 * K);
+      ctx.fillStyle = '#e0c27a';
+      for (let x = cx - 92 * K; x < cx + 92 * K; x += 2 * K) ctx.fillRect(x, gy - 9 * K, K, K);
+      for (const px of [cx - 92 * K, cx - 22 * K, cx + 18 * K, cx + 88 * K]) {
+        ctx.fillStyle = '#e3dccd'; ctx.fillRect(px, gy - 12 * K, 4 * K, 12 * K);
+        ctx.fillStyle = '#e0c27a'; ctx.fillRect(px + K, gy - 14 * K, 2 * K, 2 * K);
+      }
+      const qs = 2 * K, q = queenFrames[Math.floor(t / 0.3) % 2];
+      ctx.drawImage(q, cx - Math.round(q.width * qs / 2), gy - 30 * K - (q.height - 4) * qs, q.width * qs, q.height * qs);
+      ctx.fillStyle = '#cfc7b6'; ctx.fillRect(cx - 15 * K, gy - 30 * K, 30 * K, 2 * K);
+      ctx.fillStyle = '#c8102e'; ctx.fillRect(cx - 15 * K, gy - 28 * K, 30 * K, 4 * K);
+      ctx.fillStyle = '#e0c27a'; ctx.fillRect(cx - 15 * K, gy - 24 * K, 30 * K, K);
+      for (let x = 0; x < 12; x++) {
+        ctx.drawImage(unionJack, x, 0, 1, 8, cx + K + x * K, gy - 82 * K + Math.round(Math.sin(t * 6 + x * 0.5) * K), K, 8 * K);
+      }
+      for (let x = cx - 90 * K; x < cx + 90 * K; x += 4 * K) {
+        const k = hash(Math.round(x / K) * 3 + 1), bob = (Math.floor(t * 4 + k) % 2) * K;
+        ctx.fillStyle = ['#3b2f4a', '#8a4b3a', '#f2c230', '#5a3a2a', '#c9a27e'][k % 5];
+        ctx.fillRect(x, gy - 4 * K - bob, 3 * K, 3 * K);
+        if (k % 3 === 0) ctx.drawImage(unionJack, x + K, gy - 10 * K - bob, 4 * K, 3 * K);
+      }
+    } else if (ev.w === 4) {
+      // La patrouille passe en laissant des traînées bleu, blanc, rouge.
+      const lx = Math.round(-60 * K + u * (W + 160 * K)), ly = Math.round(Math.max(safe.t + 40, H * 0.2) + Math.sin(u * Math.PI * 2) * 4);
+      const F = [[0, 0, 1], [-14, -8, 0], [-14, 8, 2], [-28, -16, 0], [-28, 16, 2], [-28, 0, 1], [-42, -8, 0], [-42, 8, 2]];
+      const SMOKE = ['#1f4fbf', '#ffffff', '#e3262e'];
+      ctx.globalAlpha = 0.85 * fade;
+      for (const [dx, dy, c] of F) {
+        ctx.fillStyle = SMOKE[c];
+        const x1 = lx + dx * K;
+        if (x1 > 0) ctx.fillRect(0, ly + (dy + 2) * K, x1, 3 * K);
+      }
+      ctx.globalAlpha = 1;
+      for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
+    }
+    drawEventFx();
+  }
+  function drawEventFx() {
+    for (const q of evFx) {
+      const a = q.life / q.max;
+      ctx.fillStyle = a > 0.75 ? '#fff3b0' : a > 0.5 ? '#ffd84a' : a > 0.25 ? '#ff9f43' : '#ff5e3a';
+      ctx.fillRect(Math.round(q.x), Math.round(q.y), 2 * q.s, 2 * q.s);
+    }
+  }
+
   // ---------- Monde ----------
   const G = 900, JUMP_V = 265, DJUMP_V = 240, HW = 5;
   const RAINBOW = ['#ff4d6d', '#ff9f43', '#ffe14d', '#4ee08a', '#4db8ff', '#a46bff'];
@@ -1183,6 +1580,7 @@
     camX = player.x - W * 0.28;
     camY = camBase();
     world = 0; genWorld = 0; trans = null; plane = null; worldCard = 0; petals = [];
+    ev = null; evFx = []; evSeg = -1; shake = 0;
     Sound.setSong(0);
     while (lastPlat().x + lastPlat().w < camX + W + 200) genNext();
   }
@@ -1219,6 +1617,7 @@
   }
   function switchWorld(w) {
     world = w;
+    ev = null; evFx = []; shake = 0;
     for (const pl of platforms) { pl.s = w * 3 + (pl.s % 3); pl.img = null; }
     Sound.setSong(w);
     plane = { t: 0 };
@@ -1228,6 +1627,7 @@
     if (w === 3) for (let i = 0; i < 40; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), rain: true });
   }
   function updateWorld(dt) {
+    updateEvent(dt);
     if (trans) {
       trans.t += dt;
       if (!trans.switched && curtainX() <= -30) { trans.switched = true; switchWorld(trans.to); }
@@ -1437,6 +1837,8 @@
       const dist = Math.floor((p.x - distStart) / 16);
       const target = Math.floor(dist / WORLD_EVERY) % WORLDS.length;
       if (target !== genWorld && !trans) startTransition(target);
+      const seg = Math.floor(dist / WORLD_EVERY);
+      if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
       if (dist > bests[gameMode]) bests[gameMode] = dist;
       saveT -= dt;
       if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); }
@@ -1586,7 +1988,7 @@
       drawDisc(sunC, W * 0.7, H * 0.3);
       drawBgClouds();
       drawStrip(fujiStrip, 0.1, H * 0.66 - vOff * 0.12, '#8f7bb9');
-      drawStrip(toriiStrip, 0.3, H * 0.82 - vOff * 0.3, '#4f7d5c');
+      drawStrip(bambooStrip, 0.3, H * 0.84 - vOff * 0.3, '#2f5a3c');
     } else if (world === 2) {
       drawDisc(moonC, W * 0.78, H * 0.2);
       drawBgClouds();
@@ -1595,13 +1997,46 @@
     } else if (world === 3) {
       drawDisc(moonC, W * 0.24, H * 0.24);
       drawBgClouds();
-      drawStrip(londonFar, 0.1, H * 0.68 - vOff * 0.12, '#7f93b8');
-      drawStrip(londonMid, 0.3, H * 0.84 - vOff * 0.3, '#4a5268');
+      const far = H * 0.64 - vOff * 0.12;
+      drawStrip(londonFar, 0.1, far, '#6f86b0');
+      drawWater(far, '#6f86b0', '#c9d6ee');
+      drawStrip(londonMid, 0.3, H * 0.88 - vOff * 0.3, '#4a5268');
     } else {
-      drawDisc(sunC, W * 0.72, H * 0.44);
+      drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
-      drawStrip(parisFar, 0.1, H * 0.68 - vOff * 0.12, '#7f86b8');
-      drawStrip(parisMid, 0.3, H * 0.84 - vOff * 0.3, '#5a5f75');
+      const far = H * 0.64 - vOff * 0.12;
+      drawStrip(parisFar, 0.1, far, '#7a83b8');
+      drawEiffelSparkle(far);
+      drawWater(far, '#7a83b8', '#ffd9b0');
+      drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+    }
+  }
+  const mod = (a, n) => ((a % n) + n) % n;
+  // Reflets qui scintillent sur la Tamise ou la Seine.
+  function drawWater(y0, deep, light) {
+    const top = Math.round(y0), h = Math.max(1, H - top);
+    ctx.fillStyle = light;
+    for (let i = 0; i < 46; i++) {
+      if (Math.floor(time * 2 + i) % 3 === 0) continue;
+      const y = top + 2 + hash(i * 7 + 3) % Math.min(h, 40);
+      const x = mod(hash(i * 13 + 1) - camX * 0.2 + time * 6, W + 40) - 20;
+      ctx.fillRect(Math.round(x), y, 2 + hash(i) % 4, 1);
+    }
+  }
+  // La tour Eiffel qui scintille au coucher du soleil.
+  function drawEiffelSparkle(base) {
+    const tw = parisFar.width, off = mod(Math.round(camX * 0.1), tw), bottom = Math.round(base) - 1;
+    for (let x0 = -off; x0 < W; x0 += tw) {
+      const cx = x0 + 200;
+      if (cx < -30 || cx > W + 30) continue;
+      for (let i = 0; i < 30; i++) {
+        if (hash(i * 31 + Math.floor(time * 8)) % 3 !== 0) continue;
+        const fb = hash(i * 17 + 5) % 95;
+        const half = fb < 28 ? 22 - fb * 0.4 : fb < 60 ? 11 - (fb - 28) * 0.22 : Math.max(4 - (fb - 60) * 0.09, 0.6);
+        const dx = ((hash(i * 7 + 1) % 1000) / 500 - 1) * half;
+        ctx.fillStyle = i % 2 ? '#fff3b0' : '#ffffff';
+        ctx.fillRect(Math.round(cx + dx), bottom - fb, 1, 1);
+      }
     }
   }
   function drawPetals() {
@@ -1653,14 +2088,19 @@
     text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
     if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
     const hint = Math.round(H - safe.b - 14);
-    const top = y0 + 72, room = hint - 22 - top;
+    // Une seule rangée de cartes si elle tient, sinon deux rangées de deux.
+    const top = y0 + 72, gap = 6;
+    const cols = CHARS.length * 62 + (CHARS.length - 1) * gap <= W - 8 ? CHARS.length : 2;
+    const nrows = Math.ceil(CHARS.length / cols);
+    const room = (hint - 22 - top - (nrows - 1) * gap) / nrows;
     const s = room >= 70 ? 2 : 1;
-    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8, gap = 6;
-    const mby = Math.min(top + ch + 22, hint - 16);
-    const total = CHARS.length * cw + (CHARS.length - 1) * gap;
-    let x = Math.round(cx - total / 2);
+    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8;
+    const mby = Math.min(top + nrows * (ch + 12) + (nrows - 1) * gap + 10, hint - 16);
+    const total = cols * cw + (cols - 1) * gap;
     cards = [];
     CHARS.forEach((c, i) => {
+      const x = Math.round(cx - total / 2) + (i % cols) * (cw + gap);
+      const top = y0 + 72 + Math.floor(i / cols) * (ch + 12 + gap);
       const sel = i === charIdx;
       ctx.fillStyle = sel ? 'rgba(122, 92, 160, 0.92)' : 'rgba(59, 37, 80, 0.88)';
       ctx.fillRect(x, top, cw, ch + 12);
@@ -1672,7 +2112,6 @@
       ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
-      x += cw + gap;
     });
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
@@ -1736,7 +2175,12 @@
   function draw() {
     ctx.setTransform(PX, 0, 0, PX, 0, 0);
     ctx.imageSmoothingEnabled = false;
+    if (shake > 0.3 && !reduceMotion && !paused) {
+      ctx.fillStyle = '#1f1533'; ctx.fillRect(0, 0, W, H);
+      ctx.translate(Math.round((Math.random() * 2 - 1) * shake), Math.round((Math.random() * 2 - 1) * shake));
+    }
     drawBackground();
+    drawEvent();
     drawPlane();
 
     ctx.save();
@@ -1827,7 +2271,7 @@
   }
   function startGame() {
     mode = 'play';
-    distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode];
+    distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode]; evSeg = -1;
     if (genWorld !== 0) { if (!trans) startTransition(0); }
     else if (!trans) worldCard = 3;
     btnPause.hidden = false; btnHome.hidden = false;

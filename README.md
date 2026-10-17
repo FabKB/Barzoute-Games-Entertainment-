@@ -6,7 +6,7 @@ Une glace licorne en pixel art court de plateforme en plateforme en laissant der
 
 ### Jouer
 
-Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, le doudou cigogne ou le doudou faune.
+Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, le doudou cigogne, le doudou faune ou Douliam, le doudou en tricot.
 
 - **Toucher l'écran** (ou Espace / flèche haut) : sauter. Garde le doigt appuyé pour sauter plus haut.
 - **Toucher une 2e fois en l'air** : double saut.
@@ -28,10 +28,18 @@ Chaque mode garde son propre record.
 Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
 
 1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
-2. **Voyage au Japon** : mont Fuji, soleil levant, allée de torii comme à Fushimi Inari, pétales de cerisier ; musique pentatonique avec koto et taiko.
-3. **La Grosse Pomme** : toits de Manhattan, Empire State Building, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
-4. **Escale à Londres** : crachin du matin, Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, maisons colorées et cabines rouges ; plateformes en toit de bus à impériale, pierre gothique et pierre blanche à colonnes ; pop anglaise des années 60.
-5. **Bonjour Paris** : coucher de soleil, tour Eiffel, Notre-Dame, Arc de Triomphe, Sacré-Cœur, immeubles haussmanniens et cafés à auvents ; plateformes en toits de zinc, piles de macarons et pavés ; valse musette à l'accordéon.
+2. **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
+3. **La Grosse Pomme** : Empire State Building, Chrysler Building, pont de Brooklyn, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
+4. **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées ; pop anglaise des années 60.
+5. **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
+
+À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
+
+- **Glaces** : une licorne traverse le ciel en laissant un grand arc-en-ciel.
+- **Japon** : un monstre géant sort de terre et crache du feu.
+- **New York** : un gorille géant tape sur sa poitrine en haut de l'Empire State Building.
+- **Londres** : la reine salue la foule depuis le balcon de Buckingham Palace.
+- **Paris** : une patrouille d'avions passe en laissant des traînées bleu, blanc, rouge.
 
 Après le 5e monde, on repart au Monde des Glaces.
 
