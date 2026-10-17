@@ -828,7 +828,7 @@
   const rgb = h => rgbCache[h] || (rgbCache[h] = hexRgb(h));
 
   function buildPlatform(pl) {
-    const w = pl.w + 2, h = DEPTH, st = STYLES[pl.s];
+    const w = pl.w + 2, h = pl.depth || DEPTH, st = STYLES[pl.s];
     const c = mk(w, h), g = c.getContext('2d');
     const img = g.createImageData(w, h), d = img.data;
     const drip = [];
@@ -839,7 +839,7 @@
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         let col;
-        if (x === 0 || x === w - 1 || y === 0) col = OUT;
+        if (x === 0 || x === w - 1 || y === 0 || (pl.depth && y === h - 1)) col = OUT;
         else if (y <= 5) col = st.topPat ? st.topPat(x, y) : (y === 1 ? st.top[0] : st.top[1]);
         else if (y <= 5 + drip[x]) col = y === 5 + drip[x] ? st.top[2] : st.top[1];
         else if (y === 6 + drip[x]) col = st.top[2];
@@ -1137,24 +1137,34 @@
     return lx === 0 ? '#5a5f75' : b.col;
   });
 
+  // Largeur de la tour Eiffel selon la hauteur : une courbe qui s'évase vers le bas.
+  const eiffelHalf = fb => 19 * Math.exp(-fb / 26) + 0.8;
   // Paris : l'Opéra Garnier, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
   const parisFar = paintStrip(640, 110, (x, y) => {
     const fb = 109 - y, S = '#6a6fa8', IRON = '#5a4f8a';
-    // Tour Eiffel
-    const dx = Math.abs(x - 200);
-    if (fb < 28) {
-      const half = 22 - fb * 0.4;
-      if (fb >= 25 && dx <= half + 1) return IRON;
-      if (dx <= half && dx >= half - 4) return IRON;
-      if (fb >= 14 && dx < half && fb >= 14 + 8 * (dx / half) ** 2) return IRON;
-    } else if (fb < 60) {
-      const half = 11 - (fb - 28) * 0.22;
-      if ((fb === 50 || fb === 51) && dx <= half + 1) return IRON;
-      if (dx <= half && (dx >= half - 2.5 || fb % 4 === 0)) return IRON;
-    } else if (fb < 92) {
-      if (dx <= Math.max(4 - (fb - 60) * 0.09, 0.6)) return IRON;
-      if (fb >= 88 && dx <= 2) return IRON;
-    } else if (fb < 101 && dx < 1) return IRON;
+    // Tour Eiffel : quatre piliers qui s'évasent, grande arche, deux étages, sommet et antenne.
+    const dx = Math.abs(x + 0.5 - 200.5), rdx = Math.round(dx);
+    if (fb <= 100) {
+      const half = eiffelHalf(fb), FLOOR = '#7a6fae';
+      if (fb >= 96) { if (dx < 0.6) return IRON; }
+      else if ((fb === 17 || fb === 18) && dx <= half + 1.5) return FLOOR;
+      else if ((fb === 35 || fb === 36) && dx <= half + 1) return FLOOR;
+      else if (fb >= 84 && fb <= 86 && dx <= 2.5) return FLOOR;
+      else if (dx <= half) {
+        const edge = half - dx < 1.6;
+        if (fb < 17) {
+          const inner = half - (5 - fb * 0.12), arch = 14 * Math.sqrt(Math.max(0, 1 - (dx / 15) ** 2));
+          if (dx < inner && fb < arch) return null;
+          if (dx < inner - 1) return (fb + rdx) % 3 === 0 ? IRON : null;
+          return edge || (fb + rdx) % 2 === 0 ? IRON : '#4b4278';
+        }
+        if (fb < 35) {
+          if (edge || dx >= half - 3.2) return IRON;
+          return ((fb + rdx) % 4 === 0 || (fb - rdx + 100) % 4 === 0) ? IRON : null;
+        }
+        return edge || (fb + rdx) % 3 === 0 ? IRON : null;
+      }
+    }
     // Opéra Garnier : arcades, colonnade, dôme vert-de-gris et statues dorées.
     if (fb < 52 && x >= 50 && x <= 110) {
       const ox = x - 80, oad = Math.abs(ox);
@@ -1572,6 +1582,10 @@
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
+  // Pendant le passage des nuages (et un court moment après), le personnage est protégé.
+  const GRACE = 1.2;
+  let graceUntil = 0;
+  const shielded = () => trans !== null || time < graceUntil;
 
   function resetWorld() {
     platforms = [{ x: -300, w: 620, top: 0, s: 0, seed: 1 }];
@@ -1586,26 +1600,64 @@
   }
   const lastPlat = () => platforms[platforms.length - 1];
 
-  function genNext() {
-    const last = lastPlat();
-    const top = clamp(Math.round(last.top + rand(-26, 34)), -70, 70);
-    const dy = top - last.top;
-    const t = (JUMP_V + Math.sqrt(JUMP_V * JUMP_V + 2 * G * dy)) / G;
+  // Génération variée : blocs de tailles différentes, plateformes flottantes,
+  // plateformes qui montent et descendent, petits escaliers.
+  // Chaque écart reste franchissable d'un simple saut.
+  const baseTopOf = pl => (pl.baseTop !== undefined ? pl.baseTop : pl.top);
+  function gapFor(dy) {
+    const d = Math.max(dy, -30);
+    const t = (JUMP_V + Math.sqrt(JUMP_V * JUMP_V + 2 * G * d)) / G;
     const reach = (speed + 10) * t;
-    const gap = Math.round(rand(Math.min(24, reach * 0.4), reach * 0.8));
-    const pl = { x: last.x + last.w + gap, w: Math.round(rand(80, 220)), top, s: genWorld * 3 + ((Math.random() * 3) | 0), seed: (Math.random() * 1e9) | 0 };
+    return Math.round(rand(Math.min(24, reach * 0.4), reach * 0.8));
+  }
+  function addPlatform(pl) {
+    pl.s = genWorld * 3 + ((Math.random() * 3) | 0);
+    pl.seed = (Math.random() * 1e9) | 0;
     platforms.push(pl);
+    return pl;
+  }
+  function addGems(last, pl, gap) {
     if (Math.random() < 0.6) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = last.x + last.w - 6, span = gap + 12;
       for (let k = 1; k <= n; k++) {
         const f = k / (n + 1);
-        gems.push({ x: x0 + span * f, y: Math.min(last.top, top) - 22 - Math.sin(Math.PI * f) * 24, ph: Math.random() * 6 });
+        gems.push({ x: x0 + span * f, y: Math.min(baseTopOf(last), baseTopOf(pl)) - 22 - Math.sin(Math.PI * f) * 24, ph: Math.random() * 6 });
       }
     }
-    if (Math.random() < 0.5) {
+    if (pl.w >= 60 && Math.random() < 0.5) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = pl.x + 20 + Math.random() * Math.max(0, pl.w - 40 - n * 14);
-      for (let k = 0; k < n; k++) gems.push({ x: x0 + k * 14, y: pl.top - 16, ph: Math.random() * 6 });
+      for (let k = 0; k < n && x0 + k * 14 < pl.x + pl.w - 6; k++) gems.push({ x: x0 + k * 14, y: baseTopOf(pl) - 16, ph: Math.random() * 6 });
     }
+  }
+  function genNext() {
+    const last = lastPlat(), lastTop = baseTopOf(last), r = Math.random();
+    // Au tout début, on garde des blocs simples.
+    const kind = last.x + last.w < 700 ? 'block' : r < 0.5 ? 'block' : r < 0.72 ? 'float' : r < 0.86 ? 'bob' : 'steps';
+    if (kind === 'steps') {
+      const dir = Math.random() < 0.5 ? -1 : 1, n = 3;
+      let prev = last;
+      for (let i = 0; i < n; i++) {
+        const top = clamp(Math.round(baseTopOf(prev) + dir * rand(9, 14)), -70, 70);
+        const gap = Math.round(rand(12, 22));
+        const pl = addPlatform({ x: prev.x + prev.w + gap, w: Math.round(rand(26, 42)), top });
+        if (i === 0) addGems(last, pl, gap);
+        prev = pl;
+      }
+      return;
+    }
+    if (kind === 'bob') {
+      const amp = Math.round(rand(10, 16));
+      const baseTop = clamp(Math.round(lastTop + rand(-30 + amp, 30)), -60, 60);
+      const gap = gapFor(baseTop - amp - lastTop);
+      const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(46, 80)), top: baseTop, baseTop, amp, w2: rand(1.8, 2.6), ph: rand(0, 6), depth: 12 });
+      addGems(last, pl, gap);
+      return;
+    }
+    const top = clamp(Math.round(lastTop + rand(kind === 'float' ? -30 : -26, 34)), -70, 70);
+    const gap = gapFor(top - lastTop);
+    const w = kind === 'float' ? Math.round(rand(40, 90)) : Math.round(Math.random() < 0.15 ? rand(240, 320) : rand(50, 220));
+    const pl = addPlatform({ x: last.x + last.w + gap, w, top, depth: kind === 'float' ? 12 : 0 });
+    addGems(last, pl, gap);
   }
 
   // Changement de monde : un rideau de nuages traverse l'écran, le décor change quand il couvre tout.
@@ -1631,7 +1683,7 @@
     if (trans) {
       trans.t += dt;
       if (!trans.switched && curtainX() <= -30) { trans.switched = true; switchWorld(trans.to); }
-      if (trans.t >= TRANS_DUR) trans = null;
+      if (trans.t >= TRANS_DUR) { trans = null; graceUntil = time + GRACE; }
     }
     if (plane) { plane.t += dt; if (plane.t > PLANE_DUR) plane = null; }
     if (worldCard > 0) worldCard -= dt;
@@ -1723,10 +1775,13 @@
     time += dt;
     if (mode === 'dying' || mode === 'gameover') { updateEnd(dt); return; }
     const p = player;
+    for (const pl of platforms) if (pl.amp) pl.top = pl.baseTop + Math.sin(time * pl.w2 + pl.ph) * pl.amp;
+    if (p.grounded && p.on && p.on.amp) p.y = p.on.top;
     if (mode === 'play') speed = Math.min(135, speed + dt * 0.45);
 
-    // Pilote automatique sur l'écran titre.
-    if (mode === 'title') {
+    // Pilote automatique sur l'écran titre, et pendant le passage des nuages
+    // pour que le personnage arrive toujours sur une plateforme.
+    if (mode === 'title' || trans) {
       const nxt = nextPlatformAhead();
       const under = platforms.find(pl => p.x + HW > pl.x && p.x - HW < pl.x + pl.w && Math.abs(p.y - pl.top) < 1);
       if (p.grounded && under && under.x + under.w - p.x < 8) jumpBuffer = 0.1;
@@ -1755,7 +1810,7 @@
     // Déplacement horizontal, avec petit coup de pouce sur les marches.
     let nx = p.x + speed * dt;
     for (const pl of platforms) {
-      if (p.x + HW <= pl.x + 0.5 && nx + HW > pl.x && p.y > pl.top + 0.5) {
+      if (p.x + HW <= pl.x + 0.5 && nx + HW > pl.x && p.y > pl.top + 0.5 && (!pl.depth || p.y - 26 < pl.top + pl.depth)) {
         if (p.y - pl.top <= 10) { p.y = pl.top; p.vy = 0; }
         else nx = pl.x - HW;
       }
@@ -1767,9 +1822,9 @@
     if (p.vy >= 0) {
       for (const pl of platforms) {
         if (nx + HW > pl.x && nx - HW < pl.x + pl.w && p.y <= pl.top + 0.5 && ny >= pl.top) {
-          ny = pl.top; p.vy = 0; p.grounded = true;
+          ny = pl.top; p.vy = 0; p.grounded = true; p.on = pl;
           if (!wasGrounded) {
-            p.lastTop = pl.top; p.canDouble = true;
+            p.lastTop = baseTopOf(pl); p.canDouble = true;
             burst(nx, ny, 6, STYLES[pl.s].top, 40, 120);
             Sound.land();
           }
@@ -1777,12 +1832,13 @@
         }
       }
     }
+    if (!p.grounded) p.on = null;
     p.x = nx; p.y = ny;
     p.coyote = p.grounded ? 0.1 : p.coyote - dt;
 
     const nxt = nextPlatformAhead();
     if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) {
-      if (mode === 'play' && gameMode === 'defi') { die(); return; }
+      if (mode === 'play' && gameMode === 'defi' && !shielded()) { die(); return; }
       rescue();
     }
 
@@ -1909,8 +1965,8 @@
     for (const pl of platforms) {
       if (pl.x + pl.w < camX - 4 || pl.x > camX + W + 4) continue;
       if (!pl.img) pl.img = buildPlatform(pl);
-      ctx.drawImage(pl.img, pl.x - 1, pl.top);
-      if (bottom > pl.top + DEPTH) {
+      ctx.drawImage(pl.img, pl.x - 1, Math.round(pl.top));
+      if (!pl.depth && bottom > pl.top + DEPTH) {
         ctx.fillStyle = STYLES[pl.s].deep;
         ctx.fillRect(pl.x - 1, pl.top + DEPTH, pl.w + 2, bottom - pl.top - DEPTH);
       }
@@ -2004,7 +2060,7 @@
     } else {
       drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
-      const far = H * 0.64 - vOff * 0.12;
+      const far = H * 0.78 - 34 - vOff * 0.12;
       drawStrip(parisFar, 0.1, far, '#7a83b8');
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
@@ -2032,7 +2088,7 @@
       for (let i = 0; i < 30; i++) {
         if (hash(i * 31 + Math.floor(time * 8)) % 3 !== 0) continue;
         const fb = hash(i * 17 + 5) % 95;
-        const half = fb < 28 ? 22 - fb * 0.4 : fb < 60 ? 11 - (fb - 28) * 0.22 : Math.max(4 - (fb - 60) * 0.09, 0.6);
+        const half = eiffelHalf(fb);
         const dx = ((hash(i * 7 + 1) % 1000) / 500 - 1) * half;
         ctx.fillStyle = i % 2 ? '#fff3b0' : '#ffffff';
         ctx.fillRect(Math.round(cx + dx), bottom - fb, 1, 1);
@@ -2298,6 +2354,29 @@
     btnPause.hidden = true; btnHome.hidden = true;
   }
   const hit = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+  // Petit retour haptique quand on saute : courte vibration sur Android ;
+  // sur iPhone (iOS 18 et plus), un interrupteur caché donne un léger « clic » quand on le bascule.
+  const haptic = (() => {
+    let label = null;
+    try {
+      const box = document.createElement('div');
+      box.setAttribute('aria-hidden', 'true');
+      box.style.cssText = 'position:fixed;left:-100px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+      const input = document.createElement('input');
+      input.type = 'checkbox'; input.id = 'haptic-switch'; input.tabIndex = -1;
+      input.setAttribute('switch', '');
+      label = document.createElement('label');
+      label.htmlFor = 'haptic-switch';
+      box.append(input, label);
+      document.body.append(box);
+    } catch (e) { label = null; }
+    return () => {
+      try {
+        if (typeof navigator.vibrate === 'function') { navigator.vibrate(12); return; }
+        if (label) label.click();
+      } catch (e) { /* pas de retour haptique sur cet appareil */ }
+    };
+  })();
   function press(e) {
     Sound.init();
     const lx = e ? e.clientX / SCALE : -1, ly = e ? e.clientY / SCALE : -1;
@@ -2321,6 +2400,7 @@
     if (paused) { setPaused(false); return; }
     holding = true;
     jumpBuffer = 0.12;
+    haptic();
   }
   function release() { holding = false; }
 

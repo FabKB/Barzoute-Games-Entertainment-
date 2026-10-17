@@ -10,16 +10,21 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 - **Toucher l'écran** (ou Espace / flèche haut) : sauter. Garde le doigt appuyé pour sauter plus haut.
 - **Toucher une 2e fois en l'air** : double saut.
+- Chaque saut donne un petit retour haptique : courte vibration sur Android, léger « clic » sur iPhone (iOS 18 et plus, selon le navigateur).
 - Ramasse les étoiles. Le bouton en haut à droite coupe le son ; P met en pause.
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
+
+### Les plateformes
+
+Les plateformes changent de forme en route : grands blocs, petits blocs, longues avancées, plateformes qui flottent dans les airs (on peut sauter à travers par en dessous), plateformes qui montent et descendent en emportant le personnage, et petits escaliers.
 
 ### Deux modes de jeu
 
 Sur l'écran titre, touche le bouton **MODE** pour choisir :
 
 - **ZEN** : si tu tombes, un nuage te rattrape. On ne perd jamais.
-- **DÉFI** : une chute et c'est game over ! Le personnage fait une petite pirouette la tête en bas, puis un écran de fin joyeux s'affiche avec une fanfare, des confettis, ta distance et ton record. Touche **REJOUER** pour recommencer ou **MENU** pour revenir au choix du personnage.
+- **DÉFI** : une chute et c'est game over ! (Pendant le passage des nuages entre deux mondes, le personnage avance en pilote automatique et ne peut pas perdre.) Le personnage fait une petite pirouette la tête en bas, puis un écran de fin joyeux s'affiche avec une fanfare, des confettis, ta distance et ton record. Touche **REJOUER** pour recommencer ou **MENU** pour revenir au choix du personnage.
 
 Chaque mode garde son propre record.
 
