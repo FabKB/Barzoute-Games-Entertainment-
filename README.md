@@ -14,6 +14,10 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
 
+### Ajouter l'icône sur l'écran d'accueil de l'iPhone
+
+Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.
+
 ### Mettre le jeu en ligne (GitHub Pages)
 
 Dans le dépôt GitHub : **Settings → Pages → Build and deployment → Deploy from a branch**, choisis la branche et le dossier `/ (root)`. Le jeu sera ensuite à l'adresse `https://<utilisateur>.github.io/<nom-du-depot>/`.
