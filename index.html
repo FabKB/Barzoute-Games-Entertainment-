@@ -415,11 +415,36 @@
     return c;
   }
   // trail : hauteur (depuis les pieds) où part l'arc-en-ciel.
+  // Animation d'attente en boucle, indépendante du saut :
+  // normal → tassé (on retire la ligne « cut », le haut descend d'1 px) → normal → petit détail (accent).
   const CHARS = [
-    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24 },
-    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19 },
-    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18 }
-  ].map(c => Object.assign(c, { spr: makeSprite(c.rows), sprB: makeSprite(c.blink) }));
+    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24, cut: 17, accent: {
+      1: '.......KWK.......',          // reflet sur la corne
+      3: '.K....KYYYK....K.'           // les oreilles frétillent
+    } },
+    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19, cut: 9, accent: {
+      29: '........rr..rrrr....',      // elle lève une patte
+      30: '.......rrrr.dddd....',
+      31: '.......dddd.........'
+    } },
+    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18, cut: 24, accent: {
+      15: 'TT.KuKooovzvoooKuK...',     // la queue remue
+      16: 'TtTKuKoooooooooKuK...',
+      18: '.TTTKKoooqoooooKK....',
+      19: '...TTKoooooooooK.....',
+      20: '.....KoooooooooK.....'
+    } }
+  ].map(c => {
+    const frames = rows => {
+      const blank = '.'.repeat(rows[0].length);
+      const squash = [blank].concat(rows.slice(0, c.cut), rows.slice(c.cut + 1));
+      const accent = rows.map((r, i) => c.accent[i] || r);
+      return [rows, squash, rows, accent].map(makeSprite);
+    };
+    return Object.assign(c, { frames: frames(c.rows), framesB: frames(c.blink) });
+  });
+  const IDLE_FPS = 5;
+  const idleSprite = (c, blink) => (blink ? c.framesB : c.frames)[Math.floor(time * IDLE_FPS) % 4];
   let charIdx = clamp(parseInt(store.get('perso', '0'), 10) || 0, 0, CHARS.length - 1);
   const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
@@ -822,9 +847,8 @@
   }
   function drawPlayer() {
     const p = player;
-    const bob = p.grounded ? Math.floor(time * 10) % 2 : 0;
-    const c = hero(), spr = (time % 3.2) < 0.12 ? c.sprB : c.spr;
-    ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height - bob);
+    const spr = idleSprite(hero(), (time % 3.2) < 0.12);
+    ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height);
   }
 
   // Grand arc-en-ciel de fond, posé derrière les collines.
@@ -871,9 +895,8 @@
       ctx.fillStyle = sel ? '#fff3b0' : '#ffffff';
       ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + 11, cw, 1);
       ctx.fillRect(x, top, 1, ch + 12); ctx.fillRect(x + cw - 1, top, 1, ch + 12);
-      const spr = (time % 3.2) < 0.12 && sel ? c.sprB : c.spr;
-      const bob = sel ? Math.floor(time * 6) % 2 : 0;
-      ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s - bob * s, spr.width * s, spr.height * s);
+      const spr = sel ? idleSprite(c, (time % 3.2) < 0.12) : c.frames[0];
+      ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
       x += cw + gap;
