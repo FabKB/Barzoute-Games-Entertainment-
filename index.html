@@ -124,15 +124,18 @@
     const BRASS = { ratio: 1, index: 3, idxSus: 0.8, idxDecay: 0.08, vol: 0.17, a: 0.02, d: 0.1, sus: 0.8, rel: 0.06 };
     const SLAP = { ratio: 1, index: 6, idxSus: 0.2, idxDecay: 0.06, vol: 0.34, a: 0.003, d: 0.12, sus: 0.4, rel: 0.04 };
     const ORGAN = { ratio: 2, index: 1.6, idxSus: 0.7, idxDecay: 0.1, vol: 0.18, a: 0.005, d: 0.1, sus: 0.75, rel: 0.08 };
+    const ACCORDION = { ratio: 1, index: 2.6, idxSus: 0.85, idxDecay: 0.05, vol: 0.13, a: 0.015, d: 0.08, sus: 0.85, rel: 0.06 };
+    const STAB = { ratio: 1, index: 2, idxSus: 0.6, idxDecay: 0.05, vol: 0.05, a: 0.005, d: 0.08, sus: 0.5, rel: 0.05 };
 
-    // Une mesure = 8 croches. "-" prolonge la note, "." est un silence.
+    // Une mesure = 8 croches (6 pour une valse). "-" prolonge la note, "." est un silence.
     function song(o) {
-      o.len = o.prog.length * 16;
+      o.spb = o.spb || 16;
+      o.len = o.prog.length * o.spb;
       o.step = 60 / o.bpm / 4;
       o.seq = new Array(o.len).fill(null);
       let last = null;
       o.mel.forEach((bar, b) => bar.split(' ').forEach((t, i) => {
-        const s = b * 16 + i * 2;
+        const s = b * o.spb + i * 2;
         if (t === '-') { if (last) last.len += 2; }
         else if (t === '.') { last = null; }
         else { last = { m: n2m(t) - 12, len: 2 }; o.seq[s] = last; }
@@ -204,6 +207,22 @@
         ],
         bassPat: [0, 12, 7, 12, 0, 12, 7, 5],
         drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [6, 14] }
+      }),
+      song({ // Bonjour Paris : valse musette à l'accordéon, « boum-tchac-tchac »
+        bpm: 180, spb: 12, lead: ACCORDION, detune: 0.006, bass: SOFTBASS, stab: STAB, stabs: [4, 8], altFifth: true,
+        chords: {
+          G: { b: 43, a: [55, 59, 62, 67] }, D7: { b: 50, a: [54, 57, 60, 62] }, C: { b: 48, a: [55, 60, 64, 67] },
+          Em: { b: 40, a: [52, 55, 59, 64] }, Am: { b: 45, a: [57, 60, 64, 69] }
+        },
+        prog: ['G', 'G', 'D7', 'D7', 'D7', 'D7', 'G', 'G', 'C', 'C', 'G', 'Em', 'Am', 'D7', 'G', 'G'],
+        mel: [
+          'D6 - B5 - G5 -', 'D6 E6 D6 C6 B5 -', 'C6 - A5 - F#5 -', 'A5 B5 A5 G5 F#5 -',
+          'D6 - C6 - A5 -', 'F#6 E6 D6 C6 A5 -', 'B5 - G5 - D5 -', 'G5 A5 B5 C6 D6 -',
+          'E6 - G6 - E6 -', 'C6 D6 E6 F6 G6 -', 'D6 - B5 - G5 -', 'B5 C6 B5 A5 G5 -',
+          'A5 - C6 - E6 -', 'D6 C6 A5 F#5 D5 -', 'G5 - B5 - D6 -', 'G6 - - - . .'
+        ],
+        bassPat: [0, null, null, null, null, null],
+        drums: { kick: [0], hat: 4 }
       })
     ];
     let cur = SONGS[0];
@@ -284,7 +303,7 @@
       drum(t, 220, 140, 0.1, 0.18);
     }
     function sched(s, t) {
-      const S = cur, bar = (s / 16) | 0, i = s % 16, ch = S.chords[S.prog[bar]], d = S.drums;
+      const S = cur, bar = (s / S.spb) | 0, i = s % S.spb, ch = S.chords[S.prog[bar]], d = S.drums;
       if (d.kick && (d.kick.includes(i) || (d.kickAlt && bar % 2 === 1 && d.kickAlt.includes(i)))) drum(t, 160, 42, 0.2, 0.7);
       if (d.snare && d.snare.includes(i)) snare(t);
       if (d.hat && i % d.hat === 0) nz(t, 0.035, i % 4 === 2 ? 0.07 : 0.04, 'highpass', 7000);
@@ -294,11 +313,16 @@
       if (d.block && d.block.includes(i)) drum(t, 1500, 1350, 0.05, 0.25);
       if (i % 2 === 0) {
         const off = S.bassPat[i / 2];
-        if (off != null) fm(music, t, mtof(ch.b + off), S.step * 1.6, S.bass);
+        if (off != null) fm(music, t, mtof(ch.b + off + (S.altFifth && bar % 2 ? 7 : 0)), S.step * 1.6, S.bass);
       }
-      if (i % S.arpEvery === 0) playArp(t, ch.a[(i / S.arpEvery) % 4] + 12);
+      if (S.arpEvery && i % S.arpEvery === 0) playArp(t, ch.a[(i / S.arpEvery) % 4] + 12);
+      if (S.stabs && S.stabs.includes(i)) ch.a.slice(1).forEach(m => fm(music, t, mtof(m), S.step * 2.5, S.stab));
       const ev = S.seq[s];
-      if (ev) fm(music, t, mtof(ev.m), ev.len * S.step * 0.92, S.lead).connect(sendFx);
+      if (ev) {
+        fm(music, t, mtof(ev.m), ev.len * S.step * 0.92, S.lead).connect(sendFx);
+        // Deuxième anche légèrement désaccordée : le son « musette » de l'accordéon.
+        if (S.detune) fm(music, t, mtof(ev.m) * (1 + S.detune), ev.len * S.step * 0.92, S.lead);
+      }
     }
     function tick() {
       if (!ac || !on) return;
@@ -306,7 +330,7 @@
       if (nextT < now - 0.1) nextT = now + 0.05;
       while (nextT < now + 0.15) {
         // Changement de musique au début d'une mesure.
-        if (pending !== null && step % 16 === 0) {
+        if (pending !== null && step % cur.spb === 0) {
           cur = SONGS[pending]; pending = null; step = 0;
           delayNode.delayTime.setValueAtTime(cur.step * 3, nextT);
         }
@@ -706,6 +730,34 @@
         if (cx === 3) return '#f4f2ec';
         return (y - 6) % 8 === 0 ? '#d6d3cb' : '#e6e4de';
       }
+    },
+    // Bonjour Paris
+    { // toit en zinc sur façade haussmannienne à balcons
+      top: ['#a9b6cc', '#7c8aa6', '#5d6a85'], deep: '#c9bda4',
+      body(x, y) {
+        const cx = x % 14, cy = (y - 6) % 18;
+        if (cx >= 4 && cx <= 9 && cy >= 4 && cy <= 12) return cy === 4 ? '#8fa3c8' : '#5d6f96';
+        if (cy === 14 && cx >= 3 && cx <= 10) return '#2a2433';
+        if (cy === 13 && cx >= 3 && cx <= 10 && cx % 2 === 1) return '#2a2433';
+        return cy === 0 ? '#dccfb5' : '#efe3cc';
+      }
+    },
+    { // pile de macarons
+      top: ['#ffe0ec', '#f7a8c4', '#d982a4'], drip: true, deep: '#c9b6f2',
+      body(x, y) {
+        const band = ((y - 6) / 10) | 0, by = (y - 6) % 10;
+        if (by >= 8) return '#fff6e6';
+        const col = ['#b8e0c8', '#f7a8c4', '#fde7a3', '#c9b6f2'][band % 4];
+        return (by === 6 || by === 7) && (x + band) % 3 === 0 ? '#ffffff' : col;
+      }
+    },
+    { // pavés parisiens
+      top: ['#d9d4c7', '#b8b1a1', '#8e887a'], deep: '#6f6a62',
+      body(x, y) {
+        const row = ((y - 6) / 6) | 0, off = row % 2 ? 4 : 0;
+        if ((y - 6) % 6 === 0 || (x + off) % 8 === 0) return '#6f6a62';
+        return ['#9a948a', '#a9a397', '#8b857b'][hash((((x + off) / 8) | 0) * 13 + row * 7) % 3];
+      }
     }
   ];
   const rgbCache = {};
@@ -953,6 +1005,78 @@
     return lx === 0 ? '#5a5f75' : b.col;
   });
 
+  // Paris : Notre-Dame, la tour Eiffel, l'Arc de Triomphe et le Sacré-Cœur sur sa butte.
+  const parisFar = paintStrip(640, 110, (x, y) => {
+    const fb = 109 - y, S = '#6a6fa8', IRON = '#5a4f8a';
+    // Tour Eiffel
+    const dx = Math.abs(x - 200);
+    if (fb < 28) {
+      const half = 22 - fb * 0.4;
+      if (fb >= 25 && dx <= half + 1) return IRON;
+      if (dx <= half && dx >= half - 4) return IRON;
+      if (fb >= 14 && dx < half && fb >= 14 + 8 * (dx / half) ** 2) return IRON;
+    } else if (fb < 60) {
+      const half = 11 - (fb - 28) * 0.22;
+      if ((fb === 50 || fb === 51) && dx <= half + 1) return IRON;
+      if (dx <= half && (dx >= half - 2.5 || fb % 4 === 0)) return IRON;
+    } else if (fb < 92) {
+      if (dx <= Math.max(4 - (fb - 60) * 0.09, 0.6)) return IRON;
+      if (fb >= 88 && dx <= 2) return IRON;
+    } else if (fb < 101 && dx < 1) return IRON;
+    // Notre-Dame
+    if ((x >= 64 && x <= 72) || (x >= 88 && x <= 96)) { if (fb < 40) return (x % 3 === 1 && fb % 6 === 3 && fb > 8) ? '#9aa3cc' : S; }
+    if (x > 72 && x < 88 && fb < 28) return Math.hypot(x - 80, fb - 20) <= 3 ? '#c9b6f2' : S;
+    if (x === 80 && fb >= 28 && fb < 52) return S;
+    // Arc de Triomphe
+    if (x >= 380 && x <= 412 && fb < 34) {
+      if (Math.abs(x - 396) < 6 && fb < 20 - (x - 396) ** 2 / 6) return null;
+      return fb >= 30 ? '#8a90c4' : S;
+    }
+    // Sacré-Cœur, tout blanc, sur la butte Montmartre
+    const W0 = '#eef0f8';
+    if (Math.hypot(x - 540, fb - 34) <= 8 && fb >= 34) return W0;
+    if (x === 540 && fb >= 42 && fb <= 47) return W0;
+    if ((Math.hypot(x - 530, fb - 32) <= 4 || Math.hypot(x - 550, fb - 32) <= 4) && fb >= 32) return W0;
+    if (x >= 527 && x <= 553 && fb >= 22 && fb < 34) return (x % 4 === 1 && fb % 5 === 2) ? '#c9cbe0' : W0;
+    if (x >= 556 && x <= 559 && fb >= 22 && fb < 48) return W0;
+    if (Math.abs(x - 540) < 70 && fb < 22 && fb < 12 + 10 * Math.cos((x - 540) / 70 * Math.PI / 2)) return '#7d8fb0';
+    // Toits de Paris au loin
+    const h0 = 8 + hash(((x / 12) | 0) * 5 + 1) % 10;
+    if (fb < h0) return fb >= h0 - 2 ? '#8f98c4' : '#7f86b8';
+    return null;
+  });
+  // Paris : immeubles haussmanniens, toits en zinc, balcons en fer forgé, cafés à auvents rayés.
+  const parisBlocks = (() => {
+    const out = [];
+    let x = 0, i = 0;
+    while (x < 480) {
+      const w = Math.min(28 + hash(i * 7 + 5) % 11, 480 - x);
+      out.push({ x, w, h: 29 + hash(i * 11 + 3) % 8, awning: ['#d7263d', '#2e8b57', null][hash(i * 5 + 1) % 3] });
+      x += w; i++;
+    }
+    return out;
+  })();
+  const parisMid = paintStrip(480, 60, (x, y) => {
+    const fb = 59 - y;
+    const b = parisBlocks.find(o => x >= o.x && x < o.x + o.w);
+    if (!b) return null;
+    const lx = x - b.x, h = b.h;
+    if ((lx >= 2 && lx <= 4 || lx >= b.w - 5 && lx <= b.w - 3) && fb >= h && fb < h + 4) return fb === h + 3 ? '#e07b39' : '#c9a27e';
+    if (fb >= h) return null;
+    if (fb === h - 1) return '#4b5670';
+    if (fb >= h - 7) {
+      if (lx % 9 >= 3 && lx % 9 <= 5 && fb >= h - 5 && fb <= h - 3) return lx % 9 === 4 && fb <= h - 4 ? '#5d6f96' : '#efe3cc';
+      return '#6d7a96';
+    }
+    if (fb < 1) return '#bdb9b0';
+    if (b.awning && fb >= 8 && fb <= 10) return fb === 8 && lx % 3 === 0 ? null : (lx % 4 < 2 ? b.awning : '#fff4e6');
+    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#efe3cc';
+    const cy = (fb - 12) % 9, cx = lx % 7;
+    if (fb >= 12 && cy === 0 && cx >= 1 && cx <= 5) return '#2a2433';
+    if (fb >= 12 && cx >= 2 && cx <= 4 && cy >= 2 && cy <= 7) return cy === 7 ? '#8fa3c8' : '#5d6f96';
+    return lx === 0 ? '#cbbfa8' : '#efe3cc';
+  });
+
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
   const PLANE = [
     '...................KK.',
@@ -974,7 +1098,8 @@
     { name: 'MONDE DES GLACES', accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
     { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
-    { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] }
+    { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
+    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] }
   ];
 
   // ---------- Écran ----------
@@ -1048,7 +1173,7 @@
   let gameMode = store.get('mode', 'zen') === 'defi' ? 'defi' : 'zen', saveT = 0;
   let deathT = 0, goT = 0, newRecord = false, runBest = 0, confetti = [], goButtons = [], modeBtn = null;
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
-  const WORLD_EVERY = 150, TRANS_DUR = 2.4, PLANE_DUR = 6;
+  const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
 
   function resetWorld() {
@@ -1467,11 +1592,16 @@
       drawBgClouds();
       drawStrip(skylineStrip, 0.1, H * 0.68 - vOff * 0.12, '#454c8a');
       drawStrip(cityStrip, 0.3, H * 0.84 - vOff * 0.3, '#3c3a6a');
-    } else {
+    } else if (world === 3) {
       drawDisc(moonC, W * 0.24, H * 0.24);
       drawBgClouds();
       drawStrip(londonFar, 0.1, H * 0.68 - vOff * 0.12, '#7f93b8');
       drawStrip(londonMid, 0.3, H * 0.84 - vOff * 0.3, '#4a5268');
+    } else {
+      drawDisc(sunC, W * 0.72, H * 0.44);
+      drawBgClouds();
+      drawStrip(parisFar, 0.1, H * 0.68 - vOff * 0.12, '#7f86b8');
+      drawStrip(parisMid, 0.3, H * 0.84 - vOff * 0.3, '#5a5f75');
     }
   }
   function drawPetals() {

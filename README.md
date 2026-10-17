@@ -25,14 +25,15 @@ Chaque mode garde son propre record.
 
 ### Les mondes
 
-Tous les 150 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
+Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
 
 1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
 2. **Voyage au Japon** : mont Fuji, soleil levant, allée de torii comme à Fushimi Inari, pétales de cerisier ; musique pentatonique avec koto et taiko.
 3. **La Grosse Pomme** : toits de Manhattan, Empire State Building, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
 4. **Escale à Londres** : crachin du matin, Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, maisons colorées et cabines rouges ; plateformes en toit de bus à impériale, pierre gothique et pierre blanche à colonnes ; pop anglaise des années 60.
+5. **Bonjour Paris** : coucher de soleil, tour Eiffel, Notre-Dame, Arc de Triomphe, Sacré-Cœur, immeubles haussmanniens et cafés à auvents ; plateformes en toits de zinc, piles de macarons et pavés ; valse musette à l'accordéon.
 
-Après le 4e monde, on repart au Monde des Glaces.
+Après le 5e monde, on repart au Monde des Glaces.
 
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
