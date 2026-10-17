@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v15';
+  const VERSION = 'v16';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -654,23 +654,23 @@
   // Animation d'attente en boucle, indépendante du saut :
   // normal → tassé (on retire la ligne « cut », le haut descend d'1 px) → normal → petit détail (accent).
   const CHARS = [
-    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24, cut: 17, accent: {
+    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24, face: [8.5, 12], cut: 17, accent: {
       1: '.......KWK.......',          // reflet sur la corne
       3: '.K....KYYYK....K.'           // les oreilles frétillent
     } },
-    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19, cut: 9, accent: {
+    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19, face: [9.5, 4.5], cut: 9, accent: {
       29: '........rr..rrrr....',      // elle lève une patte
       30: '.......rrrr.dddd....',
       31: '.......dddd.........'
     } },
-    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18, cut: 24, accent: {
+    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18, face: [10.5, 8], cut: 24, accent: {
       15: 'TT.KuKooovzvoooKuK...',     // la queue remue
       16: 'TtTKuKoooooooooKuK...',
       18: '.TTTKKoooqoooooKK....',
       19: '...TTKoooooooooK.....',
       20: '.....KoooooooooK.....'
     } },
-    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, cut: 20, accent: douliamSway }
+    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, face: [9, 16], cut: 20, accent: douliamSway }
   ].map(c => {
     const frames = rows => {
       const blank = '.'.repeat(rows[0].length);
@@ -2041,14 +2041,19 @@
   }
 
   // ---------- Niveau bonus : pluie de bonbons, vol en ballon, fusée vers la Lune ----------
-  const RAIN_GOAL = 100, BALLOON_TIME = 35, ROCKET_TIME = 6.5;
+  const RAIN_GOAL = 100, BALLOON_TIME = 35, ROCKET_TIME = 7.5;
   let bp = null, bonusDir = 0;
-  const ROCKET = [
-    '.....KK.....', '....KrrK....', '...KrrrrK...', '...KrrrrK...', '..KwwwwwwK..', '..KwwBBwwK..',
-    '..KwBBBBwK..', '..KwBBBBwK..', '..KwwBBwwK..', '..KwwwwwwK..', '..KwwwwwwK..', '..KwwwwwwK..',
-    '..KwwwwwwK..', '.KrKwwwwKrK.', 'KrrKwwwwKrrK', 'KrrKwwwwKrrK', 'KKKKKKKKKKKK'
-  ];
-  const rocketSpr = makeSprite(ROCKET);
+  // Fusée avec un hublot rond ; le doudou s'installe dedans et on ne voit plus que sa tête.
+  const PORT = { x: 10, y: 16, r: 5 };
+  const rocketSpr = outlinedSprite(20, 36, (x, y) => {
+    const dp = Math.hypot(x - PORT.x, y - PORT.y);
+    if (dp <= PORT.r + 1.6) return dp <= PORT.r ? '#59c3ff' : '#9aa3b5';
+    if (y < 10) return Math.abs(x - 10) <= (y + 1) * 0.95 ? (y < 2 ? '#c42a40' : '#e8392b') : null;
+    if (y < 30 && x >= 1.5 && x <= 18.5) return x > 15 ? '#cfd3e0' : (y === 26 ? '#e8392b' : '#f4f4f8');
+    if (y >= 22 && (x < 5 - (30 - y) * 0.4 + 4 && x < 5.5 || x > 14.5 && x > 15 + (30 - y) * 0.4 - 4)) return y < 36 ? '#e8392b' : null;
+    if (y >= 30 && x >= 6 && x <= 14) return '#5a5f75';
+    return null;
+  }, '#3b2550');
   // Gros brocoli : bouquets vert foncé avec reflets, tige claire.
   const brocSpr = outlinedSprite(16, 18, (x, y) => {
     if (x >= 6 && x <= 10 && y >= 10) return (x === 7 ? '#c9f0b8' : '#9be08a');
@@ -2057,12 +2062,28 @@
     }
     return null;
   }, '#1d4d24');
-  const balloonSpr = paintStrip(12, 16, (x, y) => {
-    const d = ((x + 0.5 - 6) / 5.5) ** 2 + ((y + 0.5 - 6.5) / 6.5) ** 2;
-    if (d <= 1) return d > 0.8 ? '#c42a40' : ((x - 3.5) ** 2 + (y - 3.5) ** 2 < 3 ? '#ffb3c1' : '#ff4d6d');
-    if (y >= 13 && y <= 14 && x >= 5 && x <= 6) return '#c42a40';
+  // Trois ballons de couleur, comme dans le film « Là-haut ».
+  const balloonSprs = [['#ff4d6d', '#c42a40', '#ffb3c1'], ['#ffd84a', '#c9a227', '#fff1a8'], ['#4db8ff', '#2a7fc4', '#bfe6ff']].map(([c, d, l]) => paintStrip(12, 16, (x, y) => {
+    const e = ((x + 0.5 - 6) / 5.5) ** 2 + ((y + 0.5 - 6.5) / 6.5) ** 2;
+    if (e <= 1) return e > 0.8 ? d : ((x - 3.5) ** 2 + (y - 3.5) ** 2 < 3 ? l : c);
+    if (y >= 13 && y <= 14 && x >= 5 && x <= 6) return d;
     return null;
-  });
+  }));
+  const BALLOON_OFFS = [[-9, -31], [0, -38], [9, -31]];
+  function balloonPositions(x, headY) {
+    return BALLOON_OFFS.map(([dx, dy], i) => [Math.round(x + dx), Math.round(headY + dy + Math.sin(time * 3 + i * 2) * 2)]);
+  }
+  function drawBalloons(x, headY) {
+    const ax = Math.round(x), ay = Math.round(headY) + 1;
+    ctx.fillStyle = '#ffffff';
+    for (const [bx, by] of balloonPositions(x, headY)) {
+      // Ficelle du nœud du ballon jusqu'au-dessus de la tête.
+      const n = Math.max(1, Math.abs(by + 15 - ay));
+      for (let k = 0; k <= n; k++) ctx.fillRect(Math.round(bx + (ax - bx) * k / n), Math.round(by + 15 + (ay - by - 15) * k / n), 1, 1);
+    }
+    balloonPositions(x, headY).forEach(([bx, by], i) => ctx.drawImage(balloonSprs[i], bx - 6, by));
+  }
+  const heroH = () => hero().frames[0].height;
   // Sucres d'orge géants : une longue tige rayée et un crochet (dessinés une fois).
   const caneStripe = (x, y) => ((x + y) % 10 < 5 ? '#e8304a' : '#fff4f4');
   const caneStem = paintStrip(10, 480, (x, y) => (x === 0 || x === 9) ? '#a8203a' : caneStripe(x, y));
@@ -2165,7 +2186,7 @@
       // Vol en ballon : on garde le doigt appuyé pour monter, on relâche pour descendre doucement.
       b.vy = holding ? Math.max(-110, b.vy - 420 * dt) : Math.min(110, b.vy + 220 * dt);
       b.y += b.vy * dt;
-      const topLim = safe.t + 46, botLim = gy - 4;
+      const topLim = safe.t + heroH() + 56, botLim = gy - 4;
       if (b.y < topLim) { b.y = topLim; b.vy = 0; }
       if (b.y > botLim) { b.y = botLim; b.vy = -40; }
       b.x += (W * 0.3 - b.x) * Math.min(1, dt * 2);
@@ -2173,7 +2194,7 @@
       b.cloudT -= dt;
       if (b.cloudT <= 0 && b.t < BALLOON_TIME - 3) {
         b.cloudT = 2.3;
-        const gapH = Math.max(76, H * 0.42), gapY = rand(safe.t + 50 + gapH / 2, gy - 10 - gapH / 2);
+        const gapH = Math.max(92, H * 0.45), gapY = rand(safe.t + 50 + gapH / 2, gy - 10 - gapH / 2);
         b.clouds.push({ x: W + 30, gapY, gapH, k: (Math.random() * 3) | 0 });
         for (let i = 0; i < 3; i++) b.gems.push({ x: W + 70 + i * 16, y: gapY + Math.sin(i) * 10, ph: rand(0, 6) });
       }
@@ -2190,7 +2211,7 @@
       // Les nuages d'orage ne font pas perdre : « bonk », on clignote et on est repoussé vers le passage.
       if (b.hurt <= 0) {
         for (const c of b.clouds) {
-          const top = b.y - 44, bottom = b.y;
+          const top = b.y - heroH() - 30, bottom = b.y;
           const dx = b.x - c.x;
           if (dx > -18 && dx < 10 && (top < c.gapY - c.gapH / 2 || bottom > c.gapY + c.gapH / 2)) {
             b.hurt = 1.2; b.vy = (c.gapY > b.y - 22 ? 1 : -1) * 90;
@@ -2203,10 +2224,17 @@
       if (b.t >= BALLOON_TIME) { b.phase = 'rocket'; b.t = 0; b.clouds = []; b.gems = []; Sound.rocket(); }
     } else if (b.phase === 'rocket') {
       // La fusée arrive, le ballon éclate, et c'est le décollage vers la Lune.
-      if (b.t < 1) { b.x += (W / 2 - b.x) * Math.min(1, dt * 3); b.y += (H * 0.55 - b.y) * Math.min(1, dt * 3); }
-      if (b.t >= 1 && !b.popped) { b.popped = true; Sound.pop(); bonusBurst(b.x, b.y - 46, 14, ['#ff4d6d', '#ffb3c1'], 70); }
-      b.rocketY = b.t < 1.6 ? H + 60 - (H + 60 - b.y) * ease(clamp((b.t - 0.6) / 1, 0, 1)) : b.y - (b.t - 1.6) ** 2 * 26;
-      if (b.t > 1.6) bonusBurst(b.x, b.rocketY + 40, 3, ['#fff3b0', '#ffd84a', '#ff9f43'], 40);
+      const rs = evK() + 1, rh = rocketSpr.height * rs;
+      if (b.t < 1) { b.x += (W / 2 - b.x) * Math.min(1, dt * 3); b.y += (H * 0.45 - b.y) * Math.min(1, dt * 3); }
+      if (b.t >= 1 && !b.popped) {
+        b.popped = true; Sound.pop();
+        balloonPositions(b.x, b.y - heroH()).forEach(([bx, by], i) => bonusBurst(bx, by + 6, 10, [['#ff4d6d', '#ffb3c1'], ['#ffd84a', '#fff1a8'], ['#4db8ff', '#bfe6ff']][i], 70));
+      }
+      const rest = b.y + 4;
+      if (b.t < 2.2) b.rocketY = H + 40 - (H + 40 - rest) * ease(clamp((b.t - 0.9) / 0.8, 0, 1));
+      else b.rocketY = rest - (b.t - 2.2) ** 2 * 26;
+      if (b.t >= 1.8 && !b.inside) { b.inside = true; bonusBurst(b.x, rest, 14, ['#ffffff', '#fff3b0', '#ffb3d9'], 50); }
+      if (b.t > 2.2) bonusBurst(b.x, b.rocketY + rh - 2, 3, ['#fff3b0', '#ffd84a', '#ff9f43'], 40);
       if (b.t >= ROCKET_TIME) endBonus();
     }
   }
@@ -2235,6 +2263,17 @@
     ctx.globalAlpha = 0.75; ctx.fillStyle = it.col;
     ctx.fillRect(x - 4, y - 1, 2, 3); ctx.fillRect(x + 3, y - 1, 2, 3);
     ctx.globalAlpha = 1;
+  }
+  // La tête du doudou dans le hublot : son visage est centré sur la vitre.
+  function drawPorthole(rx, ry, rs) {
+    const c = hero(), spr = idleSprite(c, (time % 3.2) < 0.12);
+    const cx = rx + (PORT.x + 0.5) * rs, cy = ry + (PORT.y + 0.5) * rs;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, PORT.r * rs, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(spr, Math.round(cx - c.face[0] * rs), Math.round(cy - c.face[1] * rs), spr.width * rs, spr.height * rs);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+    ctx.fillRect(Math.round(cx - 3 * rs), Math.round(cy - 4 * rs), rs, 2 * rs);
+    ctx.restore();
   }
   function drawBonusHero(x, y) {
     const b = bp, c = hero();
@@ -2272,7 +2311,9 @@
       ctx.drawImage(moonC, Math.round(W / 2 - moonC.width * ms / 2), Math.round(my - moonC.height * ms / 2), moonC.width * ms, moonC.height * ms);
       if (b.phase === 'moon') {
         const rs = K + 1;
-        ctx.drawImage(rocketSpr, Math.round(W / 2 - rocketSpr.width * rs / 2), Math.round(my - moonC.height * ms / 2 - rocketSpr.height * rs + 4 * rs), rocketSpr.width * rs, rocketSpr.height * rs);
+        const rx = Math.round(W / 2 - rocketSpr.width * rs / 2), ry = Math.round(my - moonC.height * ms / 2 - rocketSpr.height * rs + 4 * rs);
+        ctx.drawImage(rocketSpr, rx, ry, rocketSpr.width * rs, rocketSpr.height * rs);
+        drawPorthole(rx, ry, rs);
       }
     }
     if (b.phase === 'rain' || b.phase === 'boom') {
@@ -2295,15 +2336,13 @@
     }
     if (b.phase === 'balloon' || b.phase === 'rocket') drawCloudSea(gy, b.phase === 'rocket' ? clamp(1 - (b.t - 2.5) / 1.5, 0, 1) : 1);
     const withBalloon = (b.phase === 'boom' && b.t > 0.4) || b.phase === 'balloon' || (b.phase === 'rocket' && !b.popped);
-    if (withBalloon) {
-      const bx = Math.round(b.x) + 6, by = Math.round(b.y) - 58 + Math.round(Math.sin(time * 3) * 2);
-      ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(b.x) + 1, by + 15, 1, Math.round(b.y) - 24 - (by + 15));
-      ctx.drawImage(balloonSpr, bx - 6, by);
-    }
+    if (withBalloon) drawBalloons(b.x, b.y - heroH());
     if (b.phase === 'rocket') {
-      const rs = K + 1;
-      ctx.drawImage(rocketSpr, Math.round(b.x - rocketSpr.width * rs / 2), Math.round(b.rocketY), rocketSpr.width * rs, rocketSpr.height * rs);
-      drawBonusHero(b.x, b.t < 1.6 ? b.y : b.rocketY + 2 * rs);
+      const rs = K + 1, rx = Math.round(b.x - rocketSpr.width * rs / 2), ry = Math.round(b.rocketY);
+      // Avant de monter dans la fusée, le doudou se tient juste au-dessus.
+      if (!b.inside) drawBonusHero(b.x, b.y);
+      ctx.drawImage(rocketSpr, rx, ry, rocketSpr.width * rs, rocketSpr.height * rs);
+      if (b.inside) drawPorthole(rx, ry, rs);
     } else if (b.phase !== 'moon') {
       drawBonusHero(b.x, b.y);
     }
