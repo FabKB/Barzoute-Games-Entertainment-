@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v10';
+  const VERSION = 'v11';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -2358,30 +2358,6 @@
     btnPause.hidden = true; btnHome.hidden = true;
   }
   const hit = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
-  // Petit retour haptique quand on saute : courte vibration sur Android.
-  // Sur iPhone (iOS 18 et plus), basculer un interrupteur « switch » donne un léger clic haptique ;
-  // Safari ne l'accepte qu'au relâchement du doigt, donc on le déclenche à ce moment-là.
-  let hapticPending = false;
-  function haptic() {
-    try {
-      if (typeof navigator.vibrate === 'function') { navigator.vibrate(12); return; }
-      const label = document.createElement('label');
-      label.setAttribute('aria-hidden', 'true');
-      label.style.display = 'none';
-      const input = document.createElement('input');
-      input.type = 'checkbox';
-      input.setAttribute('switch', '');
-      label.appendChild(input);
-      document.body.appendChild(label);
-      label.click();
-      label.remove();
-    } catch (e) { /* pas de retour haptique sur cet appareil */ }
-  }
-  function hapticOnRelease() {
-    if (!hapticPending) return;
-    hapticPending = false;
-    haptic();
-  }
   function press(e) {
     Sound.init();
     const lx = e ? e.clientX / SCALE : -1, ly = e ? e.clientY / SCALE : -1;
@@ -2405,7 +2381,6 @@
     if (paused) { setPaused(false); return; }
     holding = true;
     jumpBuffer = 0.12;
-    if (typeof navigator.vibrate === 'function') haptic(); else hapticPending = true;
   }
   function release() { holding = false; }
 
@@ -2414,14 +2389,14 @@
     e.preventDefault();
     press(e);
   }, { passive: false });
-  window.addEventListener('pointerup', () => { release(); hapticOnRelease(); });
+  window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
   document.addEventListener('touchstart', e => {
     if (!(e.target.closest && e.target.closest('button'))) e.preventDefault();
   }, { passive: false });
   document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
   // Sur iOS, l'audio ne démarre qu'après un geste « complet » : on relance au relâchement.
-  document.addEventListener('touchend', () => { Sound.init(); hapticOnRelease(); });
+  document.addEventListener('touchend', () => Sound.init());
   document.addEventListener('click', () => Sound.init());
 
   window.addEventListener('keydown', e => {
