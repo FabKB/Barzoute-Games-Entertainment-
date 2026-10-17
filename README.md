@@ -10,7 +10,6 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 - **Toucher l'écran** (ou Espace / flèche haut) : sauter. Garde le doigt appuyé pour sauter plus haut.
 - **Toucher une 2e fois en l'air** : double saut.
-- Chaque saut donne un petit retour haptique : courte vibration sur Android, léger « clic » sur iPhone (iOS 18 et plus, selon le navigateur).
 - Ramasse les étoiles. Le bouton en haut à droite coupe le son ; P met en pause.
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
