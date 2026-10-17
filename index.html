@@ -1470,7 +1470,21 @@
     } else if (ev.w === 3) {
       // Buckingham Palace défile : la reine salue la foule depuis le balcon.
       const cx = Math.round(W + 90 * K - u * (W + 180 * K)), gy = gyBase - 30 * K;
+      // La cour devant le palais descend jusqu'en bas de l'écran : le palais repose sur le sol.
+      ctx.fillStyle = '#bdb39d'; ctx.fillRect(cx - 92 * K, gy, 184 * K, H - gy);
+      ctx.fillStyle = '#d8cfbd'; ctx.fillRect(cx - 88 * K, gy, 176 * K, H - gy);
+      ctx.fillStyle = '#c9bfa9';
+      for (let y = gy + 4 * K; y < H; y += 5 * K) ctx.fillRect(cx - 88 * K, y, 176 * K, K);
       ctx.drawImage(palaceC, cx - 80 * K, gy - 80 * K, 160 * K, 80 * K);
+      ctx.fillStyle = '#2a2433';
+      ctx.fillRect(cx - 92 * K, gy - 7 * K, 184 * K, K);
+      for (let x = cx - 92 * K; x < cx + 92 * K; x += 2 * K) ctx.fillRect(x, gy - 8 * K, K, 8 * K);
+      ctx.fillStyle = '#e0c27a';
+      for (let x = cx - 92 * K; x < cx + 92 * K; x += 2 * K) ctx.fillRect(x, gy - 9 * K, K, K);
+      for (const px of [cx - 92 * K, cx - 22 * K, cx + 18 * K, cx + 88 * K]) {
+        ctx.fillStyle = '#e3dccd'; ctx.fillRect(px, gy - 12 * K, 4 * K, 12 * K);
+        ctx.fillStyle = '#e0c27a'; ctx.fillRect(px + K, gy - 14 * K, 2 * K, 2 * K);
+      }
       const qs = 2 * K, q = queenFrames[Math.floor(t / 0.3) % 2];
       ctx.drawImage(q, cx - Math.round(q.width * qs / 2), gy - 30 * K - (q.height - 4) * qs, q.width * qs, q.height * qs);
       ctx.fillStyle = '#cfc7b6'; ctx.fillRect(cx - 15 * K, gy - 30 * K, 30 * K, 2 * K);
