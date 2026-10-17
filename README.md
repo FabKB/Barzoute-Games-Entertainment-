@@ -51,7 +51,13 @@ Après le 5e monde, on repart au Monde des Glaces.
 
 Toutes les étoiles ramassées s'ajoutent à un trésor, partie après partie (le total s'affiche en haut à gauche de l'écran titre). À **1000 étoiles**, le niveau bonus se débloque et un bouton **BONUS** apparaît sur l'écran titre (touche B au clavier).
 
-C'est une course de 60 secondes dans un pays de sucettes géantes, de sucres d'orge, de cupcakes et de rivières de chocolat : chaque étoile compte double, les trampolines en guimauve font rebondir très haut, et on ne peut pas perdre, sur l'air de Tetris (« Korobeiniki », chanson populaire russe libre de droits, arrangée pour le jeu). Le niveau bonus reste rejouable à volonté.
+Le niveau bonus se joue en trois étapes, sur l'air de Tetris (« Korobeiniki », chanson populaire russe libre de droits, arrangée pour le jeu) :
+
+1. **La pluie de bonbons** : ton personnage reste en bas ; garde le doigt à gauche ou à droite de l'écran pour te déplacer et attraper les bonbons (1 point) et les étoiles (3 points). Attention aux brocolis : « beurk », ils retirent 3 bonbons. On ne peut pas perdre.
+2. **À 100 bonbons**, grosse explosion de confettis, un ballon apparaît et on s'envole : garde le doigt appuyé pour monter, relâche pour redescendre, passe entre les nuages d'orage (ils font juste « bonk ») et attrape les étoiles pendant 35 secondes.
+3. **La fusée** : le ballon éclate, une fusée arrive et décolle vers la Lune. Fin du voyage : « Sur la Lune ! ».
+
+Le niveau bonus reste rejouable à volonté.
 
 Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
 

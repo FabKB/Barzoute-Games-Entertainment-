@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v13';
+  const VERSION = 'v14';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -414,6 +414,17 @@
         ['C6', 'E6', 'G6', 'C7'].forEach((n, i) => fm(sfx, at(4.5 + i * 0.25), mtof(n2m(n)), 0.15, BELL));
       },
       // Souffle des nuages pendant le changement de monde.
+      yuck() { sweep(420, 140, 0.25, 0.07); },
+      boom() { if (!ac) return; const t = ac.currentTime; drum(t, 120, 30, 0.8, 0.8); nz(t, 0.9, 0.35, 'lowpass', 900, 0, sfx); },
+      pop() { if (ac) nz(ac.currentTime, 0.08, 0.2, 'highpass', 3000, 0, sfx); },
+      rocket() {
+        if (!ac) return;
+        const t = ac.currentTime + 1.5, src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = noise; src.loop = true;
+        f.type = 'lowpass'; f.frequency.setValueAtTime(200, t); f.frequency.exponentialRampToValueAtTime(2000, t + 4);
+        g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.22, t + 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.8);
+        src.connect(f); f.connect(g); g.connect(sfx); src.start(t); src.stop(t + 5);
+      },
       // Niveau bonus débloqué.
       unlock() { if (ac) ['C6', 'E6', 'G6', 'C7', 'E7', 'G7', 'C8'].forEach((n, i) => fm(sfx, ac.currentTime + 0.05 + i * 0.09, mtof(n2m(n)), 0.25, BELL)); },
       // Petit son pour l'événement de mi-parcours de chaque monde.
@@ -675,7 +686,8 @@
   const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
 
-  function makeCloud(w, h, seed) {
+  function makeCloud(w, h, seed, cols) {
+    const [cTop, cBottom, cEdge] = cols || ['#ffffff', '#f3e6ff', '#d9c6f0'];
     const n = 4 + (seed % 3), circles = [];
     for (let i = 0; i < n; i++) {
       const r = h * 0.3 + (hash(seed * 31 + i) % Math.max(1, (h * 0.25) | 0));
@@ -688,7 +700,7 @@
       for (let x = 0; x < w; x++) {
         if (!inside(x + 0.5, y + 0.5)) continue;
         const edge = !inside(x - 0.5, y + 0.5) || !inside(x + 1.5, y + 0.5) || !inside(x + 0.5, y - 0.5) || !inside(x + 0.5, y + 1.5);
-        g.fillStyle = edge ? '#d9c6f0' : (y > h * 0.62 ? '#f3e6ff' : '#ffffff');
+        g.fillStyle = edge ? cEdge : (y > h * 0.62 ? cBottom : cTop);
         g.fillRect(x, y, 1, 1);
       }
     }
@@ -1676,7 +1688,7 @@
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
   const MAIN_WORLDS = 5, BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
-  let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusT = 0, bonusEnd = false, unlockCard = 0, bonusBtn = null;
+  let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusEnd = false, unlockCard = 0, bonusBtn = null;
   // Pour tester sans attendre : le lien se terminant par #bonus, ou 5 touchers sur le numéro de version.
   // Ce déblocage de test ne modifie pas le vrai trésor et s'arrête quand on recharge la page.
   let testUnlock = false, versionTaps = 0, versionTapT = 0, versionBtn = null;
@@ -1889,6 +1901,7 @@
   function step(dt) {
     time += dt;
     if (mode === 'dying' || mode === 'gameover') { updateEnd(dt); return; }
+    if (bonus && mode === 'play') { updateBonus(dt); return; }
     const p = player;
     for (const pl of platforms) if (pl.amp) pl.top = pl.baseTop + Math.sin(time * pl.w2 + pl.ph) * pl.amp;
     if (p.grounded && p.on && p.on.amp) p.y = p.on.top;
@@ -2016,20 +2029,258 @@
     updateWorld(dt);
     if (mode === 'play') {
       const dist = Math.floor((p.x - distStart) / 16);
-      if (!bonus) {
-        const target = Math.floor(dist / WORLD_EVERY) % MAIN_WORLDS;
-        if (target !== genWorld && !trans) startTransition(target);
-        const seg = Math.floor(dist / WORLD_EVERY);
-        if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
-        if (dist > bests[gameMode]) bests[gameMode] = dist;
-      } else {
-        bonusT -= dt;
-        if (bonusT <= 0) { endBonus(); return; }
-      }
+      const target = Math.floor(dist / WORLD_EVERY) % MAIN_WORLDS;
+      if (target !== genWorld && !trans) startTransition(target);
+      const seg = Math.floor(dist / WORLD_EVERY);
+      if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
+      if (dist > bests[gameMode]) bests[gameMode] = dist;
       saveT -= dt;
       if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
     }
     if (unlockCard > 0) unlockCard -= dt;
+  }
+
+  // ---------- Niveau bonus : pluie de bonbons, vol en ballon, fusée vers la Lune ----------
+  const RAIN_GOAL = 100, BALLOON_TIME = 35, ROCKET_TIME = 6.5;
+  let bp = null, bonusDir = 0;
+  const ROCKET = [
+    '.....KK.....', '....KrrK....', '...KrrrrK...', '...KrrrrK...', '..KwwwwwwK..', '..KwwBBwwK..',
+    '..KwBBBBwK..', '..KwBBBBwK..', '..KwwBBwwK..', '..KwwwwwwK..', '..KwwwwwwK..', '..KwwwwwwK..',
+    '..KwwwwwwK..', '.KrKwwwwKrK.', 'KrrKwwwwKrrK', 'KrrKwwwwKrrK', 'KKKKKKKKKKKK'
+  ];
+  const rocketSpr = makeSprite(ROCKET);
+  const balloonSpr = paintStrip(12, 16, (x, y) => {
+    const d = ((x + 0.5 - 6) / 5.5) ** 2 + ((y + 0.5 - 6.5) / 6.5) ** 2;
+    if (d <= 1) return d > 0.8 ? '#c42a40' : ((x - 3.5) ** 2 + (y - 3.5) ** 2 < 3 ? '#ffb3c1' : '#ff4d6d');
+    if (y >= 13 && y <= 14 && x >= 5 && x <= 6) return '#c42a40';
+    return null;
+  });
+  const stormClouds = [0, 1, 2].map(k => makeCloud(44 + k * 8, 18 + k * 2, 21 + k * 4, ['#8d8aa8', '#a9a6c2', '#6d6a88']));
+  let floorC = null;
+  const groundB = () => Math.round(H * 0.86);
+
+  function startBonus() {
+    resetWorld();
+    world = genWorld = BONUS_WORLD;
+    switchWorld(BONUS_WORLD);
+    plane = null; worldCard = 3;
+    Sound.setSong(BONUS_WORLD);
+    mode = 'play'; bonus = true; bonusEnd = false;
+    starsCount = 0; streak = 0; holding = false; bonusDir = 0;
+    camY = camBase();
+    floorC = buildPlatform({ w: W + 4, s: BONUS_WORLD * 3, seed: 7 });
+    bp = { phase: 'rain', t: 0, x: W / 2, vx: 0, y: groundB(), vy: 0, caught: 0, items: [], spawn: 0.4, fx: [], clouds: [], cloudT: 1.2, gems: [], hurt: 0, rocketY: 0, flash: 0 };
+    btnPause.hidden = false; btnHome.hidden = false;
+    Sound.start();
+  }
+  function bonusGain(n) {
+    const before = tresor;
+    starsCount += n; tresor += n;
+    if (before < BONUS_COST && tresor >= BONUS_COST) { unlockCard = 3.5; Sound.unlock(); }
+  }
+  function bonusBurst(x, y, n, colors, spd) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, v = rand(spd * 0.3, spd);
+      bp.fx.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.5, 1.2), col: colors[i % colors.length], s: Math.random() < 0.3 ? 2 : 1 });
+    }
+  }
+  function updateBonus(dt) {
+    const b = bp;
+    b.t += dt;
+    camX += (b.phase === 'balloon' ? 70 : 12) * dt;
+    updateWorld(dt);
+    for (const q of b.fx) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.life -= dt; }
+    b.fx = b.fx.filter(q => q.life > 0);
+    for (const q of popups) { q.y -= 14 * dt; q.life -= dt * 0.8; }
+    popups = popups.filter(q => q.life > 0);
+    if (b.flash > 0) b.flash -= dt;
+    streakT -= dt;
+    if (streakT <= 0) streak = 0;
+    const gy = groundB();
+
+    if (b.phase === 'rain') {
+      // Pluie de bonbons : on se déplace à gauche ou à droite pour les attraper.
+      const target = holding ? bonusDir : 0;
+      b.vx += (target * 190 - b.vx) * Math.min(1, dt * 10);
+      b.x = clamp(b.x + b.vx * dt, 12, W - 12);
+      b.y = gy;
+      const lvl = Math.min(1, b.caught / RAIN_GOAL);
+      b.spawn -= dt;
+      if (b.spawn <= 0) {
+        // Plus l'écran est large, plus il pleut de bonbons à la fois.
+        b.spawn = 0.42 - lvl * 0.2;
+        const n = W > 300 ? 3 : 2;
+        for (let k = 0; k < n; k++) {
+          const r = Math.random();
+          b.items.push({ x: rand(10, W - 10), y: -10 - k * 20, vy: rand(40, 55) + lvl * 50, kind: r < 0.07 ? 'broc' : r < 0.25 ? 'star' : 'candy', col: RAINBOW[(Math.random() * 6) | 0] });
+        }
+      }
+      for (const it of b.items) {
+        it.y += it.vy * dt;
+        if (!it.done && Math.abs(it.x - b.x) < 14 && it.y > gy - 30 && it.y < gy + 2) {
+          it.done = true;
+          if (it.kind === 'broc') {
+            b.caught = Math.max(0, b.caught - 3);
+            popups.push({ x: b.x, y: gy - 40, txt: 'BEURK -3', life: 1 });
+            Sound.yuck();
+          } else {
+            const g = it.kind === 'star' ? 3 : 1;
+            b.caught += g; bonusGain(g);
+            Sound.star(streak); streak++; streakT = 1.2;
+            bonusBurst(it.x, it.y, 6, [it.col, '#ffffff', '#ffe45c'], 50);
+          }
+        }
+      }
+      b.items = b.items.filter(it => !it.done && it.y < H + 10);
+      if (b.caught >= RAIN_GOAL) {
+        // Grosse explosion de confettis, puis le ballon apparaît.
+        b.phase = 'boom'; b.t = 0; b.items = []; b.flash = 0.5; shake = 4;
+        bonusBurst(b.x, gy - 20, 90, RAINBOW.concat(['#ffffff', '#ffe45c']), 160);
+        Sound.boom();
+      }
+    } else if (b.phase === 'boom') {
+      if (b.t > 0.7) b.y = gy - (H * 0.4) * ease(Math.min(1, (b.t - 0.7) / 1.1));
+      b.x += (W * 0.3 - b.x) * Math.min(1, dt * 2);
+      if (b.t > 1.9) { b.phase = 'balloon'; b.t = 0; b.vy = 0; }
+    } else if (b.phase === 'balloon') {
+      // Vol en ballon : on garde le doigt appuyé pour monter, on relâche pour descendre doucement.
+      b.vy = holding ? Math.max(-110, b.vy - 420 * dt) : Math.min(110, b.vy + 220 * dt);
+      b.y += b.vy * dt;
+      const topLim = safe.t + 46, botLim = gy - 4;
+      if (b.y < topLim) { b.y = topLim; b.vy = 0; }
+      if (b.y > botLim) { b.y = botLim; b.vy = -40; }
+      b.x += (W * 0.3 - b.x) * Math.min(1, dt * 2);
+      if (b.hurt > 0) b.hurt -= dt;
+      b.cloudT -= dt;
+      if (b.cloudT <= 0 && b.t < BALLOON_TIME - 3) {
+        b.cloudT = 2.3;
+        const gapH = Math.max(76, H * 0.42), gapY = rand(safe.t + 50 + gapH / 2, gy - 10 - gapH / 2);
+        b.clouds.push({ x: W + 30, gapY, gapH, k: (Math.random() * 3) | 0 });
+        for (let i = 0; i < 3; i++) b.gems.push({ x: W + 70 + i * 16, y: gapY + Math.sin(i) * 10, ph: rand(0, 6) });
+      }
+      for (const c of b.clouds) c.x -= 70 * dt;
+      for (const s of b.gems) {
+        s.x -= 70 * dt;
+        if (!s.taken && Math.abs(s.x - b.x) < 11 && Math.abs(s.y - (b.y - 18)) < 18) {
+          s.taken = true; bonusGain(1); Sound.star(streak); streak++; streakT = 1.2;
+          bonusBurst(s.x, s.y, 6, ['#ffe45c', '#ffffff'], 50);
+        }
+      }
+      b.clouds = b.clouds.filter(c => c.x > -60);
+      b.gems = b.gems.filter(s => !s.taken && s.x > -10);
+      // Les nuages d'orage ne font pas perdre : « bonk », on clignote et on est repoussé vers le passage.
+      if (b.hurt <= 0) {
+        for (const c of b.clouds) {
+          const top = b.y - 44, bottom = b.y;
+          if (Math.abs(c.x - b.x) < 22 && (top < c.gapY - c.gapH / 2 || bottom > c.gapY + c.gapH / 2)) {
+            b.hurt = 1.2; b.vy = (c.gapY > b.y - 22 ? 1 : -1) * 90;
+            Sound.boing();
+            popups.push({ x: b.x, y: b.y - 50, txt: 'BONK !', life: 1 });
+            break;
+          }
+        }
+      }
+      if (b.t >= BALLOON_TIME) { b.phase = 'rocket'; b.t = 0; b.clouds = []; b.gems = []; Sound.rocket(); }
+    } else if (b.phase === 'rocket') {
+      // La fusée arrive, le ballon éclate, et c'est le décollage vers la Lune.
+      if (b.t < 1) { b.x += (W / 2 - b.x) * Math.min(1, dt * 3); b.y += (H * 0.55 - b.y) * Math.min(1, dt * 3); }
+      if (b.t >= 1 && !b.popped) { b.popped = true; Sound.pop(); bonusBurst(b.x, b.y - 46, 14, ['#ff4d6d', '#ffb3c1'], 70); }
+      b.rocketY = b.t < 1.6 ? H + 60 - (H + 60 - b.y) * ease(clamp((b.t - 0.6) / 1, 0, 1)) : b.y - (b.t - 1.6) ** 2 * 26;
+      if (b.t > 1.6) bonusBurst(b.x, b.rocketY + 40, 3, ['#fff3b0', '#ffd84a', '#ff9f43'], 40);
+      if (b.t >= ROCKET_TIME) endBonus();
+    }
+  }
+  function drawBonusCandy(it) {
+    const x = Math.round(it.x), y = Math.round(it.y);
+    if (it.kind === 'star') { ctx.drawImage(sprStar, x - 3, y - 3); return; }
+    if (it.kind === 'broc') {
+      ctx.fillStyle = '#9be08a'; ctx.fillRect(x - 1, y, 3, 4);
+      ctx.fillStyle = '#2e8b3a'; ctx.fillRect(x - 4, y - 3, 3, 3); ctx.fillRect(x - 1, y - 5, 3, 3); ctx.fillRect(x + 2, y - 3, 3, 3);
+      ctx.fillStyle = '#4fb85c'; ctx.fillRect(x - 3, y - 2, 6, 2);
+      return;
+    }
+    ctx.fillStyle = it.col; ctx.fillRect(x - 2, y - 2, 5, 5);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 1, y - 1, 1, 1);
+    ctx.globalAlpha = 0.75; ctx.fillStyle = it.col;
+    ctx.fillRect(x - 4, y - 1, 2, 3); ctx.fillRect(x + 3, y - 1, 2, 3);
+    ctx.globalAlpha = 1;
+  }
+  function drawBonusHero(x, y) {
+    const b = bp, c = hero();
+    if (b.hurt > 0 && Math.floor(time * 12) % 2) return;
+    const spr = idleSprite(c, (time % 3.2) < 0.12);
+    ctx.drawImage(spr, Math.round(x) - (spr.width >> 1), Math.round(y) - spr.height);
+  }
+  function drawBonus() {
+    const b = bp, gy = groundB(), K = evK();
+    // Le ciel noircit et la Lune approche pendant le voyage en fusée.
+    const space = b.phase === 'moon' ? 1 : b.phase === 'rocket' ? clamp((b.t - 1.4) / 3, 0, 1) : 0;
+    if (space > 0) {
+      ctx.globalAlpha = 0.9 * space; ctx.fillStyle = '#141033'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+      for (let i = 0; i < 60; i++) {
+        ctx.fillStyle = (time * 2 + i) % 5 < 0.6 ? '#fff3b0' : '#ffffff';
+        ctx.fillRect(hash(i * 7 + 2) % W, mod(hash(i * 11 + 5) % H + (b.phase === 'rocket' ? b.t * 40 * (1 + i % 3) : 0), H), 1, 1);
+      }
+      const ms = (K + 1) * (b.phase === 'moon' ? 2 : 0.6 + space * 0.9);
+      const my = b.phase === 'moon' ? H * 0.62 : -moonC.height * ms + (H * 0.32 + moonC.height * ms) * ease(space);
+      ctx.drawImage(moonC, Math.round(W / 2 - moonC.width * ms / 2), Math.round(my - moonC.height * ms / 2), moonC.width * ms, moonC.height * ms);
+      if (b.phase === 'moon') {
+        const rs = K + 1;
+        ctx.drawImage(rocketSpr, Math.round(W / 2 - rocketSpr.width * rs / 2), Math.round(my - moonC.height * ms / 2 - rocketSpr.height * rs + 4 * rs), rocketSpr.width * rs, rocketSpr.height * rs);
+      }
+    }
+    if (b.phase === 'rain' || b.phase === 'boom') {
+      if (floorC) ctx.drawImage(floorC, -2, gy);
+      for (const it of b.items) drawBonusCandy(it);
+    }
+    if (b.phase === 'balloon') {
+      for (const c of b.clouds) {
+        const spr = stormClouds[c.k], top = c.gapY - c.gapH / 2, bot = c.gapY + c.gapH / 2;
+        // Colonnes de nuages d'orage, décalées pour qu'elles restent bien moelleuses.
+        let n = 0;
+        for (let y = top - spr.height + 4; y > -spr.height; y -= spr.height - 8, n++) ctx.drawImage(stormClouds[(c.k + n) % 3], Math.round(c.x - spr.width / 2 + (n % 2 ? 6 : -6)), Math.round(y));
+        n = 0;
+        for (let y = bot - 4; y < gy + 10; y += spr.height - 8, n++) ctx.drawImage(stormClouds[(c.k + n) % 3], Math.round(c.x - spr.width / 2 + (n % 2 ? -6 : 6)), Math.round(y));
+        if (Math.floor(time * 3 + c.k) % 7 === 0) { ctx.fillStyle = '#ffe45c'; ctx.fillRect(Math.round(c.x) - 1, Math.round(top - 2), 2, 6); ctx.fillRect(Math.round(c.x), Math.round(bot - 4), 2, 6); }
+      }
+      for (const s of b.gems) ctx.drawImage(sprStar, Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
+    }
+    const withBalloon = (b.phase === 'boom' && b.t > 0.4) || b.phase === 'balloon' || (b.phase === 'rocket' && !b.popped);
+    if (withBalloon) {
+      const bx = Math.round(b.x) + 6, by = Math.round(b.y) - 58 + Math.round(Math.sin(time * 3) * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(b.x) + 1, by + 15, 1, Math.round(b.y) - 24 - (by + 15));
+      ctx.drawImage(balloonSpr, bx - 6, by);
+    }
+    if (b.phase === 'rocket') {
+      const rs = K + 1;
+      ctx.drawImage(rocketSpr, Math.round(b.x - rocketSpr.width * rs / 2), Math.round(b.rocketY), rocketSpr.width * rs, rocketSpr.height * rs);
+      drawBonusHero(b.x, b.t < 1.6 ? b.y : b.rocketY + 2 * rs);
+    } else if (b.phase !== 'moon') {
+      drawBonusHero(b.x, b.y);
+    }
+    for (const q of b.fx) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), q.s, q.s); }
+    for (const q of popups) {
+      ctx.globalAlpha = clamp(q.life * 2, 0, 1);
+      text(q.txt, Math.round(q.x), Math.round(q.y), 8, '#fff7d6', 'center');
+    }
+    ctx.globalAlpha = 1;
+    if (b.flash > 0) { ctx.globalAlpha = clamp(b.flash * 2, 0, 1); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+  }
+  function drawBonusHud() {
+    const b = bp, x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
+    ctx.drawImage(sprStar, x, y);
+    text(String(starsCount), x + 11, y, 8, '#fff7d6');
+    if (b.phase === 'rain') text('BONBONS ' + b.caught + '/' + RAIN_GOAL, x, y + 13, 8, '#fff7d6');
+    else if (b.phase === 'balloon') text('LUNE DANS 0:' + String(Math.max(0, Math.ceil(BALLOON_TIME - b.t))).padStart(2, '0'), x, y + 13, 8, '#fff7d6');
+    if (b.phase === 'rain' && b.t < 4) text('GLISSE A GAUCHE OU A DROITE', Math.round(W / 2), Math.round(H * 0.32), 8, '#ffffff', 'center');
+    if (b.phase === 'balloon' && b.t < 3) text('APPUIE POUR MONTER', Math.round(W / 2), Math.round(H * 0.32), 8, '#ffffff', 'center');
+    if (worldCard > 0 && b.phase === 'rain') {
+      ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
+      const cy = Math.round(Math.max(safe.t + 52, H * 0.18));
+      rainbowText('BONUS', Math.round(W / 2), cy, 16);
+      text('PLUIE DE BONBONS', Math.round(W / 2), cy + 22, 8, '#fff7d6', 'center');
+      ctx.globalAlpha = 1;
+    }
   }
 
   // ---------- Dessin ----------
@@ -2352,9 +2603,9 @@
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
     ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
     y += 8;
-    rainbowText(bonusEnd ? 'BONUS FINI' : 'GAME OVER', cx, y, 16);
+    rainbowText(bonusEnd ? 'SUR LA LUNE !' : 'GAME OVER', cx, y, 16);
     y += 18;
-    if (bonusEnd) text('QUEL FESTIN !', cx, y, 8, '#fff3b0', 'center');
+    if (bonusEnd) text('QUEL VOYAGE !', cx, y, 8, '#fff3b0', 'center');
     else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
     y += 14;
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
@@ -2398,6 +2649,8 @@
       ctx.translate(Math.round((Math.random() * 2 - 1) * shake), Math.round((Math.random() * 2 - 1) * shake));
     }
     drawBackground();
+    if (bonus && bp) drawBonus();
+    else {
     drawEvent();
     drawPlane();
 
@@ -2426,19 +2679,17 @@
     }
     ctx.globalAlpha = 1;
     ctx.restore();
+    }
 
     const cx = Math.round(W / 2);
-    if (mode === 'play' || mode === 'dying') {
+    if (bonus && mode === 'play') {
+      drawBonusHud();
+    } else if (mode === 'play' || mode === 'dying') {
       const x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
       ctx.drawImage(sprStar, x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
-      if (bonus) {
-        const sec = Math.max(0, Math.ceil(bonusT));
-        text('BONUS 0:' + String(sec).padStart(2, '0'), x, y + 13, 8, sec <= 10 && Math.floor(time * 4) % 2 ? '#ff4d6d' : '#fff7d6');
-      } else {
-        text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
-        if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
-      }
+      text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
+      if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
@@ -2500,20 +2751,9 @@
     charIdx = (i + CHARS.length) % CHARS.length;
     store.set('perso', charIdx);
   }
-  function startBonus() {
-    resetWorld();
-    world = genWorld = BONUS_WORLD;
-    for (const pl of platforms) { pl.s = BONUS_WORLD * 3 + (pl.s % 3); pl.img = null; }
-    switchWorld(BONUS_WORLD);
-    plane = null; worldCard = 3;
-    Sound.setSong(BONUS_WORLD);
-    mode = 'play'; bonus = true; bonusEnd = false; bonusT = BONUS_TIME;
-    distStart = player.x; starsCount = 0; speed = 95; streak = 0; evSeg = -1;
-    btnPause.hidden = false; btnHome.hidden = false;
-    Sound.start();
-  }
   function endBonus() {
     store.set('tresor', tresor);
+    if (bp) bp.phase = 'moon';
     Sound.stop();
     bonusEnd = true;
     btnPause.hidden = true; btnHome.hidden = true;
@@ -2581,6 +2821,7 @@
     }
     if (paused) { setPaused(false); return; }
     holding = true;
+    if (bonus) { bonusDir = e ? (lx < W / 2 ? -1 : 1) : 0; return; }
     jumpBuffer = 0.12;
   }
   function release() { holding = false; }
@@ -2605,6 +2846,8 @@
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
       if (!e.repeat) press();
+    } else if (bonus && mode === 'play' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+      holding = true; bonusDir = e.code === 'ArrowLeft' ? -1 : 1;
     } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
     } else if (mode === 'title' && e.code === 'KeyB' && bonusUnlocked()) {
@@ -2620,7 +2863,7 @@
     }
   });
   window.addEventListener('keyup', e => {
-    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter') release();
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') release();
   });
 
   btnSound.addEventListener('click', () => { Sound.init(); Sound.setMuted(!Sound.muted); renderSoundBtn(); });
