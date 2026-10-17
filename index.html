@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v11';
+  const VERSION = 'v16';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -127,6 +127,7 @@
     const BRASS = { ratio: 1, index: 3, idxSus: 0.8, idxDecay: 0.08, vol: 0.17, a: 0.02, d: 0.1, sus: 0.8, rel: 0.06 };
     const SLAP = { ratio: 1, index: 6, idxSus: 0.2, idxDecay: 0.06, vol: 0.34, a: 0.003, d: 0.12, sus: 0.4, rel: 0.04 };
     const ORGAN = { ratio: 2, index: 1.6, idxSus: 0.7, idxDecay: 0.1, vol: 0.18, a: 0.005, d: 0.1, sus: 0.75, rel: 0.08 };
+    const MUSICBOX = { ratio: 4, index: 1.2, idxSus: 0.2, idxDecay: 0.15, vol: 0.18, a: 0.002, d: 0.25, sus: 0.2, rel: 0.2 };
     const ACCORDION = { ratio: 1, index: 2.6, idxSus: 0.85, idxDecay: 0.05, vol: 0.13, a: 0.015, d: 0.08, sus: 0.85, rel: 0.06 };
     const STAB = { ratio: 1, index: 2, idxSus: 0.6, idxDecay: 0.05, vol: 0.05, a: 0.005, d: 0.08, sus: 0.5, rel: 0.05 };
 
@@ -226,6 +227,23 @@
         ],
         bassPat: [0, null, null, null, null, null],
         drums: { kick: [0], hat: 4 }
+      }),
+      song({ // Pays des Bonbons (niveau bonus) : « Korobeiniki », chanson populaire russe (domaine public),
+        // l'air rendu célèbre par Tetris, dans un arrangement original façon console.
+        bpm: 150, lead: LEAD, bass: BASS, arpWave: 'square', arpVol: 0.035, arpEvery: 2,
+        chords: {
+          Am: { b: 45, a: [57, 60, 64, 69] }, E: { b: 40, a: [52, 56, 59, 64] },
+          Dm: { b: 50, a: [57, 62, 65, 69] }, C: { b: 48, a: [55, 60, 64, 67] }
+        },
+        prog: ['Am', 'Am', 'E', 'Am', 'Dm', 'C', 'E', 'Am', 'Am', 'Am', 'E', 'Am', 'Dm', 'C', 'E', 'Am'],
+        mel: [
+          'E6 - B5 C6 D6 - C6 B5', 'A5 - A5 C6 E6 - D6 C6', 'B5 - - C6 D6 - E6 -', 'C6 - A5 - A5 - - -',
+          'D6 - - F6 A6 - G6 F6', 'E6 - - C6 E6 - D6 C6', 'B5 - B5 C6 D6 - E6 -', 'C6 - A5 - A5 - . .',
+          'E6 - B5 C6 D6 - C6 B5', 'A5 - A5 C6 E6 - D6 C6', 'B5 - - C6 D6 - E6 -', 'C6 - A5 - A5 - - -',
+          'D6 - - F6 A6 - G6 F6', 'E6 - - C6 E6 - D6 C6', 'B5 - B5 C6 D6 - E6 -', 'C6 - A5 - A5 - . .'
+        ],
+        bassPat: [0, 12, 0, 12, 0, 12, 0, 12],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2 }
       })
     ];
     let cur = SONGS[0];
@@ -396,6 +414,19 @@
         ['C6', 'E6', 'G6', 'C7'].forEach((n, i) => fm(sfx, at(4.5 + i * 0.25), mtof(n2m(n)), 0.15, BELL));
       },
       // Souffle des nuages pendant le changement de monde.
+      yuck() { sweep(420, 140, 0.25, 0.07); },
+      boom() { if (!ac) return; const t = ac.currentTime; drum(t, 120, 30, 0.8, 0.8); nz(t, 0.9, 0.35, 'lowpass', 900, 0, sfx); },
+      pop() { if (ac) nz(ac.currentTime, 0.08, 0.2, 'highpass', 3000, 0, sfx); },
+      rocket() {
+        if (!ac) return;
+        const t = ac.currentTime + 1.5, src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = noise; src.loop = true;
+        f.type = 'lowpass'; f.frequency.setValueAtTime(200, t); f.frequency.exponentialRampToValueAtTime(2000, t + 4);
+        g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.22, t + 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.8);
+        src.connect(f); f.connect(g); g.connect(sfx); src.start(t); src.stop(t + 5);
+      },
+      // Niveau bonus débloqué.
+      unlock() { if (ac) ['C6', 'E6', 'G6', 'C7', 'E7', 'G7', 'C8'].forEach((n, i) => fm(sfx, ac.currentTime + 0.05 + i * 0.09, mtof(n2m(n)), 0.25, BELL)); },
       // Petit son pour l'événement de mi-parcours de chaque monde.
       event(w) {
         if (!ac) return;
@@ -623,23 +654,23 @@
   // Animation d'attente en boucle, indépendante du saut :
   // normal → tassé (on retire la ligne « cut », le haut descend d'1 px) → normal → petit détail (accent).
   const CHARS = [
-    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24, cut: 17, accent: {
+    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24, face: [8.5, 12], cut: 17, accent: {
       1: '.......KWK.......',          // reflet sur la corne
       3: '.K....KYYYK....K.'           // les oreilles frétillent
     } },
-    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19, cut: 9, accent: {
+    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19, face: [9.5, 4.5], cut: 9, accent: {
       29: '........rr..rrrr....',      // elle lève une patte
       30: '.......rrrr.dddd....',
       31: '.......dddd.........'
     } },
-    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18, cut: 24, accent: {
+    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18, face: [10.5, 8], cut: 24, accent: {
       15: 'TT.KuKooovzvoooKuK...',     // la queue remue
       16: 'TtTKuKoooooooooKuK...',
       18: '.TTTKKoooqoooooKK....',
       19: '...TTKoooooooooK.....',
       20: '.....KoooooooooK.....'
     } },
-    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, cut: 20, accent: douliamSway }
+    { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, face: [9, 16], cut: 20, accent: douliamSway }
   ].map(c => {
     const frames = rows => {
       const blank = '.'.repeat(rows[0].length);
@@ -655,7 +686,8 @@
   const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
 
-  function makeCloud(w, h, seed) {
+  function makeCloud(w, h, seed, cols) {
+    const [cTop, cBottom, cEdge] = cols || ['#ffffff', '#f3e6ff', '#d9c6f0'];
     const n = 4 + (seed % 3), circles = [];
     for (let i = 0; i < n; i++) {
       const r = h * 0.3 + (hash(seed * 31 + i) % Math.max(1, (h * 0.25) | 0));
@@ -668,7 +700,7 @@
       for (let x = 0; x < w; x++) {
         if (!inside(x + 0.5, y + 0.5)) continue;
         const edge = !inside(x - 0.5, y + 0.5) || !inside(x + 1.5, y + 0.5) || !inside(x + 0.5, y - 0.5) || !inside(x + 0.5, y + 1.5);
-        g.fillStyle = edge ? '#d9c6f0' : (y > h * 0.62 ? '#f3e6ff' : '#ffffff');
+        g.fillStyle = edge ? cEdge : (y > h * 0.62 ? cBottom : cTop);
         g.fillRect(x, y, 1, 1);
       }
     }
@@ -824,6 +856,33 @@
         const row = ((y - 6) / 6) | 0, off = row % 2 ? 4 : 0;
         if ((y - 6) % 6 === 0 || (x + off) % 8 === 0) return '#6f6a62';
         return ['#9a948a', '#a9a397', '#8b857b'][hash((((x + off) / 8) | 0) * 13 + row * 7) % 3];
+      }
+    },
+    // Pays des Bonbons (niveau bonus)
+    { // tablette de chocolat
+      top: ['#a0674e', '#7b4b3a', '#5e382b'], deep: '#4e2c21',
+      body(x, y) {
+        if (x % 10 === 0 || (y - 6) % 10 === 0) return '#4e2c21';
+        if (x % 10 === 1 || (y - 6) % 10 === 1) return '#9a6249';
+        return '#7b4b3a';
+      }
+    },
+    { // sucre d'orge rayé
+      top: ['#ffffff', '#ffd6e0', '#e9a3b8'], drip: true, deep: '#c42a40',
+      body(x, y) { return (x + y) % 12 < 6 ? '#e8304a' : '#fff4f4'; }
+    },
+    { // gelée verte
+      top: ['#d9ffd9', '#7fe08a', '#4fb85c'], drip: true, deep: '#3f9a4b',
+      body(x, y) {
+        if (hash(x * 97 + y * 31) % 23 === 0) return '#c9f5cc';
+        return x % 9 === 2 ? '#9be6a4' : '#6fd47c';
+      }
+    },
+    { // trampoline en guimauve
+      top: ['#ffffff', '#ffe3ee', '#f2b8cf'], deep: '#f2b8cf',
+      body(x, y) {
+        if ((y - 6) % 8 === 0) return '#f2b8cf';
+        return x % 16 < 8 ? '#fff4f8' : '#ffe3ee';
       }
     }
   ];
@@ -1234,6 +1293,47 @@
     return lx === 0 ? '#bfa57c' : (fb % 6 === 0 ? '#d2bb93' : '#dfcaa3');
   });
 
+  // Pays des Bonbons : collines de bonbons gélifiés, sucettes géantes, sucres d'orge.
+  const candyFar = paintStrip(480, 100, (x, y) => {
+    const fb = 99 - y;
+    for (const [lx, cA] of [[80, '#e8304a'], [260, '#8a5cf0'], [400, '#2fb36b']]) {
+      const d = Math.hypot(x + 0.5 - lx, fb - 70);
+      if (d <= 18) {
+        if (d > 17) return '#ffffff';
+        const a = Math.atan2(fb - 70, x + 0.5 - lx);
+        return ((((a * 2 + d * 0.45) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) < Math.PI ? cA : '#fff4f8';
+      }
+      if (Math.abs(x + 0.5 - lx) < 1.5 && fb < 52) return '#fff4f8';
+    }
+    for (const cx of [180, 330]) {
+      const inStem = x >= cx && x <= cx + 3 && fb < 50;
+      const hook = Math.hypot(x + 0.5 - (cx - 6), fb - 50);
+      if (inStem || (fb >= 50 && hook >= 6 && hook <= 10 && x <= cx + 4)) return (x + fb) % 6 < 3 ? '#e8304a' : '#ffffff';
+    }
+    const bump = 14 + 9 * Math.abs(Math.sin(Math.PI * x / 30));
+    if (fb < bump) {
+      const k = ((x / 30) | 0) % 4;
+      if (hash(x * 13 + fb * 7) % 11 === 0) return '#ffffff';
+      return ['#ff7fae', '#ffd84a', '#7fe08a', '#9fc4ff'][k];
+    }
+    return null;
+  });
+  // Pays des Bonbons : cupcakes géants et petits bonbons au premier plan.
+  const candyMid = paintStrip(360, 60, (x, y) => {
+    const fb = 59 - y, lx = x % 60, cdx = Math.abs(lx + 0.5 - 30), k = (x / 60) | 0;
+    if (fb < 14 && cdx <= 10 + fb * 0.25) return lx % 3 === 0 ? '#c9a4e8' : '#e3c6f5';
+    if (fb >= 14 && fb < 32) {
+      const tier = (fb - 14) / 6 | 0, half = 15 - tier * 4 - ((fb - 14) % 6) * 0.6;
+      if (cdx <= half) {
+        if (hash(x * 7 + fb * 3) % 9 === 0) return ['#ff4d6d', '#ffe14d', '#4db8ff', '#4ee08a'][hash(x + fb) % 4];
+        return ['#ffb3d9', '#9fe3ff', '#fff1a8'][k % 3];
+      }
+    }
+    if (Math.hypot(lx + 0.5 - 30, fb - 33) <= 3) return '#e8304a';
+    if (lx >= 45 && lx <= 56 && fb < 9 && Math.hypot(lx + 0.5 - 50.5, fb) <= 7) return ['#7fe08a', '#ff7fae', '#ffd84a'][k % 3];
+    return null;
+  });
+
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
   const PLANE = [
     '...................KK.',
@@ -1256,7 +1356,8 @@
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
     { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
     { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
-    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] }
+    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
+    { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] }
   ];
 
   // ---------- Écran ----------
@@ -1585,6 +1686,14 @@
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
+  // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
+  const MAIN_WORLDS = 5, BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
+  let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusEnd = false, unlockCard = 0, bonusBtn = null;
+  // Pour tester sans attendre : le lien se terminant par #bonus, ou 5 touchers sur le numéro de version.
+  // Ce déblocage de test ne modifie pas le vrai trésor et s'arrête quand on recharge la page.
+  let testUnlock = false, versionTaps = 0, versionTapT = 0, versionBtn = null;
+  try { testUnlock = location.hash === '#bonus'; } catch (e) { testUnlock = false; }
+  const bonusUnlocked = () => tresor >= BONUS_COST || testUnlock;
   // Pendant le passage des nuages (et un court moment après), le personnage est protégé.
   const GRACE = 1.2;
   let graceUntil = 0;
@@ -1620,14 +1729,15 @@
     return pl;
   }
   function addGems(last, pl, gap) {
-    if (Math.random() < 0.6) {
+    const rich = genWorld === BONUS_WORLD;
+    if (rich || Math.random() < 0.6) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = last.x + last.w - 6, span = gap + 12;
       for (let k = 1; k <= n; k++) {
         const f = k / (n + 1);
         gems.push({ x: x0 + span * f, y: Math.min(baseTopOf(last), baseTopOf(pl)) - 22 - Math.sin(Math.PI * f) * 24, ph: Math.random() * 6 });
       }
     }
-    if (pl.w >= 60 && Math.random() < 0.5) {
+    if (pl.w >= 60 && (rich || Math.random() < 0.5)) {
       const n = 3 + ((Math.random() * 3) | 0), x0 = pl.x + 20 + Math.random() * Math.max(0, pl.w - 40 - n * 14);
       for (let k = 0; k < n && x0 + k * 14 < pl.x + pl.w - 6; k++) gems.push({ x: x0 + k * 14, y: baseTopOf(pl) - 16, ph: Math.random() * 6 });
     }
@@ -1635,7 +1745,20 @@
   function genNext() {
     const last = lastPlat(), lastTop = baseTopOf(last), r = Math.random();
     // Au tout début, on garde des blocs simples.
-    const kind = last.x + last.w < 700 ? 'block' : r < 0.5 ? 'block' : r < 0.72 ? 'float' : r < 0.86 ? 'bob' : 'steps';
+    const candy = genWorld === BONUS_WORLD;
+    const kind = last.x + last.w < 700 ? 'block'
+      : candy ? (r < 0.42 ? 'block' : r < 0.57 ? 'float' : r < 0.82 ? 'tramp' : r < 0.92 ? 'bob' : 'steps')
+      : r < 0.5 ? 'block' : r < 0.72 ? 'float' : r < 0.86 ? 'bob' : 'steps';
+    if (kind === 'tramp') {
+      // Trampoline en guimauve : il renvoie très haut.
+      const top = clamp(Math.round(lastTop + rand(-10, 30)), -60, 60);
+      const gap = gapFor(top - lastTop);
+      const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(40, 64)), top, depth: 14, tramp: true });
+      pl.s = 18;
+      addGems(last, pl, gap);
+      for (let k = 0; k < 4; k++) gems.push({ x: pl.x + pl.w / 2 + k * 14, y: top - 60 - k * 6, ph: Math.random() * 6 });
+      return;
+    }
     if (kind === 'steps') {
       const dir = Math.random() < 0.5 ? -1 : 1, n = 3;
       let prev = last;
@@ -1680,6 +1803,7 @@
     petals = [];
     if (w === 1) for (let i = 0; i < 26; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6) });
     if (w === 3) for (let i = 0; i < 40; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), rain: true });
+    if (w === BONUS_WORLD) for (let i = 0; i < 30; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), candy: RAINBOW[i % 6] });
   }
   function updateWorld(dt) {
     updateEvent(dt);
@@ -1777,6 +1901,7 @@
   function step(dt) {
     time += dt;
     if (mode === 'dying' || mode === 'gameover') { updateEnd(dt); return; }
+    if (bonus && mode === 'play') { updateBonus(dt); return; }
     const p = player;
     for (const pl of platforms) if (pl.amp) pl.top = pl.baseTop + Math.sin(time * pl.w2 + pl.ph) * pl.amp;
     if (p.grounded && p.on && p.on.amp) p.y = p.on.top;
@@ -1831,6 +1956,11 @@
             burst(nx, ny, 6, STYLES[pl.s].top, 40, 120);
             Sound.land();
           }
+          if (pl.tramp) {
+            p.vy = -430; p.grounded = false; p.on = null; p.hold = 0;
+            burst(nx, ny, 10, ['#ffffff', '#ffb3d9', '#ffe3ee'], 70, 60);
+            Sound.boing();
+          }
           break;
         }
       }
@@ -1841,7 +1971,7 @@
 
     const nxt = nextPlatformAhead();
     if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) {
-      if (mode === 'play' && gameMode === 'defi' && !shielded()) { die(); return; }
+      if (mode === 'play' && gameMode === 'defi' && !shielded() && !bonus) { die(); return; }
       rescue();
     }
 
@@ -1853,7 +1983,12 @@
       const dx = s.x - p.x, dy = s.y - (p.y - 16);
       if (dx * dx + dy * dy < 169) {
         s.taken = true;
-        if (mode === 'play') starsCount++;
+        if (mode === 'play') {
+          const gain = bonus ? 2 : 1, before = tresor;
+          starsCount += gain;
+          tresor += gain;
+          if (before < BONUS_COST && tresor >= BONUS_COST) { unlockCard = 3.5; Sound.unlock(); store.set('tresor', tresor); }
+        }
         Sound.star(streak);
         streak++; streakT = 1.2;
         burst(s.x, s.y, 8, ['#ffe45c', '#ffffff', '#ffb3d9'], 50, 0);
@@ -1894,13 +2029,345 @@
     updateWorld(dt);
     if (mode === 'play') {
       const dist = Math.floor((p.x - distStart) / 16);
-      const target = Math.floor(dist / WORLD_EVERY) % WORLDS.length;
+      const target = Math.floor(dist / WORLD_EVERY) % MAIN_WORLDS;
       if (target !== genWorld && !trans) startTransition(target);
       const seg = Math.floor(dist / WORLD_EVERY);
       if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
       if (dist > bests[gameMode]) bests[gameMode] = dist;
       saveT -= dt;
-      if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); }
+      if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
+    }
+    if (unlockCard > 0) unlockCard -= dt;
+  }
+
+  // ---------- Niveau bonus : pluie de bonbons, vol en ballon, fusée vers la Lune ----------
+  const RAIN_GOAL = 100, BALLOON_TIME = 35, ROCKET_TIME = 7.5;
+  let bp = null, bonusDir = 0;
+  // Fusée avec un hublot rond ; le doudou s'installe dedans et on ne voit plus que sa tête.
+  const PORT = { x: 10, y: 16, r: 5 };
+  const rocketSpr = outlinedSprite(20, 36, (x, y) => {
+    const dp = Math.hypot(x - PORT.x, y - PORT.y);
+    if (dp <= PORT.r + 1.6) return dp <= PORT.r ? '#59c3ff' : '#9aa3b5';
+    if (y < 10) return Math.abs(x - 10) <= (y + 1) * 0.95 ? (y < 2 ? '#c42a40' : '#e8392b') : null;
+    if (y < 30 && x >= 1.5 && x <= 18.5) return x > 15 ? '#cfd3e0' : (y === 26 ? '#e8392b' : '#f4f4f8');
+    if (y >= 22 && (x < 5 - (30 - y) * 0.4 + 4 && x < 5.5 || x > 14.5 && x > 15 + (30 - y) * 0.4 - 4)) return y < 36 ? '#e8392b' : null;
+    if (y >= 30 && x >= 6 && x <= 14) return '#5a5f75';
+    return null;
+  }, '#3b2550');
+  // Gros brocoli : bouquets vert foncé avec reflets, tige claire.
+  const brocSpr = outlinedSprite(16, 18, (x, y) => {
+    if (x >= 6 && x <= 10 && y >= 10) return (x === 7 ? '#c9f0b8' : '#9be08a');
+    for (const [cx, cy, r] of [[4.5, 7, 4], [8, 4.5, 4.5], [11.5, 7, 4], [8, 8.5, 4]]) {
+      if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) return (x + y) % 5 === 0 ? '#4fb85c' : ((x - cx + 1.5) ** 2 + (y - cy + 1.5) ** 2 < 2 ? '#7fd36b' : '#2e8b3a');
+    }
+    return null;
+  }, '#1d4d24');
+  // Trois ballons de couleur, comme dans le film « Là-haut ».
+  const balloonSprs = [['#ff4d6d', '#c42a40', '#ffb3c1'], ['#ffd84a', '#c9a227', '#fff1a8'], ['#4db8ff', '#2a7fc4', '#bfe6ff']].map(([c, d, l]) => paintStrip(12, 16, (x, y) => {
+    const e = ((x + 0.5 - 6) / 5.5) ** 2 + ((y + 0.5 - 6.5) / 6.5) ** 2;
+    if (e <= 1) return e > 0.8 ? d : ((x - 3.5) ** 2 + (y - 3.5) ** 2 < 3 ? l : c);
+    if (y >= 13 && y <= 14 && x >= 5 && x <= 6) return d;
+    return null;
+  }));
+  const BALLOON_OFFS = [[-9, -31], [0, -38], [9, -31]];
+  function balloonPositions(x, headY) {
+    return BALLOON_OFFS.map(([dx, dy], i) => [Math.round(x + dx), Math.round(headY + dy + Math.sin(time * 3 + i * 2) * 2)]);
+  }
+  function drawBalloons(x, headY) {
+    const ax = Math.round(x), ay = Math.round(headY) + 1;
+    ctx.fillStyle = '#ffffff';
+    for (const [bx, by] of balloonPositions(x, headY)) {
+      // Ficelle du nœud du ballon jusqu'au-dessus de la tête.
+      const n = Math.max(1, Math.abs(by + 15 - ay));
+      for (let k = 0; k <= n; k++) ctx.fillRect(Math.round(bx + (ax - bx) * k / n), Math.round(by + 15 + (ay - by - 15) * k / n), 1, 1);
+    }
+    balloonPositions(x, headY).forEach(([bx, by], i) => ctx.drawImage(balloonSprs[i], bx - 6, by));
+  }
+  const heroH = () => hero().frames[0].height;
+  // Sucres d'orge géants : une longue tige rayée et un crochet (dessinés une fois).
+  const caneStripe = (x, y) => ((x + y) % 10 < 5 ? '#e8304a' : '#fff4f4');
+  const caneStem = paintStrip(10, 480, (x, y) => (x === 0 || x === 9) ? '#a8203a' : caneStripe(x, y));
+  const caneHook = paintStrip(30, 16, (x, y) => {
+    const d = Math.hypot(x + 0.5 - 15, y + 0.5 - 15.5);
+    if (y < 16 && d >= 5 && d <= 15) return (d < 6 || d > 14) ? '#a8203a' : caneStripe(x, y);
+    return null;
+  });
+  let floorC = null;
+  const groundB = () => Math.round(H * 0.86);
+
+  function startBonus() {
+    resetWorld();
+    world = genWorld = BONUS_WORLD;
+    switchWorld(BONUS_WORLD);
+    plane = null; worldCard = 3;
+    Sound.setSong(BONUS_WORLD);
+    mode = 'play'; bonus = true; bonusEnd = false;
+    starsCount = 0; streak = 0; holding = false; bonusDir = 0;
+    camY = camBase();
+    floorC = buildPlatform({ w: W + 4, s: BONUS_WORLD * 3, seed: 7 });
+    bp = { phase: 'rain', t: 0, x: W / 2, vx: 0, y: groundB(), vy: 0, caught: 0, items: [], spawn: 0.4, fx: [], clouds: [], cloudT: 1.2, gems: [], hurt: 0, rocketY: 0, flash: 0 };
+    btnPause.hidden = false; btnHome.hidden = false;
+    Sound.start();
+  }
+  function bonusGain(n) {
+    const before = tresor;
+    starsCount += n; tresor += n;
+    if (before < BONUS_COST && tresor >= BONUS_COST) { unlockCard = 3.5; Sound.unlock(); }
+  }
+  function bonusBurst(x, y, n, colors, spd) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, v = rand(spd * 0.3, spd);
+      bp.fx.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.5, 1.2), col: colors[i % colors.length], s: Math.random() < 0.3 ? 2 : 1 });
+    }
+  }
+  function updateBonus(dt) {
+    const b = bp;
+    b.t += dt;
+    camX += (b.phase === 'balloon' ? 70 : 12) * dt;
+    updateWorld(dt);
+    for (const q of b.fx) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.life -= dt; }
+    b.fx = b.fx.filter(q => q.life > 0);
+    for (const q of popups) { q.y -= 14 * dt; q.life -= dt * 0.8; }
+    popups = popups.filter(q => q.life > 0);
+    if (b.flash > 0) b.flash -= dt;
+    streakT -= dt;
+    if (streakT <= 0) streak = 0;
+    const gy = groundB();
+
+    if (b.phase === 'rain') {
+      // Pluie de bonbons : on se déplace à gauche ou à droite pour les attraper.
+      if (b.freeze > 0) b.freeze -= dt;
+      const target = holding && !(b.freeze > 0) ? bonusDir : 0;
+      b.vx = b.freeze > 0 ? 0 : b.vx + (target * 190 - b.vx) * Math.min(1, dt * 10);
+      b.x = clamp(b.x + b.vx * dt, 12, W - 12);
+      b.y = gy;
+      const lvl = Math.min(1, b.caught / RAIN_GOAL);
+      b.spawn -= dt;
+      if (b.spawn <= 0) {
+        // Plus l'écran est large, plus il pleut de bonbons à la fois.
+        b.spawn = 0.42 - lvl * 0.2;
+        const n = W > 300 ? 3 : 2;
+        for (let k = 0; k < n; k++) {
+          const r = Math.random();
+          b.items.push({ x: rand(10, W - 10), y: -10 - k * 20, vy: rand(40, 55) + lvl * 50, kind: r < 0.07 ? 'broc' : r < 0.25 ? 'star' : 'candy', col: RAINBOW[(Math.random() * 6) | 0] });
+        }
+      }
+      for (const it of b.items) {
+        it.y += it.vy * dt;
+        const reach = it.kind === 'broc' ? 18 : 14;
+        if (!it.done && Math.abs(it.x - b.x) < reach && it.y > gy - 34 && it.y < gy + 4) {
+          it.done = true;
+          if (it.kind === 'broc') {
+            b.freeze = 0.8;
+            bonusBurst(it.x, it.y, 10, ['#2e8b3a', '#4fb85c', '#9be08a'], 60);
+            b.caught = Math.max(0, b.caught - 3);
+            popups.push({ x: b.x, y: gy - 40, txt: 'BEURK -3', life: 1 });
+            Sound.yuck();
+          } else {
+            const g = it.kind === 'star' ? 3 : 1;
+            b.caught += g; bonusGain(g);
+            Sound.star(streak); streak++; streakT = 1.2;
+            bonusBurst(it.x, it.y, 6, [it.col, '#ffffff', '#ffe45c'], 50);
+          }
+        }
+      }
+      b.items = b.items.filter(it => !it.done && it.y < H + 10);
+      if (b.caught >= RAIN_GOAL) {
+        // Grosse explosion de confettis, puis le ballon apparaît.
+        b.phase = 'boom'; b.t = 0; b.items = []; b.flash = 0.5; shake = 4;
+        bonusBurst(b.x, gy - 20, 90, RAINBOW.concat(['#ffffff', '#ffe45c']), 160);
+        Sound.boom();
+      }
+    } else if (b.phase === 'boom') {
+      if (b.t > 0.7) b.y = gy - (H * 0.4) * ease(Math.min(1, (b.t - 0.7) / 1.1));
+      b.x += (W * 0.3 - b.x) * Math.min(1, dt * 2);
+      if (b.t > 1.9) { b.phase = 'balloon'; b.t = 0; b.vy = 0; }
+    } else if (b.phase === 'balloon') {
+      // Vol en ballon : on garde le doigt appuyé pour monter, on relâche pour descendre doucement.
+      b.vy = holding ? Math.max(-110, b.vy - 420 * dt) : Math.min(110, b.vy + 220 * dt);
+      b.y += b.vy * dt;
+      const topLim = safe.t + heroH() + 56, botLim = gy - 4;
+      if (b.y < topLim) { b.y = topLim; b.vy = 0; }
+      if (b.y > botLim) { b.y = botLim; b.vy = -40; }
+      b.x += (W * 0.3 - b.x) * Math.min(1, dt * 2);
+      if (b.hurt > 0) b.hurt -= dt;
+      b.cloudT -= dt;
+      if (b.cloudT <= 0 && b.t < BALLOON_TIME - 3) {
+        b.cloudT = 2.3;
+        const gapH = Math.max(92, H * 0.45), gapY = rand(safe.t + 50 + gapH / 2, gy - 10 - gapH / 2);
+        b.clouds.push({ x: W + 30, gapY, gapH, k: (Math.random() * 3) | 0 });
+        for (let i = 0; i < 3; i++) b.gems.push({ x: W + 70 + i * 16, y: gapY + Math.sin(i) * 10, ph: rand(0, 6) });
+      }
+      for (const c of b.clouds) c.x -= 70 * dt;
+      for (const s of b.gems) {
+        s.x -= 70 * dt;
+        if (!s.taken && Math.abs(s.x - b.x) < 11 && Math.abs(s.y - (b.y - 18)) < 18) {
+          s.taken = true; bonusGain(1); Sound.star(streak); streak++; streakT = 1.2;
+          bonusBurst(s.x, s.y, 6, ['#ffe45c', '#ffffff'], 50);
+        }
+      }
+      b.clouds = b.clouds.filter(c => c.x > -60);
+      b.gems = b.gems.filter(s => !s.taken && s.x > -10);
+      // Les nuages d'orage ne font pas perdre : « bonk », on clignote et on est repoussé vers le passage.
+      if (b.hurt <= 0) {
+        for (const c of b.clouds) {
+          const top = b.y - heroH() - 30, bottom = b.y;
+          const dx = b.x - c.x;
+          if (dx > -18 && dx < 10 && (top < c.gapY - c.gapH / 2 || bottom > c.gapY + c.gapH / 2)) {
+            b.hurt = 1.2; b.vy = (c.gapY > b.y - 22 ? 1 : -1) * 90;
+            Sound.boing();
+            popups.push({ x: b.x, y: b.y - 50, txt: 'BONK !', life: 1 });
+            break;
+          }
+        }
+      }
+      if (b.t >= BALLOON_TIME) { b.phase = 'rocket'; b.t = 0; b.clouds = []; b.gems = []; Sound.rocket(); }
+    } else if (b.phase === 'rocket') {
+      // La fusée arrive, le ballon éclate, et c'est le décollage vers la Lune.
+      const rs = evK() + 1, rh = rocketSpr.height * rs;
+      if (b.t < 1) { b.x += (W / 2 - b.x) * Math.min(1, dt * 3); b.y += (H * 0.45 - b.y) * Math.min(1, dt * 3); }
+      if (b.t >= 1 && !b.popped) {
+        b.popped = true; Sound.pop();
+        balloonPositions(b.x, b.y - heroH()).forEach(([bx, by], i) => bonusBurst(bx, by + 6, 10, [['#ff4d6d', '#ffb3c1'], ['#ffd84a', '#fff1a8'], ['#4db8ff', '#bfe6ff']][i], 70));
+      }
+      const rest = b.y + 4;
+      if (b.t < 2.2) b.rocketY = H + 40 - (H + 40 - rest) * ease(clamp((b.t - 0.9) / 0.8, 0, 1));
+      else b.rocketY = rest - (b.t - 2.2) ** 2 * 26;
+      if (b.t >= 1.8 && !b.inside) { b.inside = true; bonusBurst(b.x, rest, 14, ['#ffffff', '#fff3b0', '#ffb3d9'], 50); }
+      if (b.t > 2.2) bonusBurst(b.x, b.rocketY + rh - 2, 3, ['#fff3b0', '#ffd84a', '#ff9f43'], 40);
+      if (b.t >= ROCKET_TIME) endBonus();
+    }
+  }
+  // Mer de nuages qui ondule ; le dessus arrive au pied des cupcakes.
+  function drawCloudSea(gy, alpha) {
+    if (alpha <= 0) return;
+    ctx.globalAlpha = alpha;
+    const off = camX * 0.9;
+    for (let x = 0; x < W; x += 2) {
+      const top = Math.round(gy - 3 + 4 * Math.sin((x + off) / 11) + 3 * Math.sin((x + off * 0.7) / 23));
+      ctx.fillStyle = '#d9c6f0'; ctx.fillRect(x, top, 2, 2);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(x, top + 2, 2, 6);
+      ctx.fillStyle = '#f3e6ff'; ctx.fillRect(x, top + 8, 2, H - top - 8);
+    }
+    ctx.globalAlpha = 1;
+  }
+  function drawBonusCandy(it) {
+    const x = Math.round(it.x), y = Math.round(it.y);
+    if (it.kind === 'star') { ctx.drawImage(sprStar, x - 3, y - 3); return; }
+    if (it.kind === 'broc') {
+      ctx.drawImage(brocSpr, x - (brocSpr.width >> 1), y - brocSpr.height + 4);
+      return;
+    }
+    ctx.fillStyle = it.col; ctx.fillRect(x - 2, y - 2, 5, 5);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 1, y - 1, 1, 1);
+    ctx.globalAlpha = 0.75; ctx.fillStyle = it.col;
+    ctx.fillRect(x - 4, y - 1, 2, 3); ctx.fillRect(x + 3, y - 1, 2, 3);
+    ctx.globalAlpha = 1;
+  }
+  // La tête du doudou dans le hublot : son visage est centré sur la vitre.
+  function drawPorthole(rx, ry, rs) {
+    const c = hero(), spr = idleSprite(c, (time % 3.2) < 0.12);
+    const cx = rx + (PORT.x + 0.5) * rs, cy = ry + (PORT.y + 0.5) * rs;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, PORT.r * rs, 0, Math.PI * 2); ctx.clip();
+    ctx.drawImage(spr, Math.round(cx - c.face[0] * rs), Math.round(cy - c.face[1] * rs), spr.width * rs, spr.height * rs);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+    ctx.fillRect(Math.round(cx - 3 * rs), Math.round(cy - 4 * rs), rs, 2 * rs);
+    ctx.restore();
+  }
+  function drawBonusHero(x, y) {
+    const b = bp, c = hero();
+    if (b.hurt > 0 && Math.floor(time * 12) % 2) return;
+    const frozen = b.freeze > 0;
+    const spr = frozen ? c.framesB[0] : idleSprite(c, (time % 3.2) < 0.12);
+    const sx = Math.round(x) - (spr.width >> 1) + (frozen ? Math.round(Math.sin(time * 60)) : 0), sy = Math.round(y) - spr.height;
+    ctx.drawImage(spr, sx, sy);
+    if (frozen) {
+      // Silhouette verte posée sur le personnage (préparée une seule fois par sprite).
+      if (!spr.greenTint) {
+        const t = mk(spr.width, spr.height), tg = t.getContext('2d');
+        tg.drawImage(spr, 0, 0);
+        tg.globalCompositeOperation = 'source-in';
+        tg.fillStyle = '#4fb85c'; tg.fillRect(0, 0, t.width, t.height);
+        spr.greenTint = t;
+      }
+      ctx.globalAlpha = 0.45;
+      ctx.drawImage(spr.greenTint, sx, sy);
+      ctx.globalAlpha = 1;
+    }
+  }
+  function drawBonus() {
+    const b = bp, gy = groundB(), K = evK();
+    // Le ciel noircit et la Lune approche pendant le voyage en fusée.
+    const space = b.phase === 'moon' ? 1 : b.phase === 'rocket' ? clamp((b.t - 1.4) / 3, 0, 1) : 0;
+    if (space > 0) {
+      ctx.globalAlpha = 0.9 * space; ctx.fillStyle = '#141033'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+      for (let i = 0; i < 60; i++) {
+        ctx.fillStyle = (time * 2 + i) % 5 < 0.6 ? '#fff3b0' : '#ffffff';
+        ctx.fillRect(hash(i * 7 + 2) % W, mod(hash(i * 11 + 5) % H + (b.phase === 'rocket' ? b.t * 40 * (1 + i % 3) : 0), H), 1, 1);
+      }
+      const ms = (K + 1) * (b.phase === 'moon' ? 2 : 0.6 + space * 0.9);
+      const my = b.phase === 'moon' ? H * 0.62 : -moonC.height * ms + (H * 0.32 + moonC.height * ms) * ease(space);
+      ctx.drawImage(moonC, Math.round(W / 2 - moonC.width * ms / 2), Math.round(my - moonC.height * ms / 2), moonC.width * ms, moonC.height * ms);
+      if (b.phase === 'moon') {
+        const rs = K + 1;
+        const rx = Math.round(W / 2 - rocketSpr.width * rs / 2), ry = Math.round(my - moonC.height * ms / 2 - rocketSpr.height * rs + 4 * rs);
+        ctx.drawImage(rocketSpr, rx, ry, rocketSpr.width * rs, rocketSpr.height * rs);
+        drawPorthole(rx, ry, rs);
+      }
+    }
+    if (b.phase === 'rain' || b.phase === 'boom') {
+      if (floorC) ctx.drawImage(floorC, -2, gy);
+      for (const it of b.items) drawBonusCandy(it);
+    }
+    if (b.phase === 'balloon') {
+      for (const c of b.clouds) {
+        const x = Math.round(c.x) - 5, top = Math.round(c.gapY - c.gapH / 2), bot = Math.round(c.gapY + c.gapH / 2);
+        // Sucre d'orge du haut : il pend, crochet vers le bas.
+        const hTop = top - 15;
+        if (hTop > 0) ctx.drawImage(caneStem, 0, 0, 10, hTop, x, 0, 10, hTop);
+        ctx.save(); ctx.translate(x - 20, top); ctx.scale(1, -1); ctx.drawImage(caneHook, 0, 0); ctx.restore();
+        // Sucre d'orge du bas : il sort de la mer de nuages, crochet vers le haut.
+        const hBot = H - (bot + 15);
+        if (hBot > 0) ctx.drawImage(caneStem, 0, 0, 10, Math.min(480, hBot), x, bot + 15, 10, Math.min(480, hBot));
+        ctx.drawImage(caneHook, x - 20, bot);
+      }
+      for (const s of b.gems) ctx.drawImage(sprStar, Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
+    }
+    if (b.phase === 'balloon' || b.phase === 'rocket') drawCloudSea(gy, b.phase === 'rocket' ? clamp(1 - (b.t - 2.5) / 1.5, 0, 1) : 1);
+    const withBalloon = (b.phase === 'boom' && b.t > 0.4) || b.phase === 'balloon' || (b.phase === 'rocket' && !b.popped);
+    if (withBalloon) drawBalloons(b.x, b.y - heroH());
+    if (b.phase === 'rocket') {
+      const rs = K + 1, rx = Math.round(b.x - rocketSpr.width * rs / 2), ry = Math.round(b.rocketY);
+      // Avant de monter dans la fusée, le doudou se tient juste au-dessus.
+      if (!b.inside) drawBonusHero(b.x, b.y);
+      ctx.drawImage(rocketSpr, rx, ry, rocketSpr.width * rs, rocketSpr.height * rs);
+      if (b.inside) drawPorthole(rx, ry, rs);
+    } else if (b.phase !== 'moon') {
+      drawBonusHero(b.x, b.y);
+    }
+    for (const q of b.fx) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), q.s, q.s); }
+    for (const q of popups) {
+      ctx.globalAlpha = clamp(q.life * 2, 0, 1);
+      text(q.txt, Math.round(q.x), Math.round(q.y), 8, '#fff7d6', 'center');
+    }
+    ctx.globalAlpha = 1;
+    if (b.flash > 0) { ctx.globalAlpha = clamp(b.flash * 2, 0, 1); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+  }
+  function drawBonusHud() {
+    const b = bp, x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
+    ctx.drawImage(sprStar, x, y);
+    text(String(starsCount), x + 11, y, 8, '#fff7d6');
+    if (b.phase === 'rain') text('BONBONS ' + b.caught + '/' + RAIN_GOAL, x, y + 13, 8, '#fff7d6');
+    else if (b.phase === 'balloon') text('LUNE DANS 0:' + String(Math.max(0, Math.ceil(BALLOON_TIME - b.t))).padStart(2, '0'), x, y + 13, 8, '#fff7d6');
+    if (b.phase === 'rain' && b.t < 4) text('GLISSE A GAUCHE OU A DROITE', Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
+    if (b.phase === 'balloon' && b.t < 3) text('APPUIE POUR MONTER', Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
+    if (worldCard > 0 && b.phase === 'rain') {
+      ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
+      const cy = Math.round(Math.max(safe.t + 52, H * 0.18));
+      rainbowText('BONUS', Math.round(W / 2), cy, 16);
+      text('PLUIE DE BONBONS', Math.round(W / 2), cy + 22, 8, '#fff7d6', 'center');
+      ctx.globalAlpha = 1;
     }
   }
 
@@ -2060,7 +2527,7 @@
       drawStrip(londonFar, 0.1, far, '#6f86b0');
       drawWater(far, '#6f86b0', '#c9d6ee');
       drawStrip(londonMid, 0.3, H * 0.88 - vOff * 0.3, '#4a5268');
-    } else {
+    } else if (world === 4) {
       drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
       const far = H * 0.78 - 34 - vOff * 0.12;
@@ -2068,6 +2535,12 @@
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
       drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+    } else {
+      drawBgClouds();
+      const far = H * 0.66 - vOff * 0.12;
+      drawStrip(candyFar, 0.1, far, '#7b4b3a');
+      drawWater(far, '#7b4b3a', '#a8735a');
+      drawStrip(candyMid, 0.3, H * 0.86 - vOff * 0.3, '#f7c6dc');
     }
   }
   const mod = (a, n) => ((a % n) + n) % n;
@@ -2101,6 +2574,7 @@
   function drawPetals() {
     for (const q of petals) {
       if (q.rain) { ctx.fillStyle = '#e6eefa'; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 3); continue; }
+      if (q.candy) { ctx.fillStyle = q.candy; ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); continue; }
       ctx.fillStyle = q.ph > 3 ? '#ffc0d9' : '#ff9ec4';
       if (Math.floor(time * 4 + q.ph) % 2) ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 1);
       else ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 2);
@@ -2175,16 +2649,31 @@
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
     ctx.font = '8px "Press Start 2P", ui-monospace, Menlo, monospace';
-    const bw = Math.ceil(ctx.measureText('< MODE DEFI >').width) + 12, bx = Math.round(cx - bw / 2);
+    const bw = Math.ceil(ctx.measureText('< MODE DEFI >').width) + 12;
+    const unlocked = bonusUnlocked(), bbw = 64;
+    const bx = Math.round(unlocked ? cx - (bw + bbw + 8) / 2 : cx - bw / 2);
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(bx - 1, mby - 4, bw + 2, 16);
     ctx.fillStyle = zen ? '#3f8f78' : '#c83c6e'; ctx.fillRect(bx, mby - 3, bw, 14);
-    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', cx, mby, 8, '#ffffff', 'center');
+    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', bx + Math.round(bw / 2), mby, 8, '#ffffff', 'center');
     modeBtn = { x: bx - 4, y: mby - 8, w: bw + 8, h: 24 };
+    bonusBtn = null;
+    if (unlocked) {
+      // Bouton du niveau bonus, rayé comme un sucre d'orge.
+      const gx = bx + bw + 8;
+      ctx.fillStyle = '#fff4e6'; ctx.fillRect(gx - 1, mby - 4, bbw + 2, 16);
+      for (let k = 0; k < bbw; k++) { ctx.fillStyle = (k + Math.floor(time * 12)) % 8 < 4 ? '#e8304a' : '#ff7fae'; ctx.fillRect(gx + k, mby - 3, 1, 14); }
+      text('BONUS', gx + bbw / 2, mby, 8, Math.floor(time * 3) % 2 ? '#fff3b0' : '#ffffff', 'center');
+      bonusBtn = { x: gx - 2, y: mby - 8, w: bbw + 6, h: 24 };
+    }
     const tip = Math.floor(time / 2.5) % 2 === 0 ? 'TAP = SAUT  2E TAP = DOUBLE'
       : (zen ? 'ZEN : UN NUAGE TE RATTRAPE' : 'DEFI : UNE CHUTE = GAME OVER');
     text(tip, cx, hint, 8, '#ffffff', 'center');
     if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
-    text(VERSION, Math.round(W - 6 - safe.r), Math.round(safe.t + 8 + 56 / SCALE), 8, '#d6fff0', 'right');
+    ctx.drawImage(sprStar, Math.round(6 + safe.l), Math.round(18 + safe.t));
+    text(tresor >= BONUS_COST ? tresor + ' BONUS !' : tresor + '/' + BONUS_COST + (testUnlock ? ' TEST' : ''), Math.round(17 + safe.l), Math.round(18 + safe.t), 8, '#fff3b0');
+    const vy = Math.round(safe.t + 8 + 56 / SCALE);
+    text(VERSION, Math.round(W - 6 - safe.r), vy, 8, '#d6fff0', 'right');
+    versionBtn = { x: W - 50 - safe.r, y: vy - 8, w: 50, h: 24 };
   }
 
   // Écran de fin joyeux : confettis, personnage qui danse, score et deux boutons.
@@ -2202,21 +2691,29 @@
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
     ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
     y += 8;
-    rainbowText('GAME OVER', cx, y, 16);
+    rainbowText(bonusEnd ? 'SUR LA LUNE !' : 'GAME OVER', cx, y, 16);
     y += 18;
-    if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
+    if (bonusEnd) text('QUEL VOYAGE !', cx, y, 8, '#fff3b0', 'center');
+    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
     y += 14;
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
     ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
     if (Math.floor(time * 4) % 2) { ctx.drawImage(sprStar, cx - 30, y + 6); ctx.drawImage(sprStar, cx + 23, y + 14); }
     else { ctx.drawImage(sprStar, cx - 26, y + 14); ctx.drawImage(sprStar, cx + 19, y + 6); }
     y += heroH + 8;
-    const dist = Math.floor((player.x - distStart) / 16);
-    text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
-    ctx.drawImage(sprStar, cx + 2, y);
-    text(String(starsCount), cx + 13, y, 8, '#ffffff');
-    y += 12;
-    text('RECORD ' + bests[gameMode] + ' M', cx, y, 8, '#d6fff0', 'center');
+    if (bonusEnd) {
+      ctx.drawImage(sprStar, cx - 40, y);
+      text('+' + starsCount + ' ETOILES', cx - 28, y, 8, '#ffffff');
+      y += 12;
+      text('TRESOR ' + tresor, cx, y, 8, '#d6fff0', 'center');
+    } else {
+      const dist = Math.floor((player.x - distStart) / 16);
+      text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
+      ctx.drawImage(sprStar, cx + 2, y);
+      text(String(starsCount), cx + 13, y, 8, '#ffffff');
+      y += 12;
+      text('RECORD ' + bests[gameMode] + ' M', cx, y, 8, '#d6fff0', 'center');
+    }
     y += 18;
     const bw = Math.min(90, Math.floor((pw - 24) / 2)), bh = 20;
     goButtons = [
@@ -2240,6 +2737,8 @@
       ctx.translate(Math.round((Math.random() * 2 - 1) * shake), Math.round((Math.random() * 2 - 1) * shake));
     }
     drawBackground();
+    if (bonus && bp) drawBonus();
+    else {
     drawEvent();
     drawPlane();
 
@@ -2268,9 +2767,12 @@
     }
     ctx.globalAlpha = 1;
     ctx.restore();
+    }
 
     const cx = Math.round(W / 2);
-    if (mode === 'play' || mode === 'dying') {
+    if (bonus && mode === 'play') {
+      drawBonusHud();
+    } else if (mode === 'play' || mode === 'dying') {
       const x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
       ctx.drawImage(sprStar, x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
@@ -2279,7 +2781,7 @@
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
-        rainbowText('MONDE ' + (world + 1), cx, cy, 16);
+        rainbowText(bonus ? 'BONUS' : 'MONDE ' + (world + 1), cx, cy, 16);
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
@@ -2287,6 +2789,14 @@
       drawGameOver(cx);
     } else {
       drawTitle(cx);
+    }
+    if (unlockCard > 0) {
+      ctx.globalAlpha = clamp(unlockCard / 0.5, 0, 1);
+      const cy = Math.round(Math.max(safe.t + 40, H * 0.22));
+      rainbowText('BONUS', cx, cy, 16);
+      text('DEBLOQUE !', cx, cy + 20, 8, '#fff3b0', 'center');
+      text('PAYS DES BONBONS', cx, cy + 32, 8, '#ffffff', 'center');
+      ctx.globalAlpha = 1;
     }
     if (paused) {
       ctx.fillStyle = 'rgba(31, 21, 51, 0.55)';
@@ -2329,7 +2839,16 @@
     charIdx = (i + CHARS.length) % CHARS.length;
     store.set('perso', charIdx);
   }
+  function endBonus() {
+    store.set('tresor', tresor);
+    if (bp) bp.phase = 'moon';
+    Sound.stop();
+    bonusEnd = true;
+    btnPause.hidden = true; btnHome.hidden = true;
+    gameOver();
+  }
   function startGame() {
+    bonus = false; bonusEnd = false;
     mode = 'play';
     distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode]; evSeg = -1;
     if (genWorld !== 0) { if (!trans) startTransition(0); }
@@ -2340,6 +2859,7 @@
   function goTitle() {
     if (mode !== 'play') return;
     if (paused) setPaused(false);
+    if (bonus) { bonus = false; store.set('tresor', tresor); backToMenu(); return; }
     mode = 'title'; speed = 70; holding = false;
     btnPause.hidden = true; btnHome.hidden = true;
   }
@@ -2349,10 +2869,12 @@
     Sound.jump();
   }
   function restart() {
+    if (bonusEnd) { startBonus(); return; }
     resetWorld();
     startGame();
   }
   function backToMenu() {
+    bonus = false; bonusEnd = false;
     resetWorld();
     mode = 'title'; speed = 70;
     btnPause.hidden = true; btnHome.hidden = true;
@@ -2371,6 +2893,13 @@
     }
     if (mode === 'title') {
       if (e && hit(modeBtn, lx, ly)) { toggleMode(); return; }
+      if (e && hit(bonusBtn, lx, ly)) { startBonus(); return; }
+      if (e && hit(versionBtn, lx, ly)) {
+        versionTaps = performance.now() - versionTapT < 1500 ? versionTaps + 1 : 1;
+        versionTapT = performance.now();
+        if (versionTaps >= 5 && !testUnlock) { testUnlock = true; unlockCard = 3.5; Sound.unlock(); }
+        return;
+      }
       if (e) {
         const i = cards.findIndex(c => hit(c, lx, ly));
         if (i >= 0) pick(i);
@@ -2380,6 +2909,7 @@
     }
     if (paused) { setPaused(false); return; }
     holding = true;
+    if (bonus) { bonusDir = e ? (lx < W / 2 ? -1 : 1) : 0; return; }
     jumpBuffer = 0.12;
   }
   function release() { holding = false; }
@@ -2404,8 +2934,12 @@
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
       if (!e.repeat) press();
+    } else if (bonus && mode === 'play' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+      holding = true; bonusDir = e.code === 'ArrowLeft' ? -1 : 1;
     } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
+    } else if (mode === 'title' && e.code === 'KeyB' && bonusUnlocked()) {
+      Sound.init(); startBonus();
     } else if (mode === 'title' && e.code === 'ArrowDown') {
       toggleMode();
     } else if (mode === 'gameover' && e.code === 'Escape') {
@@ -2417,7 +2951,7 @@
     }
   });
   window.addEventListener('keyup', e => {
-    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter') release();
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') release();
   });
 
   btnSound.addEventListener('click', () => { Sound.init(); Sound.setMuted(!Sound.muted); renderSoundBtn(); });
@@ -2425,7 +2959,7 @@
   btnHome.addEventListener('click', () => { Sound.init(); goTitle(); });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { setPaused(true); Sound.suspend(); store.set(BEST_KEY[gameMode], bests[gameMode]); }
+    if (document.hidden) { setPaused(true); Sound.suspend(); store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
   });
   window.addEventListener('resize', resize);
 

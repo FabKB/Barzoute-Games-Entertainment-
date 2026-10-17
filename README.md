@@ -47,6 +47,20 @@ Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde s
 
 Après le 5e monde, on repart au Monde des Glaces.
 
+### Le niveau bonus : le Pays des Bonbons
+
+Toutes les étoiles ramassées s'ajoutent à un trésor, partie après partie (le total s'affiche en haut à gauche de l'écran titre). À **1000 étoiles**, le niveau bonus se débloque et un bouton **BONUS** apparaît sur l'écran titre (touche B au clavier).
+
+Le niveau bonus se joue en trois étapes, sur l'air de Tetris (« Korobeiniki », chanson populaire russe libre de droits, arrangée pour le jeu) :
+
+1. **La pluie de bonbons** : ton personnage reste en bas ; garde le doigt à gauche ou à droite de l'écran pour te déplacer et attraper les bonbons (1 point) et les étoiles (3 points). Attention aux gros brocolis : « beurk », ils retirent 3 bonbons et figent le personnage un court instant. On ne peut pas perdre.
+2. **À 100 bonbons**, grosse explosion de confettis, trois ballons apparaissent, comme dans le film « Là-haut », et on s'envole : garde le doigt appuyé pour monter, relâche pour redescendre, passe entre les sucres d'orge géants (ils font juste « bonk »), au-dessus d'une mer de nuages, et attrape les étoiles pendant 35 secondes.
+3. **La fusée** : les ballons éclatent, une fusée arrive, ton doudou monte dedans (on ne voit plus que sa tête dans le hublot) et elle décolle vers la Lune. Fin du voyage : « Sur la Lune ! ».
+
+Le niveau bonus reste rejouable à volonté.
+
+Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
+
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
 Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.
