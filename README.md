@@ -14,6 +14,10 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
 
+### Les plateformes
+
+Les plateformes changent de forme en route : grands blocs, petits blocs, longues avancées, plateformes qui flottent dans les airs (on peut sauter à travers par en dessous), plateformes qui montent et descendent en emportant le personnage, et petits escaliers.
+
 ### Deux modes de jeu
 
 Sur l'écran titre, touche le bouton **MODE** pour choisir :
