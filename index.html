@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v16';
+  const VERSION = 'v17';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -244,6 +244,21 @@
         ],
         bassPat: [0, 12, 0, 12, 0, 12, 0, 12],
         drums: { kick: [0, 8], snare: [4, 12], hat: 2 }
+      }),
+      song({ // Balade en Slovénie : polka alpine à l'accordéon, « oum-pa oum-pa » (composition originale)
+        bpm: 124, lead: ACCORDION, detune: 0.006, bass: SOFTBASS, stab: STAB, stabs: [4, 12],
+        chords: {
+          F: { b: 41, a: [53, 57, 60, 65] }, C7: { b: 36, a: [52, 55, 58, 60] }, Bb: { b: 46, a: [53, 58, 62, 65] }
+        },
+        prog: ['F', 'F', 'C7', 'C7', 'C7', 'C7', 'F', 'F', 'Bb', 'Bb', 'F', 'F', 'C7', 'C7', 'F', 'F'],
+        mel: [
+          'C6 A5 C6 F6 A6 - F6 -', 'G6 F6 E6 F6 A6 - . .', 'G6 - E6 - C6 - E6 -', 'G6 F6 E6 D6 C6 - . .',
+          'A#5 C6 D6 E6 G6 - E6 -', 'A#6 - G6 - E6 - C6 -', 'A6 G6 F6 E6 F6 - C6 -', 'F6 - A6 - F6 - . .',
+          'D6 F6 A#6 - F6 - D6 -', 'C6 D6 F6 - A#6 A6 G6 F6', 'A6 - F6 - C6 - F6 -', 'A6 C7 A6 F6 C6 - . .',
+          'G6 A6 A#6 G6 E6 - C6 -', 'E6 F6 G6 A6 A#6 - G6 E6', 'F6 - A6 - C7 - A6 F6', 'F6 - - - . . C6 -'
+        ],
+        bassPat: [0, null, null, null, 7, null, null, null],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 4 }
       })
     ];
     let cur = SONGS[0];
@@ -451,8 +466,12 @@
         } else if (w === 3) {
           noiseSweep(t, 3, 900, 1500, 0.1, 'bandpass');
           for (let k = 0; k < 14; k++) nz(t + rand(0.1, 2.4), 0.04, 0.06, 'highpass', 2500, 0, sfx);
-        } else {
+        } else if (w === 4) {
           noiseSweep(t + 0.8, 3.5, 300, 2200, 0.16, 'lowpass');
+        } else {
+          // Le dragon : un petit grondement, puis deux souffles de feu.
+          fm(sfx, t + 0.3, 140, 0.9, Object.assign({}, SLAP, { vol: 0.14, glide: 0.55, sus: 0.8 }));
+          [0.22, 0.74].forEach(f => noiseSweep(t + f * EVENT_DUR[6], 1.1, 500, 1900, 0.1, 'bandpass'));
         }
       },
       whoosh() {
@@ -876,6 +895,39 @@
       body(x, y) {
         if (hash(x * 97 + y * 31) % 23 === 0) return '#c9f5cc';
         return x % 9 === 2 ? '#9be6a4' : '#6fd47c';
+      }
+    },
+    // Balade en Slovénie
+    { // kremšnita, le gâteau à la crème de Bled
+      top: ['#fffaf0', '#e9c27a', '#c98f45'], deep: '#c98f45',
+      topPat(x, y) { return y === 1 ? '#fffaf0' : (y === 2 && hash(x * 7) % 3 === 0 ? '#ffffff' : (y === 5 ? '#c98f45' : '#e9c27a')); },
+      body(x, y) {
+        const ly = (y - 6) % 24;
+        if (ly < 2) return '#d9a85c';
+        if (ly < 11) return hash(x * 13 + y * 7) % 29 === 0 ? '#f6ecd2' : '#fff8e7';
+        if (ly < 21) return hash(x * 11 + y * 5) % 31 === 0 ? '#ffd24a' : '#ffe27a';
+        return '#c98f45';
+      }
+    },
+    { // ruches aux façades peintes
+      top: ['#b07a46', '#8a5a34', '#5e3a20'], deep: '#5a3a22',
+      topPat(x, y) { return y <= 2 ? (x % 4 < 2 ? '#7a4a2a' : '#5e3820') : (y === 5 ? '#5e3a20' : '#9a6a3c'); },
+      body(x, y) {
+        const cx = x % 14, cy = (y - 6) % 14;
+        if (cx <= 1 || cy <= 1) return cx === 0 || cy === 0 ? '#6b4226' : '#8a5a34';
+        if (cy === 11 && cx >= 5 && cx <= 9) return '#2a2433';
+        if (Math.abs(cx - 7.5) + Math.abs(cy - 6) <= 2) return cy === 6 ? '#ffd84a' : '#fff4d6';
+        return ['#d7263d', '#2f6db5', '#2e8b57', '#f2a33a'][hash(((x / 14) | 0) * 7 + (((y - 6) / 14) | 0) * 3) % 4];
+      }
+    },
+    { // kozolec, le séchoir à foin en bois
+      top: ['#a0703f', '#7a4a2a', '#4e3020'], deep: '#4e3020',
+      topPat(x, y) { return y <= 2 ? (x % 4 < 2 ? '#7a4a2a' : '#5e3820') : (y === 5 ? '#4e3020' : '#8f5a32'); },
+      body(x, y) {
+        const cx = x % 20, cy = (y - 6) % 8;
+        if (cx <= 2) return cx === 1 ? '#7d5030' : '#6b4226';
+        if (cy <= 1) return cy === 0 ? '#7d5030' : '#a0703f';
+        return hash(x * 5 + y * 17) % 4 === 0 ? '#d1a43e' : '#e8c35a';
       }
     },
     { // trampoline en guimauve
@@ -1351,13 +1403,101 @@
   PLANE_B[5] = '.' + PLANE[5].slice(1);
   const planeFrames = [makeSprite(PLANE), makeSprite(PLANE_B)];
 
+  // Slovénie : les Alpes juliennes et le Triglav aux trois sommets, sapins au bord du lac.
+  const ALPS = [[40, 58, 0.9], [130, 72, 1], [210, 56, 0.8], [283, 80, 1.3], [300, 92, 1.1], [318, 82, 1.3], [400, 64, 0.9], [480, 76, 1], [560, 58, 0.8], [622, 68, 1]];
+  const slovAlps = paintStrip(640, 100, (x, y) => {
+    const fb = 99 - y;
+    const ti = Math.floor(x / 6), th = 12 + hash(ti * 7 + 3) % 7;
+    if (fb < 8 || fb < th - Math.abs(x + 0.5 - (ti * 6 + 3)) * 2.2) return (x + fb) % 5 === 0 ? '#3c705d' : '#2f5d4f';
+    let h = 0, side = 0;
+    for (const [px, ph, sl] of ALPS) {
+      let dx = x + 0.5 - px;
+      if (dx > 320) dx -= 640;
+      if (dx < -320) dx += 640;
+      const v = ph - Math.abs(dx) * sl;
+      if (v > h) { h = v; side = dx; }
+    }
+    h += (hash(x >> 1) % 3) - 1;
+    if (fb >= h) return null;
+    const lit = side < 0;
+    if (fb > h - 6 - hash(x * 3) % 5 && fb > 44) return lit ? '#f4f8ff' : '#d3dcf0';
+    if (fb > 52 && hash(x * 7 + fb * 3) % 6 === 0) return lit ? '#e6edf9' : '#c3cde6';
+    if (hash(x * 5 + fb * 11) % 13 === 0) return lit ? '#8496bd' : '#6a78a0';
+    return lit ? '#93a3c6' : '#7584ad';
+  });
+  // Slovénie : le château de Bled sur sa falaise, l'île et son église, les barques « pletna ».
+  const slovLake = paintStrip(480, 70, (x, y) => {
+    const fb = 69 - y, WALL = '#f4efe4', ROOF = '#c0392b';
+    // Le château, perché sur la falaise.
+    if (x >= 68 && x <= 74 && fb >= 46 && fb < 62) return fb >= 56 && fb <= 58 && x >= 70 && x <= 72 ? '#5d6f96' : WALL;
+    if (fb >= 62 && fb < 68 && Math.abs(x + 0.5 - 71.5) <= 3.5 - (fb - 62) * 0.6) return ROOF;
+    if (x >= 78 && x <= 98 && fb >= 46 && fb < 56) return x % 4 === 1 && fb >= 49 && fb <= 51 ? '#5d6f96' : WALL;
+    if (fb >= 56 && fb < 62 && Math.abs(x + 0.5 - 88.5) <= 11 - (fb - 56) * 1.6) return fb === 56 ? '#9e2b20' : ROOF;
+    if (x >= 64 && x <= 106 && fb >= 38 && fb < 46) return x % 7 === 3 && fb >= 41 && fb <= 42 ? '#5d6f96' : (fb === 38 ? '#cfc7b6' : WALL);
+    if (x >= 64 && x <= 106 && fb === 46 && x % 3 === 0) return WALL;
+    if (x >= 50 && x <= 122) {
+      const ct = Math.min(38, (x - 50) * 1.8 + 6, (122 - x) * 2.4 + 4);
+      if (fb < ct) {
+        if (fb < 9 + hash(x >> 1) % 6) return (x + fb) % 4 === 0 ? '#3c705d' : '#2f5d4f';
+        if (hash(x * 3 + fb * 7) % 7 === 0) return '#857f74';
+        return x < 66 && fb > (x - 50) * 1.8 + 2 ? '#bdb7aa' : '#a39d90';
+      }
+    }
+    // L'île de Bled : l'église de l'Assomption et son clocher, le grand escalier.
+    if (x >= 344 && x <= 350 && fb >= 6 && fb < 36) return fb >= 28 && fb <= 30 && x >= 346 && x <= 348 ? '#3b2f4a' : WALL;
+    if (fb >= 36 && fb < 50 && Math.abs(x + 0.5 - 347.5) <= 3.5 - (fb - 36) * 0.26) return fb === 36 ? '#e0c27a' : '#8a3a2a';
+    if (x >= 322 && x <= 342 && fb >= 6 && fb < 18) return x % 5 === 2 && fb >= 10 && fb <= 13 ? '#5d6f96' : WALL;
+    if (fb >= 18 && fb < 25 && Math.abs(x + 0.5 - 332.5) <= 12 - (fb - 18) * 1.6) return ROOF;
+    if (x >= 327 && x <= 339 && fb < 6) return fb % 2 === 0 ? '#d9d3c4' : WALL;
+    for (const [tx, tr] of [[308, 7], [317, 5], [356, 6], [366, 7]]) if (fb >= 3 && ((x + 0.5 - tx) / (tr * 0.7)) ** 2 + ((fb - 5 - tr * 0.6) / tr) ** 2 <= 1) return (x + fb) % 4 === 0 ? '#3c705d' : '#2f6b4a';
+    if (Math.abs(x + 0.5 - 336) <= 36 && fb < 6 - ((x + 0.5 - 336) / 36) ** 2 * 5) return fb === 0 ? '#8a7a5a' : '#4f8a4a';
+    // Les barques à toit rayé.
+    for (const cx of [212, 440]) {
+      const dx = x + 0.5 - cx;
+      if (fb < 3 && Math.abs(dx) <= 11 - (2 - fb) * 1.5) return fb === 2 ? '#a0703f' : '#7a4a2a';
+      if (fb >= 3 && fb < 6 && (Math.abs(dx + 7) < 0.6 || Math.abs(dx - 6) < 0.6)) return '#5e3820';
+      if (fb >= 6 && fb < 8 && Math.abs(dx) <= 8) return Math.floor(x / 2) % 2 ? '#d7263d' : '#fff4e6';
+      if (fb >= 3 && fb < 8 && dx >= 9 && dx <= 10) return fb >= 6 ? '#f3d3b8' : '#2a2433';
+    }
+    return null;
+  });
+  // Slovénie : prairie fleurie, kozolec (séchoirs à foin), sapins et chapelle au clocher pointu.
+  const slovNear = paintStrip(480, 50, (x, y) => {
+    const fb = 49 - y;
+    for (const [cx, h] of [[24, 34], [36, 26], [150, 40], [164, 30], [252, 28], [400, 38], [414, 28], [468, 24]]) {
+      const dx = x + 0.5 - cx;
+      if (fb < 5 && Math.abs(dx) <= 1) return '#6b4226';
+      if (fb >= 4 && fb < h && Math.abs(dx) <= (h - fb) * 0.28 + ((h - fb) % 6) * 0.45) return dx < 0 ? '#3f8058' : '#2f6b4a';
+    }
+    // Le kozolec double (toplar) et un kozolec simple.
+    for (const [x0, n] of [[60, 3], [300, 2]]) {
+      const x1 = x0 + n * 14, mid = (x0 + x1) / 2 + 0.5;
+      if (fb >= 24 && fb < 30 && Math.abs(x + 0.5 - mid) <= (x1 - x0) / 2 + 4 - (fb - 24) * 1.2) return (x + fb) % 4 < 2 ? '#6b4226' : '#7a4a2a';
+      if (x >= x0 && x <= x1 + 1 && fb < 24) {
+        if ((x - x0) % 14 <= 1) return '#5e3820';
+        if (fb >= 3) return fb % 4 === 0 ? '#8a5a34' : (hash(x * 5 + fb * 17) % 4 === 0 ? '#d1a43e' : '#e8c35a');
+      }
+    }
+    // Petite chapelle blanche.
+    if (x >= 204 && x <= 221 && fb < 14) return x >= 211 && x <= 214 && fb < 7 ? '#6b4226' : '#f4efe4';
+    if (fb >= 14 && fb < 20 && Math.abs(x + 0.5 - 213) <= 11 - (fb - 14) * 1.6) return '#c0392b';
+    if (x >= 222 && x <= 228 && fb < 26) return fb >= 20 && fb <= 22 && x >= 224 && x <= 226 ? '#3b2f4a' : '#f4efe4';
+    if (fb >= 26 && fb < 38 && Math.abs(x + 0.5 - 225.5) <= 3.5 - (fb - 26) * 0.3) return '#8a3a2a';
+    if (fb < 6 + 3 * Math.sin(x * 0.05)) {
+      const k = hash(x * 13 + fb * 7) % 23;
+      return k === 0 ? '#fff4d6' : k === 1 ? '#ffd84a' : (fb % 3 === 0 && x % 2 ? '#6fb85a' : '#5aa04a');
+    }
+    return null;
+  });
+
   const WORLDS = [
     { name: 'MONDE DES GLACES', accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
     { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
     { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
     { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
-    { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] }
+    { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
+    { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] }
   ];
 
   // ---------- Écran ----------
@@ -1541,11 +1681,43 @@
     return '#e3dccd';
   });
 
-  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5];
+  // Slovénie : le dragon de Ljubljana (tourné vers la gauche), ailes levées ou baissées.
+  const inTri = (x, y, a, b, c) => {
+    const s1 = (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]);
+    const s2 = (c[0] - b[0]) * (y - b[1]) - (c[1] - b[1]) * (x - b[0]);
+    const s3 = (a[0] - c[0]) * (y - c[1]) - (a[1] - c[1]) * (x - c[0]);
+    return (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+  };
+  const dragonFrames = [true, false].map(up => outlinedSprite(42, 30, (x, y) => {
+    if (Math.hypot(x - 5, y - 11) < 1.2) return '#ffd84a';
+    const [hd, ht] = segDist(x, y, 8, 9, 10, 5);
+    if (hd < 1.1 - ht * 0.5) return '#f2e6c0';
+    const body = ell(x, y, 20, 16, 10, 5) || ell(x, y, 6, 12, 4.5, 3.2) || ell(x, y, 2, 13.5, 3, 2)
+      || segDist(x, y, 13, 15, 7, 12)[0] < 2.8 || ell(x, y, 15, 21, 2, 2.5) || ell(x, y, 25, 21, 2, 2.5);
+    const t1 = segDist(x, y, 29, 17, 35, 20), t2 = segDist(x, y, 35, 20, 40, 16), t3 = segDist(x, y, 40, 16, 37, 12);
+    const tail = t1[0] < 2.6 - t1[1] * 0.6 || t2[0] < 2 - t2[1] * 0.6 || t3[0] < 1.4 - t3[1] * 0.4;
+    if (body || tail) {
+      if (Math.hypot(x - 1, y - 13) < 0.8) return '#1f3a26';
+      return ell(x, y, 20, 18.5, 8, 2.2) ? '#c8e68a' : '#3e9a52';
+    }
+    for (let k = 0; k < 4; k++) if (inTri(x, y, [15 + k * 4, 11.6], [18 + k * 4, 11.6], [16.5 + k * 4, 8.5])) return '#e8c84a';
+    const wing = up
+      ? inTri(x, y, [14, 13], [27, 13], [25, 0.5]) || inTri(x, y, [14, 13], [25, 0.5], [15, 2])
+      : inTri(x, y, [14, 15], [27, 15], [26, 29.5]) || inTri(x, y, [14, 15], [26, 29.5], [17, 27]);
+    if (wing) return (up ? segDist(x, y, 20, 13, 20, 1.5) : segDist(x, y, 20, 15, 21, 28))[0] < 0.7 ? '#4f9a5a' : '#8fd89a';
+    return null;
+  }, '#1f3a26'));
+  // Trajet du dragon : il traverse le ciel vers la gauche et fait un looping au milieu.
+  const dragonPos = (t, dur) => {
+    const u = t / dur, K = evK(), R = 26 * K, a = clamp((u - 0.42) / 0.22, 0, 1) * TAU;
+    return [W + 50 * K - u * (W + 130 * K) - R * Math.sin(a), Math.max(safe.t + 2 * R + 14, H * 0.38) + Math.sin(u * 9) * 3 * K + R * (Math.cos(a) - 1)];
+  };
+
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5];
   let ev = null, evSeg = -1, evFx = [], shake = 0;
   let reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
-  const groundY = () => (world >= 3 ? H * 0.88 : H * 0.84) - (camY - camBase()) * 0.3;
+  const groundY = () => (world === 3 || world === 4 ? H * 0.88 : H * 0.84) - (camY - camBase()) * 0.3;
   const evK = () => (H >= 260 ? 2 : 1);
   const ease = u => u * u * (3 - 2 * u);
   const unicornPos = (t, dur) => {
@@ -1577,6 +1749,18 @@
       ev.lastFrame = frame;
     } else if (ev.w === 1 && (ev.t < 1.2 || ev.t > dur - 1.2)) {
       shake = Math.max(shake, 0.8);
+    } else if (ev.w === 6) {
+      // Deux petites flammes, crachées droit devant le dragon.
+      const u = ev.t / dur;
+      if ((u > 0.18 && u < 0.32) || (u > 0.74 && u < 0.88)) {
+        const [x, y] = dragonPos(ev.t, dur), [x2, y2] = dragonPos(ev.t + 0.02, dur);
+        const a = Math.atan2(y2 - y, x2 - x), r = a - Math.PI, ox = -21 * s, oy = -2 * s;
+        const mx = x + ox * Math.cos(r) - oy * Math.sin(r), my = y + ox * Math.sin(r) + oy * Math.cos(r);
+        for (let i = 0; i < 2; i++) {
+          const v = rand(60, 110) * s, d = a + rand(-0.25, 0.25);
+          evFx.push({ x: mx, y: my, vx: Math.cos(d) * v, vy: Math.sin(d) * v, life: rand(0.3, 0.55), max: 0.55, s: s / 2 });
+        }
+      }
     }
     if (ev && ev.w === 1 && ev.t > 1.6 && ev.t < 4.6) {
       shake = Math.max(shake, 1.8);
@@ -1660,6 +1844,15 @@
       }
       ctx.globalAlpha = 1;
       for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
+    } else if (ev.w === 6) {
+      // Le dragon de Ljubljana bat des ailes et suit la direction de son vol (looping compris).
+      const s = K + 1, spr = dragonFrames[Math.floor(t * 6) % 2];
+      const [x, y] = dragonPos(t, dur), [x2, y2] = dragonPos(t + 0.02, dur);
+      ctx.save();
+      ctx.translate(Math.round(x), Math.round(y));
+      ctx.rotate(Math.atan2(y2 - y, x2 - x) - Math.PI);
+      ctx.drawImage(spr, -Math.round(spr.width * s / 2), -Math.round(spr.height * s / 2), spr.width * s, spr.height * s);
+      ctx.restore();
     }
     drawEventFx();
   }
@@ -1687,7 +1880,8 @@
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
-  const MAIN_WORLDS = 5, BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
+  // Ordre des mondes : la Slovénie (6) vient après Paris ; le 5 est le niveau bonus.
+  const CYCLE = [0, 1, 2, 3, 4, 6], BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
   let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusEnd = false, unlockCard = 0, bonusBtn = null;
   // Pour tester sans attendre : le lien se terminant par #bonus, ou 5 touchers sur le numéro de version.
   // Ce déblocage de test ne modifie pas le vrai trésor et s'arrête quand on recharge la page.
@@ -1754,7 +1948,7 @@
       const top = clamp(Math.round(lastTop + rand(-10, 30)), -60, 60);
       const gap = gapFor(top - lastTop);
       const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(40, 64)), top, depth: 14, tramp: true });
-      pl.s = 18;
+      pl.s = 21;
       addGems(last, pl, gap);
       for (let k = 0; k < 4; k++) gems.push({ x: pl.x + pl.w / 2 + k * 14, y: top - 60 - k * 6, ph: Math.random() * 6 });
       return;
@@ -2029,7 +2223,7 @@
     updateWorld(dt);
     if (mode === 'play') {
       const dist = Math.floor((p.x - distStart) / 16);
-      const target = Math.floor(dist / WORLD_EVERY) % MAIN_WORLDS;
+      const target = CYCLE[Math.floor(dist / WORLD_EVERY) % CYCLE.length];
       if (target !== genWorld && !trans) startTransition(target);
       const seg = Math.floor(dist / WORLD_EVERY);
       if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
@@ -2535,6 +2729,13 @@
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
       drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+    } else if (world === 6) {
+      drawBgClouds();
+      const far = H * 0.62 - vOff * 0.12, lake = far + 16;
+      drawStrip(slovAlps, 0.1, far, '#3fa39a');
+      drawStrip(slovLake, 0.2, lake, '#3fa39a');
+      drawWater(lake, '#3fa39a', '#bfeee4');
+      drawStrip(slovNear, 0.3, H * 0.84 - vOff * 0.3, '#5aa04a');
     } else {
       drawBgClouds();
       const far = H * 0.66 - vOff * 0.12;
@@ -2781,7 +2982,7 @@
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
-        rainbowText(bonus ? 'BONUS' : 'MONDE ' + (world + 1), cx, cy, 16);
+        rainbowText(bonus ? 'BONUS' : 'MONDE ' + (CYCLE.indexOf(world) + 1), cx, cy, 16);
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
