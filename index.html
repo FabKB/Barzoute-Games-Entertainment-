@@ -69,6 +69,9 @@
 <body>
 <div id="stage"><canvas id="game" role="img" aria-label="Jeu Glace Licorne : touche l'écran pour sauter de plateforme en plateforme"></canvas></div>
 <div class="btns">
+  <button id="btnHome" type="button" aria-label="Changer de personnage" hidden>
+    <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="1" width="2" height="1" fill="currentColor"/><rect x="4" y="2" width="4" height="1" fill="currentColor"/><rect x="3" y="3" width="6" height="1" fill="currentColor"/><rect x="2" y="4" width="8" height="1" fill="currentColor"/><rect x="1" y="5" width="10" height="1" fill="currentColor"/><rect x="2" y="6" width="8" height="5" fill="currentColor"/><rect x="5" y="8" width="2" height="3" fill="#3b2550"/></svg>
+  </button>
   <button id="btnPause" type="button" aria-label="Pause" hidden>
     <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="2" width="2" height="8" fill="currentColor"/><rect x="7" y="2" width="2" height="8" fill="currentColor"/></svg>
   </button>
@@ -267,7 +270,12 @@
   const PAL = {
     K: OUT, W: '#ffffff', H: '#ffffff', P: '#ffc6de', p: '#f49cc4', Y: '#ffd84a', y: '#e9a42a',
     R: '#ff7fae', I: '#ff9fc9', B: '#59c3ff', G: '#6fe39a', C: '#f0b765', c: '#b8732f',
-    O: '#e2851c', S: '#ffe45c'
+    O: '#e2851c', S: '#ffe45c',
+    // Cigogne
+    w: '#ffffff', g: '#d9d3e6', N: '#2a2433', r: '#e8392b', d: '#b3241a',
+    // Faune
+    f: '#fbf7f0', h: '#e08a4a', e: '#eadfce', u: '#f3ead9', n: '#e07a52', b: '#8a4a2a',
+    v: '#3d4660', z: '#f4f1ea', o: '#4a5062', q: '#33384a', T: '#c2603a', t: '#953f22'
   };
   // La glace licorne, d'après le dessin : corne, oreilles de chat, grands yeux, cornet gaufré.
   const SCOOP = [
@@ -313,6 +321,81 @@
   BLINK[12] = 'KPRPPPPPPPPPPPRPK';
   const STAR = ['...O...', '..OSO..', '.OSWSO.', 'OSSSSSO', '.OSSSO.', '.OSOSO.', 'OO...OO'];
 
+  // Le doudou cigogne : long bec rouge, aile noire, grandes pattes rouges.
+  const STORK = [
+    '.......KKKK.........',
+    '......KwwwwK........',
+    '.....KwwwwwwK.......',
+    '.....KwwKwwwwKK.....',
+    '.....KwwwwwwKrrrK...',
+    '.....KwwwwwwKrrrrK..',
+    '......KwwwwwKKdrrrK.',
+    '......KwwwwK...KdrrK',
+    '......KwwwwK.....KdK',
+    '......KwwwwK........',
+    '......KwwwwK........',
+    '......KwwwgK........',
+    '.....KwwwwgK........',
+    '....KKwwwwwgKK......',
+    '...KNNwwwwwwwgK.....',
+    '..KNNNNwwwwwwwgK....',
+    '.KNNNNNNwwwwwwwgK...',
+    'KNNNNNNNwwwwwwwwgK..',
+    'KNNNNNNwwwwwwwwwgK..',
+    '.KNNNNwwwwwwwwwggK..',
+    '..KKNwwwwwwwwwggK...',
+    '....KKgwwwwwggKK....',
+    '........rr..rr......',
+    '........rr..rr......',
+    '........rr..rr......',
+    '........dd..dd......',
+    '........rr..rr......',
+    '........rr..rr......',
+    '........rr..rr......',
+    '........rr..rr......',
+    '.......rrrr.rrrr....',
+    '.......dddd.dddd....'
+  ];
+  const STORK_BLINK = STORK.slice();
+  STORK_BLINK[3] = '.....KwwgwwwwKK.....';
+
+  // Le doudou faune : petites cornes, grandes oreilles, foulard rayé, salopette, queue rousse.
+  const FAUN = [
+    '.......Kh...hK.......',
+    '.......Khh.hhK.......',
+    '......KffhfhffK......',
+    '.KKK.KfffffffffK.KKK.',
+    'KeeefKfffffffffKfeeeK',
+    'KeeeeKfuuuuuuufKeeeeK',
+    '.KeeKfuubuuubuufKeeK.',
+    '..KKKfuubuuubuufKKK..',
+    '.....KuuuuuuuuuK.....',
+    '.....KuRuunuuRuK.....',
+    '......KuuuuuuuK......',
+    '.....KvvvvvvvvvK.....',
+    '....KzzzzzzzzzzzK....',
+    '....KvvvvvvvvvvvK....',
+    '....KooozvzoooooK....',
+    '...KuKooovzvoooKuK...',
+    '.TTKuKoooooooooKuK...',
+    'TTTKuKoooooooooKuK...',
+    'TtTTKKoooqoooooKK....',
+    '.TtTTKoooooooooK.....',
+    '..TTTKoooooooooK.....',
+    '.....KooooKooooK.....',
+    '.....KqqqqKqqqqK.....',
+    '.....KKuuKKKuuKK.....',
+    '......KuuK.KuuK......',
+    '......KuuK.KuuK......',
+    '......KuuK.KuuK......',
+    '......KuuK.KuuK......',
+    '......KuuK.KuuK......',
+    '......KKKK.KKKK......'
+  ];
+  const FAUN_BLINK = FAUN.slice();
+  FAUN_BLINK[6] = '.KeeKfuuuuuuuuufKeeK.';
+  FAUN_BLINK[7] = '..KKKfuKKuuKKuufKKK..';
+
   function makeSprite(rows) {
     const c = mk(rows[0].length, rows.length), g = c.getContext('2d');
     rows.forEach((row, y) => {
@@ -323,8 +406,14 @@
     });
     return c;
   }
-  const sprHero = makeSprite(BODY);
-  const sprBlink = makeSprite(BLINK);
+  // trail : hauteur (depuis les pieds) où part l'arc-en-ciel.
+  const CHARS = [
+    { name: 'GLACE', rows: BODY, blink: BLINK, trail: 24 },
+    { name: 'CIGOGNE', rows: STORK, blink: STORK_BLINK, trail: 19 },
+    { name: 'FAUNE', rows: FAUN, blink: FAUN_BLINK, trail: 18 }
+  ].map(c => Object.assign(c, { spr: makeSprite(c.rows), sprB: makeSprite(c.blink) }));
+  let charIdx = clamp(parseInt(store.get('perso', '0'), 10) || 0, 0, CHARS.length - 1);
+  const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
 
   function makeCloud(w, h, seed) {
@@ -410,6 +499,7 @@
   const probe = document.getElementById('safe');
   const btnPause = document.getElementById('btnPause');
   const btnSound = document.getElementById('btnSound');
+  const btnHome = document.getElementById('btnHome');
   let W = 320, H = 180, SCALE = 1, PX = 1;
   const safe = { l: 0, r: 0, t: 0, b: 0 };
   let skyC = mk(1, 1);
@@ -448,6 +538,7 @@
     safe.b = parseFloat(cs.paddingBottom) / SCALE || 0;
     safe.l = parseFloat(cs.paddingLeft) / SCALE || 0;
     buildSky();
+    buildRainbow();
   }
 
   // ---------- Monde ----------
@@ -602,13 +693,14 @@
     }
 
     // Traînée arc-en-ciel.
-    if (!trail.length || p.x - trail[trail.length - 1].x >= 1) trail.push({ x: p.x, y: p.y - 24 });
-    else trail[trail.length - 1].y = p.y - 24;
+    const ty0 = p.y - hero().trail;
+    if (!trail.length || p.x - trail[trail.length - 1].x >= 1) trail.push({ x: p.x, y: ty0 });
+    else trail[trail.length - 1].y = ty0;
     while (trail.length > 2 && trail[1].x < camX - 8) trail.shift();
     sparkT -= dt;
     if (sparkT <= 0) {
       sparkT = 0.07;
-      particles.push({ x: p.x - 10, y: p.y - 24 + rand(0, 12), vx: -6, vy: rand(-8, 8), g: 0, life: rand(0.5, 0.9), col: Math.random() < 0.5 ? '#ffffff' : '#fff3b0' });
+      particles.push({ x: p.x - 10, y: ty0 + rand(0, 12), vx: -6, vy: rand(-8, 8), g: 0, life: rand(0.5, 0.9), col: Math.random() < 0.5 ? '#ffffff' : '#fff3b0' });
     }
 
     for (const q of particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; q.life -= dt; }
@@ -723,8 +815,63 @@
   function drawPlayer() {
     const p = player;
     const bob = p.grounded ? Math.floor(time * 10) % 2 : 0;
-    const spr = (time % 3.2) < 0.12 ? sprBlink : sprHero;
-    ctx.drawImage(spr, Math.round(p.x) - 8, Math.round(p.y) - 30 - bob);
+    const c = hero(), spr = (time % 3.2) < 0.12 ? c.sprB : c.spr;
+    ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height - bob);
+  }
+
+  // Grand arc-en-ciel de fond, posé derrière les collines.
+  let rainbowC = mk(1, 1), rainbowR = 0;
+  function buildRainbow() {
+    const R = Math.round(Math.min(W * 0.42, H * 0.5)), band = 4, outer = R + band * 6;
+    const c = mk(outer * 2, outer), g = c.getContext('2d');
+    const pastel = RAINBOW.map(hx => { const [r, gg, b] = hexRgb(hx); return `rgb(${(r + 255) >> 1},${(gg + 255) >> 1},${(b + 255) >> 1})`; });
+    for (let y = 0; y < outer; y++) {
+      for (let x = 0; x < outer * 2; x++) {
+        const dist = Math.hypot(x + 0.5 - outer, outer - y - 0.5);
+        const i = Math.floor((outer - dist) / band);
+        if (i >= 0 && i < 6) { g.fillStyle = pastel[i]; g.fillRect(x, y, 1, 1); }
+      }
+    }
+    rainbowC = c; rainbowR = outer;
+  }
+  function drawRainbow() {
+    const vOff = camY - camBase();
+    ctx.globalAlpha = 0.7;
+    ctx.drawImage(rainbowC, Math.round(W * 0.68 - rainbowR), Math.round(H * 0.7 - rainbowR - vOff * 0.08));
+    ctx.globalAlpha = 1;
+  }
+
+  // Écran titre : choix du personnage.
+  let cards = [];
+  function drawTitle(cx) {
+    const y0 = Math.round(Math.max(14, safe.t + 10, H * 0.06));
+    rainbowText('GLACE', cx, y0, 16);
+    rainbowText('LICORNE', cx, y0 + 21, 16);
+    text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
+    if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
+    const hint = Math.round(H - safe.b - 14);
+    const top = y0 + 72, room = hint - 14 - top;
+    const s = room >= 70 ? 2 : 1;
+    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8, gap = 6;
+    const total = CHARS.length * cw + (CHARS.length - 1) * gap;
+    let x = Math.round(cx - total / 2);
+    cards = [];
+    CHARS.forEach((c, i) => {
+      const sel = i === charIdx;
+      ctx.fillStyle = sel ? 'rgba(122, 92, 160, 0.92)' : 'rgba(59, 37, 80, 0.88)';
+      ctx.fillRect(x, top, cw, ch + 12);
+      ctx.fillStyle = sel ? '#fff3b0' : '#ffffff';
+      ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + 11, cw, 1);
+      ctx.fillRect(x, top, 1, ch + 12); ctx.fillRect(x + cw - 1, top, 1, ch + 12);
+      const spr = (time % 3.2) < 0.12 && sel ? c.sprB : c.spr;
+      const bob = sel ? Math.floor(time * 6) % 2 : 0;
+      ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s - bob * s, spr.width * s, spr.height * s);
+      text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
+      cards.push({ x, y: top, w: cw, h: ch + 12 });
+      x += cw + gap;
+    });
+    text('TAP = SAUT  2E TAP = DOUBLE', cx, hint, 8, '#ffffff', 'center');
+    if (best > 0) text('RECORD ' + best + ' M', Math.round(6 + safe.l), Math.round(H - safe.b - 28), 8, '#d6fff0');
   }
 
   function draw() {
@@ -732,6 +879,7 @@
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(skyC, 0, 0);
     drawSkyStars();
+    drawRainbow();
     drawHills();
     drawBgClouds();
 
@@ -761,15 +909,7 @@
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
       text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
     } else {
-      const y0 = Math.round(Math.max(14, safe.t + 10, H * 0.08));
-      rainbowText('GLACE', cx, y0, 16);
-      rainbowText('LICORNE', cx, y0 + 21, 16);
-      text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
-      if (Math.floor(time * 2) % 2 === 0) text('TOUCHE POUR JOUER', cx, y0 + 62, 8, '#fff3b0', 'center');
-      const yb = Math.round(H - safe.b - 30);
-      text('TAP = SAUT', cx, yb, 8, '#ffffff', 'center');
-      text('2E TAP = DOUBLE SAUT', cx, yb + 12, 8, '#ffffff', 'center');
-      if (best > 0) text('RECORD ' + best + ' M', cx, y0 + 76, 8, '#d6fff0', 'center');
+      drawTitle(cx);
     }
     if (paused) {
       ctx.fillStyle = 'rgba(31, 21, 51, 0.55)';
@@ -808,15 +948,33 @@
     if (v) { Sound.stop(); holding = false; }
     else { Sound.resume(); Sound.start(); lastT = performance.now(); }
   }
+  function pick(i) {
+    charIdx = (i + CHARS.length) % CHARS.length;
+    store.set('perso', charIdx);
+  }
   function startGame() {
     mode = 'play';
     distStart = player.x; starsCount = 0; speed = 80; streak = 0;
-    btnPause.hidden = false;
+    btnPause.hidden = false; btnHome.hidden = false;
     Sound.start();
   }
-  function press() {
+  function goTitle() {
+    if (mode !== 'play') return;
+    if (paused) setPaused(false);
+    mode = 'title'; speed = 70; holding = false;
+    btnPause.hidden = true; btnHome.hidden = true;
+  }
+  function press(e) {
     Sound.init();
-    if (mode === 'title') { startGame(); return; }
+    if (mode === 'title') {
+      if (e) {
+        const lx = e.clientX / SCALE, ly = e.clientY / SCALE;
+        const i = cards.findIndex(c => lx >= c.x && lx < c.x + c.w && ly >= c.y && ly < c.y + c.h);
+        if (i >= 0) pick(i);
+      }
+      startGame();
+      return;
+    }
     if (paused) { setPaused(false); return; }
     holding = true;
     jumpBuffer = 0.12;
@@ -826,7 +984,7 @@
   window.addEventListener('pointerdown', e => {
     if (e.target.closest && e.target.closest('button')) return;
     e.preventDefault();
-    press();
+    press(e);
   }, { passive: false });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
@@ -843,6 +1001,8 @@
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
       if (!e.repeat) press();
+    } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+      pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
     } else if (e.code === 'KeyP' || e.code === 'Escape') {
       setPaused(!paused);
     } else if (e.code === 'KeyM') {
@@ -855,6 +1015,7 @@
 
   btnSound.addEventListener('click', () => { Sound.init(); Sound.setMuted(!Sound.muted); renderSoundBtn(); });
   btnPause.addEventListener('click', () => { Sound.init(); setPaused(!paused); });
+  btnHome.addEventListener('click', () => { Sound.init(); goTitle(); });
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { setPaused(true); Sound.suspend(); store.set('best', best); }
