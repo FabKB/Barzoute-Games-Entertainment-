@@ -14,6 +14,16 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
 
+### Les mondes
+
+Tous les 500 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
+
+1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
+2. **Voyage au Japon** : mont Fuji, soleil levant, allée de torii comme à Fushimi Inari, pétales de cerisier ; musique pentatonique avec koto et taiko.
+3. **La Grosse Pomme** : toits de Manhattan, Empire State Building, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
+
+Après le 3e monde, on repart au Monde des Glaces.
+
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
 Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.
