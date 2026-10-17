@@ -123,6 +123,7 @@
     const SOFTBASS = { ratio: 1, index: 1.4, idxSus: 0.5, idxDecay: 0.12, vol: 0.3, a: 0.01, d: 0.15, sus: 0.6, rel: 0.08 };
     const BRASS = { ratio: 1, index: 3, idxSus: 0.8, idxDecay: 0.08, vol: 0.17, a: 0.02, d: 0.1, sus: 0.8, rel: 0.06 };
     const SLAP = { ratio: 1, index: 6, idxSus: 0.2, idxDecay: 0.06, vol: 0.34, a: 0.003, d: 0.12, sus: 0.4, rel: 0.04 };
+    const ORGAN = { ratio: 2, index: 1.6, idxSus: 0.7, idxDecay: 0.1, vol: 0.18, a: 0.005, d: 0.1, sus: 0.75, rel: 0.08 };
 
     // Une mesure = 8 croches. "-" prolonge la note, "." est un silence.
     function song(o) {
@@ -187,6 +188,22 @@
         ],
         bassPat: [0, 12, 0, 12, 7, 12, 10, 12],
         drums: { kick: [0, 7, 10], snare: [4, 12], hat: 1, open: [14] }
+      }),
+      song({ // Escale à Londres : pop anglaise des années 60, orgue, guitare en arpèges, basse qui roule
+        bpm: 128, lead: ORGAN, bass: BASS, arpWave: 'square', arpVol: 0.04, arpEvery: 2,
+        chords: {
+          G: { b: 43, a: [55, 59, 62, 67] }, D: { b: 50, a: [54, 57, 62, 66] }, Em: { b: 40, a: [52, 55, 59, 64] },
+          C: { b: 48, a: [55, 60, 64, 67] }, Am: { b: 45, a: [57, 60, 64, 69] }
+        },
+        prog: ['G', 'D', 'Em', 'C', 'G', 'D', 'C', 'D', 'Em', 'C', 'G', 'D', 'Am', 'C', 'D', 'D'],
+        mel: [
+          'D6 - B5 D6 G6 - F#6 E6', 'F#6 - D6 - A5 - D6 -', 'E6 G6 B6 - A6 G6 E6 -', 'G6 - E6 C6 D6 - E6 -',
+          'B5 D6 G6 - B6 - A6 G6', 'A6 - F#6 D6 F#6 - A6 -', 'G6 E6 C6 E6 G6 - C7 -', 'B6 - A6 - F#6 - D6 -',
+          'E6 - B5 E6 G6 - E6 -', 'C6 E6 G6 - E6 - C6 -', 'D6 G6 B6 - A6 G6 D6 -', 'F#6 - A6 - D7 - A6 -',
+          'C7 - A6 E6 A6 - C7 -', 'E7 - C7 G6 E6 - G6 -', 'F#6 E6 D6 E6 F#6 - A6 -', 'D7 - - - . . D6 -'
+        ],
+        bassPat: [0, 12, 7, 12, 0, 12, 7, 5],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [6, 14] }
       })
     ];
     let cur = SONGS[0];
@@ -652,6 +669,43 @@
         if (y > 8 && cx >= 5 && cx <= 12 && cy === 18) return '#d9b38c';
         return '#8a5a44';
       }
+    },
+    // Escale à Londres
+    { // toit de bus rouge à impériale
+      top: ['#ff6b6b', '#d7263d', '#9e1b2c'], deep: '#7d1424',
+      body(x, y) {
+        const yy = (y - 6) % 40;
+        if (yy >= 3 && yy <= 12) {
+          const cx = x % 14;
+          if (cx >= 2 && cx <= 11) return yy === 3 ? '#d6f0ff' : '#7fb8e0';
+          return '#b51f33';
+        }
+        if (yy === 16 || yy === 17) return '#f3e3c3';
+        return '#d7263d';
+      }
+    },
+    { // pierre gothique dorée, comme Big Ben
+      top: ['#f3dfaa', '#d9bf86', '#b39a62'], deep: '#8f784a',
+      topPat(x, y) { return y <= 2 ? (x % 6 < 3 ? '#f3dfaa' : '#b39a62') : (y === 3 ? '#f3dfaa' : '#d9bf86'); },
+      body(x, y) {
+        const cx = x % 12, cy = (y - 6) % 24;
+        if (cx < 2) return '#b39a62';
+        if (cx >= 4 && cx <= 8 && cy >= 6 && cy <= 18) {
+          if (cy === 6) return cx === 6 ? '#4b4f63' : '#cdb07a';
+          if (cy === 7) return (cx >= 5 && cx <= 7) ? '#4b4f63' : '#cdb07a';
+          return '#4b4f63';
+        }
+        return cy === 0 ? '#b39a62' : '#cdb07a';
+      }
+    },
+    { // pierre blanche à colonnes
+      top: ['#ffffff', '#e6e4de', '#bdb9b0'], deep: '#a9a59c',
+      body(x, y) {
+        const cx = x % 10;
+        if (cx === 1 || cx === 2) return '#cfccc4';
+        if (cx === 3) return '#f4f2ec';
+        return (y - 6) % 8 === 0 ? '#d6d3cb' : '#e6e4de';
+      }
     }
   ];
   const rgbCache = {};
@@ -795,6 +849,110 @@
     return null;
   });
 
+  // Londres : Big Ben et le Parlement, la London Eye, Tower Bridge et le dôme de St Paul.
+  const londonFar = paintStrip(640, 100, (x, y) => {
+    const fb = 99 - y, S = '#6b7aa6', WIN = '#c9d0e6', STEEL = '#c3cbe0';
+    // London Eye
+    const dx = x - 260, dy = fb - 44, d = Math.hypot(dx, dy), ang = Math.atan2(dy, dx), seg = Math.PI / 12;
+    const ca = Math.round(ang / seg) * seg;
+    if (Math.hypot(x - (260 + Math.cos(ca) * 36), fb - (44 + Math.sin(ca) * 36)) < 1.6) return '#cfe3f5';
+    if (Math.abs(d - 34) < 0.9 || d <= 2) return '#eef1f8';
+    if (d < 34) {
+      const a = ((ang % (2 * seg)) + 2 * seg) % (2 * seg);
+      if (a * d < 0.6 || (2 * seg - a) * d < 0.6) return STEEL;
+    }
+    if (fb < 44) {
+      const t = fb / 44;
+      if (Math.abs(x - (240 + 20 * t)) < 1 || Math.abs(x - (280 - 20 * t)) < 1) return STEEL;
+    }
+    // Big Ben
+    if (x >= 96 && x <= 105) {
+      if (fb < 62) {
+        if (Math.hypot(x - 100.5, fb - 54) <= 3.6) {
+          if ((x === 100 && fb >= 54 && fb <= 57) || (fb === 54 && x >= 100 && x <= 102)) return '#3b3f5c';
+          return '#f3ead2';
+        }
+        return (x % 3 === 1 && fb % 6 === 2 && fb < 48) ? WIN : S;
+      }
+      if (Math.abs(x - 100.5) <= 5 - (fb - 62) * 5 / 22) return fb > 80 ? '#e0c27a' : S;
+    }
+    // Parlement
+    if (x >= 106 && x <= 190) {
+      let h = x % 12 < 2 ? 34 : 28;
+      if (x >= 146 && x <= 153) h = (x === 146 || x === 153) ? 44 : 48;
+      if (fb < h) return (x % 4 === 1 && fb % 5 === 2 && fb < h - 4) ? WIN : S;
+    }
+    // Tower Bridge
+    for (const tx of [430, 490]) {
+      if (x >= tx && x < tx + 10) {
+        if (fb < 56) return ((x === tx + 4 || x === tx + 5) && fb % 7 === 3 && fb > 24) ? WIN : S;
+        if (fb < 68 && Math.abs(x - (tx + 4.5)) <= 5 - (fb - 56) * 5 / 12) return S;
+        if (fb < 62 && (x === tx || x === tx + 9)) return S;
+      }
+    }
+    if (x >= 440 && x < 490 && (fb === 45 || fb === 48 || fb === 49)) return '#8fb0d8';
+    if (x >= 405 && x <= 525 && fb >= 18 && fb <= 21) return S;
+    if (x >= 405 && x < 430 && Math.abs(fb - (22 + (x - 405) * 30 / 25)) < 0.8) return '#8fb0d8';
+    if (x >= 500 && x <= 525 && Math.abs(fb - (52 - (x - 500) * 30 / 25)) < 0.8) return '#8fb0d8';
+    // Cathédrale St Paul
+    if (x >= 584 && x <= 586 && fb >= 36 && fb <= 44) return S;
+    if (x === 585 && fb >= 44 && fb <= 47) return '#e0c27a';
+    if (fb >= 24 && Math.hypot(x - 585, fb - 24) <= 12) return S;
+    if (x >= 571 && x <= 599 && fb < 24) return (x % 4 === 1 && fb % 5 === 2) ? WIN : S;
+    // Immeubles bas à l'arrière-plan
+    const h0 = 10 + hash(((x / 14) | 0) * 7 + 3) % 16;
+    if (fb < h0) return (x % 3 === 1 && fb % 4 === 2 && hash(x * 5 + fb) % 4 === 0) ? WIN : '#7b89b2';
+    return null;
+  });
+  // Londres : maisons mitoyennes colorées, cheminées, portes peintes et cabines téléphoniques rouges.
+  const londonBlocks = (() => {
+    const out = [];
+    let x = 0, i = 0;
+    while (x < 480) {
+      if (i > 0 && hash(i * 19) % 5 === 0) { out.push({ x, w: 8, phone: true }); x += 8; i++; continue; }
+      const w = Math.min(24 + hash(i * 7 + 2) % 9, 480 - x);
+      out.push({
+        x, w, h: 22 + hash(i * 11 + 4) % 10,
+        col: ['#c9a27e', '#e8e2d6', '#b5523b', '#d9c7a8'][hash(i * 13 + 1) % 4],
+        door: ['#d7263d', '#2f6db5', '#2e8b57', '#f2c230', '#3b2f4a'][hash(i * 3 + 7) % 5]
+      });
+      x += w; i++;
+    }
+    return out;
+  })();
+  const londonMid = paintStrip(480, 64, (x, y) => {
+    const fb = 63 - y;
+    const b = londonBlocks.find(o => x >= o.x && x < o.x + o.w);
+    if (!b) return null;
+    const lx = x - b.x;
+    if (b.phone) {
+      if (lx < 1 || lx > 6 || fb > 15) return null;
+      if (fb >= 14) return (lx === 1 || lx === 6) && fb === 15 ? null : '#a00d26';
+      if (fb >= 4 && fb <= 11 && lx >= 2 && lx <= 5) return (fb % 2 === 0 || lx === 3 || lx === 4) ? '#f3e6c8' : '#c8102e';
+      return '#c8102e';
+    }
+    const h = b.h, cx = b.w >> 1;
+    if (lx >= 3 && lx <= 8 && fb >= h && fb < h + 6) return fb === h + 5 ? '#6b3a2c' : '#8a4b3a';
+    if ((lx === 4 || lx === 7) && fb >= h + 6 && fb <= h + 7) return '#e07b39';
+    if (fb >= h) return null;
+    if (fb >= h - 3) return '#4b4f63';
+    if (fb < 1) return '#bdb9b0';
+    if (lx >= cx - 2 && lx <= cx + 2 && fb < 10) {
+      if (fb === 9 && (lx === cx - 2 || lx === cx + 2)) return b.col;
+      return lx === cx + 1 && fb === 5 ? '#f2c230' : b.door;
+    }
+    for (const wx of [4, b.w - 9]) {
+      for (const wy of [12, 22]) {
+        if (wy + 7 > h - 4) continue;
+        if (lx >= wx && lx <= wx + 4 && fb >= wy && fb <= wy + 6) {
+          if (lx === wx || lx === wx + 4 || fb === wy || fb === wy + 6 || fb === wy + 3) return '#ffffff';
+          return '#3f5170';
+        }
+      }
+    }
+    return lx === 0 ? '#5a5f75' : b.col;
+  });
+
   // L'avion qui annonce le nouveau monde (il vole vers la gauche).
   const PLANE = [
     '...................KK.',
@@ -815,7 +973,8 @@
   const WORLDS = [
     { name: 'MONDE DES GLACES', accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
-    { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] }
+    { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
+    { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] }
   ];
 
   // ---------- Écran ----------
@@ -889,7 +1048,7 @@
   let gameMode = store.get('mode', 'zen') === 'defi' ? 'defi' : 'zen', saveT = 0;
   let deathT = 0, goT = 0, newRecord = false, runBest = 0, confetti = [], goButtons = [], modeBtn = null;
   // Mondes : world = décor affiché, genWorld = monde des plateformes générées.
-  const WORLD_EVERY = 200, TRANS_DUR = 2.4, PLANE_DUR = 6;
+  const WORLD_EVERY = 150, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
 
   function resetWorld() {
@@ -941,6 +1100,7 @@
     worldCard = 3;
     petals = [];
     if (w === 1) for (let i = 0; i < 26; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6) });
+    if (w === 3) for (let i = 0; i < 40; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), rain: true });
   }
   function updateWorld(dt) {
     if (trans) {
@@ -951,8 +1111,11 @@
     if (plane) { plane.t += dt; if (plane.t > PLANE_DUR) plane = null; }
     if (worldCard > 0) worldCard -= dt;
     for (const q of petals) {
-      q.x += (-16 - speed * 0.15) * dt + Math.sin(time * 2 + q.ph) * 8 * dt;
-      q.y += 14 * dt;
+      if (q.rain) { q.x -= (25 + speed * 0.2) * dt; q.y += 130 * dt; }
+      else {
+        q.x += (-16 - speed * 0.15) * dt + Math.sin(time * 2 + q.ph) * 8 * dt;
+        q.y += 14 * dt;
+      }
       if (q.x < -4) q.x += W + 8;
       if (q.y > H + 2) { q.y = -4; q.x = rand(0, W + 20); }
     }
@@ -1299,15 +1462,21 @@
       drawBgClouds();
       drawStrip(fujiStrip, 0.1, H * 0.66 - vOff * 0.12, '#8f7bb9');
       drawStrip(toriiStrip, 0.3, H * 0.82 - vOff * 0.3, '#4f7d5c');
-    } else {
+    } else if (world === 2) {
       drawDisc(moonC, W * 0.78, H * 0.2);
       drawBgClouds();
       drawStrip(skylineStrip, 0.1, H * 0.68 - vOff * 0.12, '#454c8a');
       drawStrip(cityStrip, 0.3, H * 0.84 - vOff * 0.3, '#3c3a6a');
+    } else {
+      drawDisc(moonC, W * 0.24, H * 0.24);
+      drawBgClouds();
+      drawStrip(londonFar, 0.1, H * 0.68 - vOff * 0.12, '#7f93b8');
+      drawStrip(londonMid, 0.3, H * 0.84 - vOff * 0.3, '#4a5268');
     }
   }
   function drawPetals() {
     for (const q of petals) {
+      if (q.rain) { ctx.fillStyle = '#e6eefa'; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 3); continue; }
       ctx.fillStyle = q.ph > 3 ? '#ffc0d9' : '#ff9ec4';
       if (Math.floor(time * 4 + q.ph) % 2) ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 1);
       else ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 2);
