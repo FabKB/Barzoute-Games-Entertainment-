@@ -90,6 +90,9 @@
 (() => {
   'use strict';
 
+  // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
+  const VERSION = 'v10';
+
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -2181,6 +2184,7 @@
       : (zen ? 'ZEN : UN NUAGE TE RATTRAPE' : 'DEFI : UNE CHUTE = GAME OVER');
     text(tip, cx, hint, 8, '#ffffff', 'center');
     if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
+    text(VERSION, Math.round(W - 6 - safe.r), Math.round(safe.t + 8 + 56 / SCALE), 8, '#d6fff0', 'right');
   }
 
   // Écran de fin joyeux : confettis, personnage qui danse, score et deux boutons.
@@ -2354,29 +2358,30 @@
     btnPause.hidden = true; btnHome.hidden = true;
   }
   const hit = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
-  // Petit retour haptique quand on saute : courte vibration sur Android ;
-  // sur iPhone (iOS 18 et plus), un interrupteur caché donne un léger « clic » quand on le bascule.
-  const haptic = (() => {
-    let label = null;
+  // Petit retour haptique quand on saute : courte vibration sur Android.
+  // Sur iPhone (iOS 18 et plus), basculer un interrupteur « switch » donne un léger clic haptique ;
+  // Safari ne l'accepte qu'au relâchement du doigt, donc on le déclenche à ce moment-là.
+  let hapticPending = false;
+  function haptic() {
     try {
-      const box = document.createElement('div');
-      box.setAttribute('aria-hidden', 'true');
-      box.style.cssText = 'position:fixed;left:-100px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+      if (typeof navigator.vibrate === 'function') { navigator.vibrate(12); return; }
+      const label = document.createElement('label');
+      label.setAttribute('aria-hidden', 'true');
+      label.style.display = 'none';
       const input = document.createElement('input');
-      input.type = 'checkbox'; input.id = 'haptic-switch'; input.tabIndex = -1;
+      input.type = 'checkbox';
       input.setAttribute('switch', '');
-      label = document.createElement('label');
-      label.htmlFor = 'haptic-switch';
-      box.append(input, label);
-      document.body.append(box);
-    } catch (e) { label = null; }
-    return () => {
-      try {
-        if (typeof navigator.vibrate === 'function') { navigator.vibrate(12); return; }
-        if (label) label.click();
-      } catch (e) { /* pas de retour haptique sur cet appareil */ }
-    };
-  })();
+      label.appendChild(input);
+      document.body.appendChild(label);
+      label.click();
+      label.remove();
+    } catch (e) { /* pas de retour haptique sur cet appareil */ }
+  }
+  function hapticOnRelease() {
+    if (!hapticPending) return;
+    hapticPending = false;
+    haptic();
+  }
   function press(e) {
     Sound.init();
     const lx = e ? e.clientX / SCALE : -1, ly = e ? e.clientY / SCALE : -1;
@@ -2400,7 +2405,7 @@
     if (paused) { setPaused(false); return; }
     holding = true;
     jumpBuffer = 0.12;
-    haptic();
+    if (typeof navigator.vibrate === 'function') haptic(); else hapticPending = true;
   }
   function release() { holding = false; }
 
@@ -2409,14 +2414,14 @@
     e.preventDefault();
     press(e);
   }, { passive: false });
-  window.addEventListener('pointerup', release);
+  window.addEventListener('pointerup', () => { release(); hapticOnRelease(); });
   window.addEventListener('pointercancel', release);
   document.addEventListener('touchstart', e => {
     if (!(e.target.closest && e.target.closest('button'))) e.preventDefault();
   }, { passive: false });
   document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
   // Sur iOS, l'audio ne démarre qu'après un geste « complet » : on relance au relâchement.
-  document.addEventListener('touchend', () => Sound.init());
+  document.addEventListener('touchend', () => { Sound.init(); hapticOnRelease(); });
   document.addEventListener('click', () => Sound.init());
 
   window.addEventListener('keydown', e => {
