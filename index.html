@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v21';
+  const VERSION = 'v22';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -1806,7 +1806,7 @@
       return fb > hill - 3 ? '#a8b86a' : '#8fa65a';
     }
     const far2 = 34 + 10 * Math.sin(x / 640 * TAU * 2 + 2);
-    if (fb < far2) return '#a6a8c8';
+    if (fb < far2) return '#a9b8c4';
     return null;
   });
   // Toscane : le Ponte Vecchio et ses boutiques, palais ocre aux volets verts au bord de l'Arno.
@@ -1897,7 +1897,7 @@
     { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
     { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
     { name: 'HONG KONG', accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
-    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#4a5a9e', '#6a74b4', '#9a8cc0', '#d49aa8', '#f2a98a', '#f8c28a', '#fbd9a0', '#fde9c0'] },
+    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
     { name: 'CAP CANAVERAL', accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
   ];
 
@@ -1910,7 +1910,7 @@
   const btnHome = document.getElementById('btnHome');
   let W = 320, H = 180, SCALE = 1, PX = 1;
   const safe = { l: 0, r: 0, t: 0, b: 0 };
-  let skyCs = [], sunC = mk(1, 1), moonC = mk(1, 1);
+  let skyCs = [], sunC = mk(1, 1), moonC = mk(1, 1), goldSunC = mk(1, 1);
   const camBase = () => -H * 0.66;
 
   function buildSky() {
@@ -1935,6 +1935,8 @@
     });
     const R = Math.max(10, Math.round(Math.min(W, H) * 0.13));
     sunC = disc(R, (x, y, d, r) => (d > r - 2 && (x + y) % 2 === 0) ? '#ff9a85' : '#ff5e57');
+    // Soleil doré de l'après-midi toscan.
+    goldSunC = disc(R, (x, y, d, r) => (d > r - 2 && (x + y) % 2 === 0) ? '#fff4c0' : (d < r * 0.45 ? '#fff0a0' : '#ffd84a'));
     moonC = disc(Math.round(R * 0.7), (x, y) => hash(x * 31 + y * 17) % 9 === 0 ? '#efdfb6' : '#fff4d6');
   }
 
@@ -3404,11 +3406,11 @@
       drawWater(lake, '#1a2448', '#ff9ad8');
       drawStrip(hkMid, 0.3, H * 0.84 - vOff * 0.3, '#2a2438');
     } else if (world === 8) {
-      drawDisc(sunC, W * 0.22, H * 0.36);
+      drawDisc(goldSunC, W * 0.78, H * 0.2);
       drawBgClouds();
       const far = H * 0.62 - vOff * 0.12;
       drawStrip(tuscFar, 0.1, far, '#4f7a8a');
-      drawWater(far, '#4f7a8a', '#ffe0b0');
+      drawWater(far, '#4f7a8a', '#fff4c0');
       drawStrip(tuscMid, 0.3, H * 0.82 - vOff * 0.3, '#c08a5a');
     } else if (world === 9) {
       drawBgClouds();
