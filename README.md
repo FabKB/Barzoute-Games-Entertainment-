@@ -14,6 +14,19 @@ Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou su
 
 Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la musique.
 
+### Créer son doudou en photo
+
+Sur l'écran de choix, la 5e case (**PHOTO**, avec un appareil photo) permet de transformer n'importe quel doudou en personnage jouable :
+
+1. Pose le doudou sur un **fond uni** (drap, mur, table) bien différent de ses couleurs, et prends-le en entier.
+2. Touche **PRENDRE UNE PHOTO** (ou **CHOISIR UNE PHOTO** dans l'album).
+3. L'aperçu montre la photo, avec le fond retiré en rose, et le personnage en pixel art à côté. Si un morceau du doudou disparaît (par exemple un doudou blanc sur un fond blanc), baisse le curseur **FOND** ; s'il reste du fond, monte-le.
+4. Donne-lui un nom (7 lettres maximum) et touche **VALIDER**.
+
+Astuce iPhone : une image déjà détourée (sans fond) est utilisée telle quelle.
+
+Tout se passe dans le téléphone : la photo n'est envoyée nulle part. Le personnage est gardé dans la mémoire du navigateur ; s'il disparaît (données du site effacées), il suffit de le refaire. Le petit appareil photo dans le coin de sa case permet de le remplacer.
+
 ### Les plateformes
 
 Les plateformes changent de forme en route : grands blocs, petits blocs, longues avancées, plateformes qui flottent dans les airs (on peut sauter à travers par en dessous), plateformes qui montent et descendent en emportant le personnage, et petits escaliers.
