@@ -29,14 +29,16 @@ Chaque mode garde son propre record.
 
 ### Les mondes
 
-Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde suivant. Un avion traverse ensuite le ciel avec une banderole au nom du nouveau monde, et la musique change.
+Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à raison de 100 m par monde. Entre deux mondes, un rideau de nuages traverse l'écran, puis un avion passe avec une banderole au nom du nouveau monde, et la musique change.
 
-1. **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
-2. **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
-3. **La Grosse Pomme** : Empire State Building, Chrysler Building, pont de Brooklyn, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
-4. **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées ; pop anglaise des années 60.
-5. **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
-6. **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
+- **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
+- **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
+- **La Grosse Pomme** : Empire State Building, Chrysler Building, pont de Brooklyn, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
+- **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées ; pop anglaise des années 60.
+- **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
+- **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
+- **Hong Kong**, de nuit : Victoria Peak, la Bank of China Tower et l'IFC, une jonque aux voiles rouges et le Star Ferry sur le port, enseignes au néon, tramway « ding-ding » et taxi rouge ; plateformes en paniers vapeur à dim sum, enseignes lumineuses et échafaudages en bambou ; pop cantonaise à la flûte.
+- **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
@@ -46,8 +48,12 @@ Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde s
 - **Londres** : la reine salue la foule depuis le balcon de Buckingham Palace.
 - **Paris** : une patrouille d'avions passe en laissant des traînées bleu, blanc, rouge.
 - **Slovénie** : le dragon de Ljubljana traverse le ciel, fait un looping et crache deux petites flammes.
+- **Hong Kong** : une danse du lion traverse la rue pendant qu'un feu d'artifice éclate au-dessus du port.
+- **Toscane** : les chevaux du Palio de Sienne passent au galop, chaque jockey aux couleurs de son quartier.
 
-Après le 6e monde, on repart au Monde des Glaces.
+### La fin : le décollage à Cap Canaveral
+
+Après le 4e monde, on arrive à **Cap Canaveral** : palmiers, grand hangar d'assemblage, tours de lancement. Le personnage court tout seul sur la piste jusqu'à la fusée, saute dedans (on ne voit plus que sa tête dans le hublot), puis compte à rebours « 3, 2, 1, DÉCOLLAGE ! » : la fusée part dans l'espace et l'écran « BON VOYAGE ! » affiche la distance, les étoiles et le record. C'est valable en ZEN comme en DÉFI. Touche **REJOUER** pour un nouveau tirage de 4 mondes.
 
 ### Le niveau bonus : le Pays des Bonbons
 
