@@ -66,6 +66,47 @@
   .btns button:active { background: var(--pink); color: var(--ink); }
   .btns button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
   .btns svg { width: 24px; height: 24px; shape-rendering: crispEdges; }
+  /* Atelier « doudou en photo » : une fenêtre par-dessus le jeu. */
+  #creator {
+    position: fixed; inset: 0; z-index: 5;
+    display: flex;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(31, 21, 51, 0.82);
+    font-family: var(--pixel); font-size: 10px; line-height: 1.6;
+    touch-action: manipulation;
+    overflow: auto;
+  }
+  #creator[hidden] { display: none; }
+  .cr-box {
+    width: min(100%, 420px); margin: auto;
+    background: #5b3f86; border: 3px solid var(--cream);
+    padding: 12px; display: grid; gap: 10px; text-align: center;
+  }
+  .cr-box h2 { margin: 0; font-size: 14px; color: #fff3b0; font-weight: normal; }
+  .cr-box p { margin: 0; color: var(--cream); }
+  /* Téléphone à l'horizontale : tout tient sur la hauteur de l'écran. */
+  @media (max-height: 480px) {
+    #creator { font-size: 8px; }
+    .cr-box { width: min(100%, 560px); gap: 6px; padding: 8px; }
+    .cr-btn, .cr-box button { padding: 6px 8px; }
+  }
+  .cr-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .cr-btn, .cr-box button {
+    font: inherit; color: #ffffff; background: #ff5fa2; border: 3px solid var(--cream);
+    padding: 8px 10px; cursor: pointer;
+  }
+  .cr-btn.alt, .cr-box button.alt { background: #4db8ff; }
+  .cr-box button:disabled { opacity: 0.45; cursor: default; }
+  .cr-btn { position: relative; overflow: hidden; }
+  .cr-btn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+  #crView { display: block; margin: 0 auto; width: min(100%, 60vh); height: auto; image-rendering: pixelated; background: #2a1f4a; border: 2px solid var(--ink); }
+  .cr-field { display: flex; align-items: center; gap: 8px; justify-content: center; color: #d6fff0; }
+  .cr-field input[type=range] { flex: 1; max-width: 220px; touch-action: auto; }
+  #crName {
+    font: inherit; width: 9em; padding: 6px; text-transform: uppercase;
+    background: var(--cream); color: var(--ink); border: 3px solid var(--ink);
+    -webkit-user-select: text; user-select: text;
+  }
   #safe {
     position: fixed;
     visibility: hidden;
@@ -86,12 +127,30 @@
   <button id="btnSound" type="button" aria-label="Couper le son"></button>
 </div>
 <div id="safe" aria-hidden="true"></div>
+<div id="creator" role="dialog" aria-modal="true" aria-labelledby="crTitle" hidden>
+  <div class="cr-box">
+    <h2 id="crTitle">NOUVEAU DOUDOU</h2>
+    <p>Pose ton doudou sur un fond uni (drap, mur, table) et prends-le en entier.</p>
+    <div class="cr-row">
+      <label class="cr-btn">PRENDRE UNE PHOTO<input id="crCam" type="file" accept="image/*" capture="environment"></label>
+      <label class="cr-btn alt">CHOISIR UNE PHOTO<input id="crLib" type="file" accept="image/*"></label>
+    </div>
+    <canvas id="crView" width="240" height="120" aria-label="Aperçu : la photo à gauche, le personnage à droite"></canvas>
+    <p id="crMsg">Le fond retiré apparaît en rose sur la photo.</p>
+    <label class="cr-field">FOND <input id="crTol" type="range" min="12" max="140" value="56" aria-label="Force du détourage"></label>
+    <label class="cr-field">NOM <input id="crName" type="text" maxlength="7" autocomplete="off" spellcheck="false" value="DOUDOU"></label>
+    <div class="cr-row">
+      <button id="crOk" type="button" disabled>VALIDER</button>
+      <button id="crCancel" type="button" class="alt">ANNULER</button>
+    </div>
+  </div>
+</div>
 <script>
 (() => {
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v23';
+  const VERSION = 'v24';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -699,12 +758,12 @@
   FAUN_BLINK[6] = '.KeeKfuuuuuuuuufKeeK.';
   FAUN_BLINK[7] = '..KKKfuKKuuKKuufKKK..';
 
-  function makeSprite(rows) {
+  function makeSprite(rows, pal = PAL) {
     const c = mk(rows[0].length, rows.length), g = c.getContext('2d');
     rows.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) {
         const ch = row[x];
-        if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); }
+        if (ch !== '.') { g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1); }
       }
     });
     return c;
@@ -761,18 +820,35 @@
       20: '.....KoooooooooK.....'
     } },
     { name: 'DOULIAM', rows: DOULIAM, blink: DOULIAM_BLINK, trail: 20, face: [9, 16], cut: 20, accent: douliamSway }
-  ].map(c => {
+  ].map(charFrames);
+  function charFrames(c) {
     const frames = rows => {
       const blank = '.'.repeat(rows[0].length);
       const squash = [blank].concat(rows.slice(0, c.cut), rows.slice(c.cut + 1));
       const accent = rows.map((r, i) => c.accent[i] || r);
-      return [rows, squash, rows, accent].map(makeSprite);
+      return [rows, squash, rows, accent].map(r => makeSprite(r, c.pal));
     };
     return Object.assign(c, { frames: frames(c.rows), framesB: frames(c.blink) });
-  });
+  }
+  // 5e case : le doudou pris en photo. Il est gardé dans le téléphone (stockage du navigateur).
+  const customChar = { name: 'PHOTO', custom: true, empty: true };
+  CHARS.push(customChar);
+  function setCustom(d) {
+    const h = d.rows.length;
+    // Accent : la tête penche d'un pixel.
+    const accent = {};
+    for (let y = 0; y < Math.round(h * 0.35); y++) accent[y] = '.' + d.rows[y].slice(0, -1);
+    Object.assign(customChar, {
+      empty: false, name: d.name, rows: d.rows, blink: d.rows, pal: Object.assign({ K: OUT }, d.pal),
+      cut: Math.round(h * 0.62), accent, trail: Math.round(h * 0.6), face: [d.rows[0].length / 2, h * 0.32]
+    });
+    charFrames(customChar);
+  }
+  try { const saved = JSON.parse(store.get('doudou', 'null')); if (saved && saved.rows && saved.pal) setCustom(saved); } catch (e) { /* doudou illisible : la case reste vide */ }
   const IDLE_FPS = 5;
   const idleSprite = (c, blink, offset = 0) => (blink ? c.framesB : c.frames)[(Math.floor(time * IDLE_FPS) + offset) % 4];
   let charIdx = clamp(parseInt(store.get('perso', '0'), 10) || 0, 0, CHARS.length - 1);
+  if (CHARS[charIdx].empty) charIdx = 0;
   const hero = () => CHARS[charIdx];
   const sprStar = makeSprite(STAR);
 
@@ -3522,7 +3598,15 @@
   }
 
   // Écran titre : choix du personnage.
-  let cards = [];
+  let cards = [], retakeBtn = null;
+  // Appareil photo en pixels (16 × 12 à l'échelle 1).
+  function drawCamera(x, y, s, col) {
+    const r = (a, b, w, h) => ctx.fillRect(Math.round(x + a * s), Math.round(y + b * s), Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)));
+    ctx.fillStyle = col; r(0, 3, 16, 9); r(5, 1, 6, 2);
+    ctx.fillStyle = '#3b2550'; r(5, 5, 6, 5);
+    ctx.fillStyle = '#9fd8ff'; r(6, 6, 4, 3);
+    ctx.fillStyle = '#ff5fa2'; r(12, 4, 2, 1);
+  }
   function drawTitle(cx) {
     const y0 = Math.round(Math.max(14, safe.t + 10, H * 0.06));
     rainbowText('GLACE', cx, y0, 16);
@@ -3539,7 +3623,7 @@
     const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8;
     const mby = Math.min(top + nrows * (ch + 12) + (nrows - 1) * gap + 10, hint - 16);
     const total = cols * cw + (cols - 1) * gap;
-    cards = [];
+    cards = []; retakeBtn = null;
     CHARS.forEach((c, i) => {
       const x = Math.round(cx - total / 2) + (i % cols) * (cw + gap);
       const top = y0 + 72 + Math.floor(i / cols) * (ch + 12 + gap);
@@ -3549,11 +3633,21 @@
       ctx.fillStyle = sel ? '#fff3b0' : '#ffffff';
       ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + 11, cw, 1);
       ctx.fillRect(x, top, 1, ch + 12); ctx.fillRect(x + cw - 1, top, 1, ch + 12);
-      // Tous animés, décalés pour ne pas bouger ni cligner en même temps.
-      const spr = idleSprite(c, ((time + i * 1.1) % 3.2) < 0.12, i);
-      ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
+      if (c.empty) {
+        // Case vide : un appareil photo pour créer son doudou.
+        drawCamera(Math.round(x + cw / 2 - 8 * s), top + Math.round(ch / 2 - 6 * s), s, Math.floor(time * 2) % 2 ? '#fff3b0' : '#ffffff');
+      } else {
+        // Tous animés, décalés pour ne pas bouger ni cligner en même temps.
+        const spr = idleSprite(c, ((time + i * 1.1) % 3.2) < 0.12, i);
+        ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
+      }
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
+      // Petit appareil photo dans le coin pour refaire son doudou.
+      if (c.custom && !c.empty) {
+        drawCamera(x + cw - 13, top + 3, 0.6, '#ffffff');
+        retakeBtn = { x: x + cw - 22, y: top - 4, w: 26, h: 22 };
+      }
     });
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
@@ -3748,8 +3842,10 @@
     if (v) { Sound.stop(); holding = false; }
     else { Sound.resume(); Sound.start(); lastT = performance.now(); }
   }
-  function pick(i) {
-    charIdx = (i + CHARS.length) % CHARS.length;
+  function pick(i, dir = 1) {
+    i = (i + CHARS.length) % CHARS.length;
+    if (CHARS[i].empty) i = (i + dir + CHARS.length) % CHARS.length;
+    charIdx = i;
     store.set('perso', charIdx);
   }
   function endBonus() {
@@ -3816,7 +3912,9 @@
         return;
       }
       if (e) {
+        if (hit(retakeBtn, lx, ly)) { openCreator(); return; }
         const i = cards.findIndex(c => hit(c, lx, ly));
+        if (i >= 0 && CHARS[i].empty) { openCreator(); return; }
         if (i >= 0) pick(i);
       }
       startGame();
@@ -3829,8 +3927,199 @@
   }
   function release() { holding = false; }
 
+  // ---------- Doudou en photo : détourage puis dessin en pixel art ----------
+  // Tout se fait dans le téléphone : la photo n'est envoyée nulle part.
+  const DOUDOU_H = 28, DOUDOU_W = 26;
+  const cdist = (d, i, r, g, b) => Math.hypot(d[i] - r, d[i + 1] - g, d[i + 2] - b);
+  const mixHex = (c, t, k) => '#' + c.map((v, q) => Math.round(v + (t[q] - v) * k).toString(16).padStart(2, '0')).join('');
+  function photoToRows(img, tol) {
+    // 1. Photo réduite pour travailler vite.
+    const k = Math.min(1, 160 / Math.max(img.width, img.height));
+    const w = Math.max(8, Math.round(img.width * k)), h = Math.max(8, Math.round(img.height * k)), n = w * h;
+    const work = mk(w, h), wg = work.getContext('2d');
+    wg.drawImage(img, 0, 0, w, h);
+    const d = wg.getImageData(0, 0, w, h).data, fg = new Uint8Array(n);
+    const near = (i, x) => [i - w, i + w, x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1];
+    let clear = 0;
+    for (let i = 0; i < n; i++) if (d[i * 4 + 3] < 128) clear++;
+    if (clear > n * 0.05) {
+      // Image déjà détourée (par exemple avec l'appareil photo de l'iPhone) : on garde sa transparence.
+      for (let i = 0; i < n; i++) fg[i] = d[i * 4 + 3] >= 128 ? 1 : 0;
+    } else {
+      // 2. Couleur du fond : la moyenne des bords. On « remplit » le fond depuis les bords
+      // tant que la couleur reste proche de celle du fond (ou change en douceur, pour les ombres).
+      const border = [];
+      for (let x = 0; x < w; x++) border.push(x, (h - 1) * w + x);
+      for (let y = 1; y < h - 1; y++) border.push(y * w, y * w + w - 1);
+      let r = 0, g = 0, b = 0;
+      for (const i of border) { r += d[i * 4]; g += d[i * 4 + 1]; b += d[i * 4 + 2]; }
+      r /= border.length; g /= border.length; b /= border.length;
+      const bg = new Uint8Array(n), stack = [];
+      for (const i of border) if (!bg[i] && cdist(d, i * 4, r, g, b) < tol) { bg[i] = 1; stack.push(i); }
+      while (stack.length) {
+        const i = stack.pop();
+        for (const j of near(i, i % w)) {
+          if (j < 0 || j >= n || bg[j]) continue;
+          const toBg = cdist(d, j * 4, r, g, b);
+          if (toBg < tol || (toBg < tol * 2 && cdist(d, j * 4, d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) < tol * 0.22)) { bg[j] = 1; stack.push(j); }
+        }
+      }
+      for (let i = 0; i < n; i++) fg[i] = 1 - bg[i];
+    }
+    // 3. On garde le plus gros morceau : c'est le doudou.
+    const lab = new Int32Array(n).fill(-1);
+    let best = -1, bestN = 0;
+    for (let s0 = 0; s0 < n; s0++) {
+      if (!fg[s0] || lab[s0] >= 0) continue;
+      const st = [s0]; let cnt = 0;
+      lab[s0] = s0;
+      while (st.length) {
+        const i = st.pop(); cnt++;
+        for (const j of near(i, i % w)) if (j >= 0 && j < n && fg[j] && lab[j] < 0) { lab[j] = s0; st.push(j); }
+      }
+      if (cnt > bestN) { bestN = cnt; best = s0; }
+    }
+    // Aperçu : le fond retiré est teinté en rose.
+    const view = wg.getImageData(0, 0, w, h);
+    for (let i = 0; i < n; i++) if (lab[i] !== best) { const q = i * 4; view.data[q] = (view.data[q] + 255 * 2) / 3; view.data[q + 1] = view.data[q + 1] / 3; view.data[q + 2] = (view.data[q + 2] + 180 * 2) / 3; view.data[q + 3] = 255; }
+    wg.putImageData(view, 0, 0);
+    if (bestN < n * 0.03 || bestN > n * 0.97) return { view: work, rows: null };
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let i = 0; i < n; i++) if (lab[i] === best) { const x = i % w, y = (i / w) | 0; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    // 4. Réduction à la taille d'un personnage du jeu.
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    let th = DOUDOU_H, tw = Math.round(bw * th / bh);
+    if (tw > DOUDOU_W) { tw = DOUDOU_W; th = clamp(Math.round(bh * tw / bw), 10, DOUDOU_H); }
+    tw = Math.max(6, tw);
+    const cells = [];
+    for (let cy = 0; cy < th; cy++) {
+      for (let cx = 0; cx < tw; cx++) {
+        const ya = Math.floor(y0 + cy * bh / th), yb = Math.max(ya + 1, Math.floor(y0 + (cy + 1) * bh / th));
+        const xa = Math.floor(x0 + cx * bw / tw), xb = Math.max(xa + 1, Math.floor(x0 + (cx + 1) * bw / tw));
+        let r = 0, g = 0, b = 0, c = 0, t = 0, dr = 0, dg = 0, db = 0, dc = 0;
+        for (let y = ya; y < yb; y++) for (let x = xa; x < xb; x++) {
+          t++;
+          const i = y * w + x;
+          if (lab[i] !== best) continue;
+          c++; r += d[i * 4]; g += d[i * 4 + 1]; b += d[i * 4 + 2];
+          // Pixels très sombres : souvent les yeux ou la truffe, qu'on ne veut pas perdre.
+          if (d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11 < 70) { dc++; dr += d[i * 4]; dg += d[i * 4 + 1]; db += d[i * 4 + 2]; }
+        }
+        const dark = c && dc >= c * 0.2 && dc < c;
+        cells.push(c >= t * 0.45 ? (dark ? Object.assign([dr / dc, dg / dc, db / dc], { dark: true }) : [r / c, g / c, b / c]) : null);
+      }
+    }
+    // 5. Couleurs plus franches, puis 6 couleurs principales (k-moyennes).
+    const px = cells.filter(Boolean);
+    for (const c of px) { const l = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; for (let q = 0; q < 3; q++) c[q] = clamp(l + (c[q] - l) * 1.3, 0, 255); }
+    const lum = c => c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11;
+    const sorted = px.slice().sort((a, b) => lum(a) - lum(b)), K = Math.min(6, px.length);
+    let centers = Array.from({ length: K }, (_, i) => sorted[Math.floor((i + 0.5) * sorted.length / K)].slice());
+    const nearest = c => { let bi = 0, bd = Infinity; centers.forEach((m, i) => { const dd = (c[0] - m[0]) ** 2 + (c[1] - m[1]) ** 2 + (c[2] - m[2]) ** 2; if (dd < bd) { bd = dd; bi = i; } }); return bi; };
+    for (let it = 0; it < 8; it++) {
+      const acc = centers.map(() => [0, 0, 0, 0]);
+      for (const c of px) { const a = acc[nearest(c)]; a[0] += c[0]; a[1] += c[1]; a[2] += c[2]; a[3]++; }
+      centers = centers.map((m, i) => acc[i][3] ? [acc[i][0] / acc[i][3], acc[i][1] / acc[i][3], acc[i][2] / acc[i][3]] : m);
+    }
+    let labels = cells.map(c => (c ? nearest(c) : -1));
+    const keep = cells.map(c => !!(c && c.dark));
+    // 6. Aplats : un pixel isolé prend la couleur majoritaire de ses voisins.
+    labels = labels.map((L, i) => {
+      if (L < 0 || keep[i]) return L;
+      const cx = i % tw, cy = (i / tw) | 0, votes = {};
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const x = cx + dx, y = cy + dy;
+        if (x < 0 || y < 0 || x >= tw || y >= th) continue;
+        const v = labels[y * tw + x];
+        if (v >= 0) votes[v] = (votes[v] || 0) + 1;
+      }
+      const top = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0];
+      return top !== undefined && votes[top] >= 6 && !votes[L] ? +top : L;
+    });
+    // 7. Lumière : reflet en haut, ombre en bas ; puis contour sombre et une marge pour l'animation.
+    const pal = {}, letters = 'abcdefghijklmnopqr';
+    centers.forEach((m, i) => {
+      pal[letters[i * 3]] = mixHex(m, m, 0);
+      pal[letters[i * 3 + 1]] = mixHex(m, [255, 255, 255], 0.28);
+      pal[letters[i * 3 + 2]] = mixHex(m, [20, 10, 40], 0.3);
+    });
+    const at = (x, y) => (x < 0 || y < 0 || x >= tw || y >= th) ? -1 : labels[y * tw + x];
+    const rows = [];
+    for (let y = -1; y <= th; y++) {
+      let row = '..';
+      for (let x = -1; x <= tw; x++) {
+        const L = at(x, y);
+        if (L < 0) { row += (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) ? 'K' : '.'; continue; }
+        row += letters[L * 3 + (at(x, y - 1) < 0 ? 1 : at(x, y + 1) < 0 ? 2 : 0)];
+      }
+      rows.push(row + '.');
+    }
+    while (rows.length && !/[^.]/.test(rows[0])) rows.shift();
+    return { view: work, rows, pal };
+  }
+
+  // L'atelier : prendre ou choisir une photo, régler le fond, donner un nom.
+  const creator = document.getElementById('creator'), crView = document.getElementById('crView');
+  const crTol = document.getElementById('crTol'), crName = document.getElementById('crName');
+  const crOk = document.getElementById('crOk'), crMsg = document.getElementById('crMsg');
+  let crImg = null, crRes = null;
+  function openCreator() {
+    holding = false;
+    crImg = null; crRes = null; crOk.disabled = true;
+    crName.value = customChar.empty ? 'DOUDOU' : customChar.name;
+    crMsg.textContent = 'Le fond retiré apparaît en rose sur la photo.';
+    creator.hidden = false;
+    drawCreator();
+  }
+  function closeCreator() { creator.hidden = true; }
+  function drawCreator() {
+    const g = crView.getContext('2d'), CW = crView.width, CH = crView.height;
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#2a1f4a'; g.fillRect(0, 0, CW, CH);
+    for (let y = 0; y < CH; y += 8) for (let x = CW / 2; x < CW; x += 8) if (((x + y) / 8) % 2) { g.fillStyle = '#33275a'; g.fillRect(x, y, 8, 8); }
+    if (!crRes) { g.fillStyle = '#d6fff0'; g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'center'; g.fillText('PAS ENCORE DE PHOTO', CW / 2, CH / 2); return; }
+    const v = crRes.view, k = Math.min((CW / 2 - 8) / v.width, (CH - 8) / v.height);
+    g.imageSmoothingEnabled = true;
+    g.drawImage(v, Math.round(CW / 4 - v.width * k / 2), Math.round(CH / 2 - v.height * k / 2), v.width * k, v.height * k);
+    g.imageSmoothingEnabled = false;
+    if (crRes.rows) {
+      const spr = makeSprite(crRes.rows, Object.assign({ K: OUT }, crRes.pal)), z = Math.max(1, Math.floor(Math.min((CW / 2 - 8) / spr.width, (CH - 8) / spr.height)));
+      g.drawImage(spr, Math.round(CW * 3 / 4 - spr.width * z / 2), Math.round(CH / 2 - spr.height * z / 2), spr.width * z, spr.height * z);
+    }
+  }
+  function rebuildCreator() {
+    if (!crImg) return;
+    crRes = photoToRows(crImg, +crTol.value);
+    crOk.disabled = !crRes.rows;
+    crMsg.textContent = crRes.rows ? 'Le fond retiré apparaît en rose. Règle FOND si besoin.' : 'Doudou introuvable : essaie un autre réglage de FOND ou un fond plus uni.';
+    drawCreator();
+  }
+  function loadPhoto(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { crImg = img; rebuildCreator(); URL.revokeObjectURL(url); };
+    img.onerror = () => { crMsg.textContent = 'Impossible de lire cette photo.'; URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+  for (const id of ['crCam', 'crLib']) {
+    const input = document.getElementById(id);
+    input.addEventListener('change', () => { loadPhoto(input.files && input.files[0]); input.value = ''; });
+  }
+  crTol.addEventListener('input', rebuildCreator);
+  document.getElementById('crCancel').addEventListener('click', closeCreator);
+  crOk.addEventListener('click', () => {
+    if (!crRes || !crRes.rows) return;
+    const name = (crName.value.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || 'DOUDOU').slice(0, 7);
+    const data = { name, rows: crRes.rows, pal: crRes.pal };
+    setCustom(data);
+    store.set('doudou', JSON.stringify(data));
+    pick(CHARS.indexOf(customChar));
+    closeCreator();
+  });
+
   window.addEventListener('pointerdown', e => {
-    if (e.target.closest && e.target.closest('button')) return;
+    if (e.target.closest && (e.target.closest('button') || e.target.closest('#creator'))) return;
     e.preventDefault();
     press(e);
   }, { passive: false });
@@ -3845,6 +4134,7 @@
   document.addEventListener('click', () => Sound.init());
 
   window.addEventListener('keydown', e => {
+    if (!creator.hidden) { if (e.code === 'Escape') closeCreator(); return; }
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter') {
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
@@ -3852,7 +4142,7 @@
     } else if (bonus && mode === 'play' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
       holding = true; bonusDir = e.code === 'ArrowLeft' ? -1 : 1;
     } else if (mode === 'title' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-      pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1));
+      pick(charIdx + (e.code === 'ArrowLeft' ? -1 : 1), e.code === 'ArrowLeft' ? -1 : 1);
     } else if (mode === 'title' && e.code === 'KeyB' && bonusUnlocked()) {
       Sound.init(); startBonus();
     } else if (mode === 'title' && e.code === 'ArrowDown') {
