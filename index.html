@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v17';
+  const VERSION = 'v19';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -129,6 +129,8 @@
     const ORGAN = { ratio: 2, index: 1.6, idxSus: 0.7, idxDecay: 0.1, vol: 0.18, a: 0.005, d: 0.1, sus: 0.75, rel: 0.08 };
     const MUSICBOX = { ratio: 4, index: 1.2, idxSus: 0.2, idxDecay: 0.15, vol: 0.18, a: 0.002, d: 0.25, sus: 0.2, rel: 0.2 };
     const ACCORDION = { ratio: 1, index: 2.6, idxSus: 0.85, idxDecay: 0.05, vol: 0.13, a: 0.015, d: 0.08, sus: 0.85, rel: 0.06 };
+    const FLUTE = { ratio: 1, index: 0.9, idxSus: 0.5, idxDecay: 0.1, vol: 0.17, a: 0.03, d: 0.1, sus: 0.8, rel: 0.1 };
+    const MANDOLIN = { ratio: 2, index: 2.2, idxSus: 0.15, idxDecay: 0.06, vol: 0.2, a: 0.003, d: 0.12, sus: 0.25, rel: 0.08 };
     const STAB = { ratio: 1, index: 2, idxSus: 0.6, idxDecay: 0.05, vol: 0.05, a: 0.005, d: 0.08, sus: 0.5, rel: 0.05 };
 
     // Une mesure = 8 croches (6 pour une valse). "-" prolonge la note, "." est un silence.
@@ -259,6 +261,54 @@
         ],
         bassPat: [0, null, null, null, 7, null, null, null],
         drums: { kick: [0, 8], snare: [4, 12], hat: 4 }
+      }),
+      song({ // Hong Kong : pop cantonaise pentatonique, flûte, bloc de bois (composition originale)
+        bpm: 140, lead: FLUTE, bass: BASS, arpWave: 'square', arpVol: 0.03, arpEvery: 2,
+        chords: {
+          G: { b: 43, a: [55, 59, 62, 67] }, Em: { b: 40, a: [52, 55, 59, 64] },
+          C: { b: 48, a: [55, 60, 64, 67] }, D: { b: 50, a: [54, 57, 62, 66] }
+        },
+        prog: ['G', 'G', 'Em', 'Em', 'C', 'C', 'D', 'D', 'G', 'G', 'Em', 'Em', 'C', 'D', 'G', 'G'],
+        mel: [
+          'D6 E6 G6 - A6 G6 E6 D6', 'E6 - G6 - D6 - B5 -', 'B5 D6 E6 - G6 E6 D6 B5', 'D6 - - - E6 - . .',
+          'G6 A6 B6 - A6 G6 E6 G6', 'E6 - D6 - B5 - D6 -', 'A5 B5 D6 - E6 D6 B5 A5', 'A5 - - - . . D6 E6',
+          'G6 - E6 G6 A6 - G6 E6', 'D6 E6 G6 - E6 - D6 -', 'B5 - D6 E6 G6 - E6 D6', 'E6 - - - . . B5 D6',
+          'E6 G6 E6 D6 B5 - A5 B5', 'D6 - E6 - A6 - G6 E6', 'G6 - - - D6 - B5 -', 'G5 - - - . . . .'
+        ],
+        bassPat: [0, 12, 7, 12, 0, 12, 7, 12],
+        drums: { kick: [0, 6, 8], snare: [4, 12], hat: 2, block: [10, 14] }
+      }),
+      song({ // Dolce Toscana : saltarello à la mandoline et au tambourin (composition originale)
+        bpm: 200, spb: 12, lead: MANDOLIN, bass: SOFTBASS, stab: STAB, stabs: [4, 10],
+        chords: {
+          Dm: { b: 50, a: [57, 62, 65, 69] }, A7: { b: 45, a: [57, 61, 64, 67] }, Gm: { b: 43, a: [55, 58, 62, 67] },
+          F: { b: 41, a: [53, 57, 60, 65] }, C: { b: 48, a: [55, 60, 64, 67] }
+        },
+        prog: ['Dm', 'Dm', 'A7', 'A7', 'Dm', 'Dm', 'A7', 'Dm', 'F', 'C', 'Dm', 'A7', 'Gm', 'Dm', 'A7', 'Dm'],
+        mel: [
+          'D6 - F6 A6 - F6', 'D6 - E6 F6 E6 D6', 'C#6 - E6 A6 - G6', 'E6 - C#6 A5 - .',
+          'D6 - F6 A6 - D7', 'C7 - A6 F6 - D6', 'E6 F6 G6 E6 - C#6', 'D6 - - D6 - .',
+          'A6 - C7 A6 - F6', 'G6 - E6 C6 - E6', 'F6 - A6 D7 - A6', 'C#7 - A6 E6 - .',
+          'G6 - A#6 D7 - A#6', 'A6 - F6 D6 - F6', 'E6 G6 F6 E6 D6 C#6', 'D6 - - - . .'
+        ],
+        bassPat: [0, null, null, 7, null, null],
+        drums: { kick: [0, 6], hat: 2, open: [4, 10] }
+      }),
+      song({ // Cap Canaveral : hymne du grand départ, cuivres (composition originale)
+        bpm: 112, lead: BRASS, bass: BASS, arpWave: 'triangle', arpVol: 0.05, arpEvery: 2,
+        chords: {
+          C: { b: 48, a: [55, 60, 64, 67] }, F: { b: 41, a: [53, 57, 60, 65] },
+          G: { b: 43, a: [55, 59, 62, 67] }, Am: { b: 45, a: [57, 60, 64, 69] }
+        },
+        prog: ['C', 'C', 'F', 'C', 'Am', 'F', 'G', 'G', 'C', 'C', 'F', 'C', 'Am', 'G', 'C', 'C'],
+        mel: [
+          'G5 - C6 - E6 - G6 -', 'G6 - - E6 C6 - E6 -', 'F6 - A6 - C7 - A6 -', 'G6 - - - E6 - . .',
+          'E6 - A6 - C7 - A6 -', 'F6 - A6 - C7 - D7 -', 'D7 - - - B6 - G6 -', 'G6 - - - . . G5 -',
+          'C6 - E6 G6 C7 - - -', 'B6 - A6 - G6 - E6 -', 'F6 - A6 C7 F7 - E7 D7', 'C7 - - - G6 - . .',
+          'A6 - C7 - E7 - C7 -', 'D7 - B6 - G6 - B6 -', 'C7 - - - G6 - E6 -', 'C7 - - - . . . .'
+        ],
+        bassPat: [0, null, 0, 7, 0, null, 0, 7],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [14] }
       })
     ];
     let cur = SONGS[0];
@@ -440,6 +490,13 @@
         g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.22, t + 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.8);
         src.connect(f); f.connect(g); g.connect(sfx); src.start(t); src.stop(t + 5);
       },
+      // Bip du compte à rebours, et accord du décollage.
+      countdown(go) {
+        if (!ac) return;
+        const t = ac.currentTime + 0.02;
+        if (go) ['C5', 'E5', 'G5', 'C6'].forEach(n => fm(sfx, t, mtof(n2m(n)), 0.8, BELL));
+        else fm(sfx, t, mtof(n2m('G5')), 0.18, BELL);
+      },
       // Niveau bonus débloqué.
       unlock() { if (ac) ['C6', 'E6', 'G6', 'C7', 'E7', 'G7', 'C8'].forEach((n, i) => fm(sfx, ac.currentTime + 0.05 + i * 0.09, mtof(n2m(n)), 0.25, BELL)); },
       // Petit son pour l'événement de mi-parcours de chaque monde.
@@ -468,6 +525,20 @@
           for (let k = 0; k < 14; k++) nz(t + rand(0.1, 2.4), 0.04, 0.06, 'highpass', 2500, 0, sfx);
         } else if (w === 4) {
           noiseSweep(t + 0.8, 3.5, 300, 2200, 0.16, 'lowpass');
+        } else if (w === 7) {
+          // Danse du lion : tambour et cymbales ; feu d'artifice : sifflement puis « boum ».
+          for (let k = 0; k * 0.25 < EVENT_DUR[7] - 1; k++) {
+            if (k % 4 !== 3) drum(t + k * 0.25, k % 4 === 0 ? 120 : 160, 60, 0.18, k % 4 === 0 ? 0.45 : 0.25);
+            if (k % 4 === 0) nz(t + k * 0.25, 0.3, 0.07, 'highpass', 5000, 0, sfx);
+          }
+          FIREWORKS.forEach(([f]) => {
+            fm(sfx, t + f - 0.6, 500, 0.55, Object.assign({}, BELL, { vol: 0.05, glide: 2.2 }));
+            drum(t + f, 90, 40, 0.5, 0.35); nz(t + f, 0.6, 0.12, 'lowpass', 1200, 0, sfx);
+          });
+        } else if (w === 8) {
+          // Le Palio : galop des chevaux et clameur de la foule.
+          for (let k = 0; k * 0.14 < EVENT_DUR[8] - 1.5; k++) drum(t + 0.8 + k * 0.14 + (k % 2) * 0.03, 900, 650, 0.04, 0.12);
+          noiseSweep(t + 0.6, 6, 700, 1300, 0.07, 'bandpass');
         } else {
           // Le dragon : un petit grondement, puis deux souffles de feu.
           fm(sfx, t + 0.3, 140, 0.9, Object.assign({}, SLAP, { vol: 0.14, glide: 0.55, sus: 0.8 }));
@@ -928,6 +999,104 @@
         if (cx <= 2) return cx === 1 ? '#7d5030' : '#6b4226';
         if (cy <= 1) return cy === 0 ? '#7d5030' : '#a0703f';
         return hash(x * 5 + y * 17) % 4 === 0 ? '#d1a43e' : '#e8c35a';
+      }
+    },
+    // Hong Kong
+    { // paniers vapeur à dim sum en bambou
+      top: ['#f2dca0', '#d9b870', '#a8864a'], deep: '#8a6a3a',
+      topPat(x, y) { return y === 1 ? '#f2dca0' : ((x + y) % 3 === 0 ? '#b8955a' : '#d9b870'); },
+      body(x, y) {
+        const cy = (y - 6) % 12;
+        if (cy <= 1) return cy === 0 ? '#8a6a3a' : '#b8955a';
+        if (cy === 11) return '#a8864a';
+        return (x + (cy >> 1)) % 4 === 0 ? '#c4a062' : ((x * 3 + cy) % 7 === 0 ? '#e6cc8a' : '#d9b870');
+      }
+    },
+    { // enseignes au néon sur panneau sombre
+      top: ['#ff6fd0', '#2a1f4a', '#1a1433'], deep: '#1a1433',
+      topPat(x, y) { return y === 1 ? (x % 4 < 2 ? '#ff6fd0' : '#ffd0f0') : '#2a1f4a'; },
+      body(x, y) {
+        const cx = x % 22, cy = (y - 6) % 22, k = hash(((x / 22) | 0) * 7 + (((y - 6) / 22) | 0) * 13) % 4;
+        const col = ['#ff4fa8', '#4fe0ff', '#ffe14d', '#7dff8a'][k];
+        if (cx >= 3 && cx <= 18 && cy >= 3 && cy <= 18) {
+          const ring = cx === 3 || cx === 18 || cy === 3 || cy === 18;
+          if (ring) return col;
+          if ((cy === 8 || cy === 13) && cx >= 6 && cx <= 15) return col;
+          if ((cx === 7 || cx === 14) && cy >= 6 && cy <= 15) return col;
+        }
+        return (x + y) % 9 === 0 ? '#2a1f4a' : '#1f1838';
+      }
+    },
+    { // échafaudage en bambou
+      top: ['#e6d29a', '#c4a868', '#8a7444'], deep: '#4a4a5a',
+      topPat(x, y) { return y <= 2 ? (x % 6 === 0 ? '#2a2433' : '#e6d29a') : (y === 5 ? '#8a7444' : '#c4a868'); },
+      body(x, y) {
+        const cx = x % 12, cy = (y - 6) % 14;
+        if (cx <= 1) return cy === 4 || cy === 5 ? '#2a2433' : (cx === 0 ? '#a8864a' : '#d9c07e');
+        if (cy <= 1) return cx === 6 ? '#2a2433' : (cy === 0 ? '#a8864a' : '#d9c07e');
+        return (x + y) % 2 ? '#5a5a6e' : '#4a4a5a';
+      }
+    },
+    // Dolce Toscana
+    { // marbre rayé noir et blanc, comme la cathédrale de Sienne
+      top: ['#ffffff', '#ecebe6', '#bdbab0'], deep: '#2a2a33',
+      body(x, y) {
+        const band = ((y - 6) / 6) | 0;
+        if (band % 2) return hash(x * 7 + y * 3) % 17 === 0 ? '#4a4a55' : '#2a2a33';
+        return hash(x * 5 + y * 11) % 13 === 0 ? '#d9d6ce' : '#f4f2ec';
+      }
+    },
+    { // toit en tuiles de terre cuite sur mur ocre à volets verts
+      top: ['#e58a5a', '#c4603a', '#8f3f22'], deep: '#b8864a',
+      topPat(x, y) { return (x % 4 === 0 || y === 5) ? '#8f3f22' : (y <= 2 ? '#e58a5a' : '#c4603a'); },
+      body(x, y) {
+        const cx = x % 16, cy = (y - 6) % 20;
+        if (cy >= 5 && cy <= 14 && cx >= 4 && cx <= 11) {
+          if (cx === 4 || cx === 11) return '#3f7a4a';
+          if (cx === 5 || cx === 10) return (cy % 2) ? '#4f9a5a' : '#3f7a4a';
+          return '#4a3a3a';
+        }
+        if (cy === 15 && cx >= 3 && cx <= 12) return '#e8d4a8';
+        return hash(x * 3 + y * 7) % 11 === 0 ? '#d4a05e' : '#e0b46e';
+      }
+    },
+    { // panforte, le gâteau de Sienne, saupoudré de sucre
+      top: ['#ffffff', '#f4efe4', '#d9d0c0'], deep: '#5e3a20',
+      topPat(x, y) { return y <= 2 ? (hash(x * 13 + y) % 4 ? '#ffffff' : '#ece4d4') : (y === 5 ? '#d9d0c0' : '#f4efe4'); },
+      body(x, y) {
+        const k = hash(x * 31 + y * 17) % 19;
+        if (k === 0) return '#e8d4a8';
+        if (k === 1) return '#c96a3a';
+        if (k === 2) return '#3f6a2a';
+        return (x + y) % 5 === 0 ? '#6b4226' : '#7d4f2e';
+      }
+    },
+    // Cap Canaveral (fin de la partie)
+    { // béton de la piste avec bandes jaunes et noires
+      top: ['#ffd84a', '#2a2433', '#7d7d8a'], deep: '#8a8a96',
+      topPat(x, y) { return y <= 3 ? ((x + y) % 8 < 4 ? '#ffd84a' : '#2a2433') : '#7d7d8a'; },
+      body(x, y) {
+        const cx = x % 24, cy = (y - 6) % 16;
+        if (cx === 0 || cy === 0) return '#8a8a96';
+        return hash(x * 7 + y * 13) % 9 === 0 ? '#a4a4ae' : '#b4b4be';
+      }
+    },
+    { // poutres d'acier rouge
+      top: ['#ff6b5a', '#d7263d', '#8e1b2a'], deep: '#3a3a48',
+      body(x, y) {
+        const cx = x % 16, cy = (y - 6) % 16;
+        if (cx <= 1 || cy <= 1) return '#d7263d';
+        if (Math.abs(cx - cy) <= 1 || Math.abs(cx + cy - 16) <= 1) return '#b81f33';
+        return '#3a3a48';
+      }
+    },
+    { // dalles blanches de l'aire de lancement
+      top: ['#ffffff', '#e6e8f0', '#b8bccb'], deep: '#9aa0b4',
+      body(x, y) {
+        const cx = x % 18, cy = (y - 6) % 18;
+        if (cx === 0 || cy === 0) return '#b8bccb';
+        if (cx >= 7 && cx <= 10 && cy >= 7 && cy <= 10) return '#d7263d';
+        return '#eef0f6';
       }
     },
     { // trampoline en guimauve
@@ -1490,6 +1659,235 @@
     return null;
   });
 
+  // Hong Kong : Victoria Peak, gratte-ciel du port (Bank of China Tower, IFC), fenêtres allumées.
+  const hkFar = paintStrip(640, 120, (x, y) => {
+    const fb = 119 - y;
+    // Bank of China Tower : verre bleu, grands « X » blancs, toit en biseau et deux mâts.
+    const bdx = x + 0.5 - 200;
+    if ((Math.abs(bdx + 12) < 0.6 || Math.abs(bdx + 9) < 0.6) && fb >= 88 && fb < 104) return '#c9d6f2';
+    if (bdx >= -14 && bdx <= 14 - Math.max(0, fb - 30) * 0.35 && fb < 90) {
+      if (Math.abs(bdx) > 13 || bdx > 13 - Math.max(0, fb - 30) * 0.35) return '#c9d6f2';
+      return (Math.abs(((fb + bdx) % 24 + 24) % 24) < 1 || Math.abs(((fb - bdx) % 24 + 24) % 24) < 1) ? '#c9d6f2' : (x % 2 ? '#3d5a9e' : '#46649e');
+    }
+    // IFC : la plus haute tour, couronne en gradins.
+    const idx = Math.abs(x + 0.5 - 330);
+    if (fb < 92 && idx <= 11) return idx > 10 ? '#5a6fa8' : (x % 3 === 0 ? '#a8b8dc' : (hash(x * 7 + fb * 3) % 9 === 0 ? '#fff3b0' : '#7f93c4'));
+    if (fb >= 92 && fb < 108 && idx <= 11 - (fb - 92) * 0.55 - ((fb % 4) < 2 ? 1 : 0)) return '#a8b8dc';
+    // Autres tours, avec des fenêtres allumées.
+    const bi = Math.floor(x / 18), bh = 30 + hash(bi * 13 + 7) % 50, lx = x % 18;
+    if (lx >= 1 && lx <= 15 && fb < bh) {
+      if (lx === 1 || fb === bh - 1) return '#232a52';
+      return (lx % 3 === 2 && fb % 4 === 1 && hash(x * 5 + fb * 11) % 3 === 0) ? ['#fff3b0', '#9ff0ff', '#ffc4e6'][hash(x + fb) % 3] : '#2c3462';
+    }
+    // Victoria Peak et les collines derrière la ville.
+    const ridge = 58 + 22 * Math.sin(x / 640 * TAU * 2 + 0.6) + 10 * Math.sin(x / 640 * TAU * 5);
+    if (fb < ridge) return (x + fb) % 7 === 0 ? '#22304e' : '#1c2844';
+    return null;
+  });
+  // Hong Kong : une jonque aux voiles rouges et le Star Ferry sur le port.
+  const hkBoats = paintStrip(480, 40, (x, y) => {
+    const fb = 39 - y;
+    const jx = x + 0.5 - 100;
+    if (fb < 5 && Math.abs(jx) <= 17 - (4 - fb) * 1.2 + (jx < 0 ? fb * 0.8 : 0)) return fb === 4 ? '#a0703f' : '#6b4226';
+    for (const [mx, h, w] of [[-9, 20, 9], [1, 28, 11], [11, 18, 8]]) {
+      const sx = jx - mx;
+      if (fb >= 5 && fb < 5 + h && sx >= -w * (fb - 5) / h - 1 && sx <= 1) return (fb - 5) % 5 === 0 ? '#8e1b2a' : '#d7263d';
+      if (Math.abs(sx - 0.5) < 0.6 && fb >= 4 && fb < 6 + h) return '#4e3020';
+    }
+    const fx = x + 0.5 - 330;
+    if (Math.abs(fx) <= 22) {
+      if (fb < 5) return fb === 4 ? '#ffffff' : '#2e8b57';
+      if (fb < 11 && Math.abs(fx) <= 19) return (fb >= 6 && fb <= 8 && Math.floor(fx) % 3 !== 0) ? '#3a4a6a' : '#f4f4f8';
+      if (fb === 11 && Math.abs(fx) <= 20) return '#2e8b57';
+      if (fb >= 12 && fb < 16 && fx >= -2 && fx <= 2) return fb === 15 ? '#2a2433' : '#ffffff';
+    }
+    return null;
+  });
+  // Hong Kong : vieux immeubles, enseignes au néon, tramway « ding-ding » et taxi rouge.
+  const hkBlocks = (() => {
+    const out = [];
+    let x = 0, i = 0;
+    while (x < 480) {
+      const w = Math.min(22 + hash(i * 7 + 2) % 14, 480 - x);
+      out.push({ x, w, h: 20 + hash(i * 11 + 9) % 14, c: ['#4a4a6a', '#5a4a5e', '#4a5a66', '#5e5470'][hash(i * 3) % 4], sign: hash(i * 17 + 4) % 3 !== 0, sc: ['#ff4fa8', '#4fe0ff', '#ffe14d', '#7dff8a', '#ff8a3a'][hash(i * 5 + 3) % 5] });
+      x += w; i++;
+    }
+    return out;
+  })();
+  const hkMid = paintStrip(480, 64, (x, y) => {
+    const fb = 63 - y;
+    // Tramway à impériale vert.
+    if (x >= 60 && x <= 100 && fb < 24) {
+      const lx = x - 60;
+      if (fb < 2) return (lx === 6 || lx === 7 || lx === 33 || lx === 34) ? '#1d171b' : '#3a3a48';
+      if (fb === 23) return '#1f5a36';
+      if (fb === 12 || fb === 13) return '#f4e6c0';
+      if ((fb >= 15 && fb <= 20 || fb >= 5 && fb <= 10) && lx % 6 >= 2 && lx > 1 && lx < 39) return '#ffe9a8';
+      return '#2e8b57';
+    }
+    if (x === 80 && fb >= 24 && fb < 34) return '#2a2433';
+    // Taxi rouge au toit argenté.
+    if (x >= 250 && x <= 272 && fb < 10) {
+      const lx = x - 250;
+      if (fb < 3 && (Math.abs(lx - 5) <= 2 || Math.abs(lx - 17) <= 2)) return '#1d171b';
+      if (fb >= 6 && (lx < 5 || lx > 17)) return null;
+      if (fb >= 6) return fb === 9 ? '#c9c9d4' : (lx % 6 === 2 ? '#d7263d' : '#9ff0ff');
+      return '#d7263d';
+    }
+    const b = hkBlocks.find(o => x >= o.x && x < o.x + o.w);
+    if (!b) return null;
+    const lx = x - b.x;
+    // Enseigne verticale qui dépasse de la façade.
+    if (b.sign && lx >= 2 && lx <= 8 && fb >= 12 && fb <= 30) {
+      if (lx === 2 || lx === 8 || fb === 12 || fb === 30) return b.sc;
+      return (fb - 12) % 5 === 2 && lx >= 4 && lx <= 6 ? b.sc : '#1a1433';
+    }
+    if (fb >= b.h) return null;
+    if (fb === b.h - 1) return '#2a2433';
+    if (fb < 6) return lx % 8 < 6 && fb < 5 ? ['#ffe9a8', '#ffb3d9', '#9ff0ff'][hash(b.x + 1) % 3] : '#3a3048';
+    const cy = (fb - 6) % 7, cx = lx % 6;
+    if (cy >= 2 && cy <= 4 && cx >= 2 && cx <= 4) return hash(b.x * 3 + fb * 5 + lx) % 3 ? '#ffd97a' : '#2a2433';
+    if (cy === 5 && cx === 2 && hash(b.x + fb) % 2) return '#c9c9d4';
+    return b.c;
+  });
+
+  // Toscane : collines et cyprès, Florence (Duomo, campanile de Giotto, Palazzo Vecchio)
+  // et Sienne (Torre del Mangia, Palazzo Pubblico, cathédrale rayée).
+  const tuscFar = paintStrip(640, 120, (x, y) => {
+    const fb = 119 - y, MARBLE = '#f4efe4', GREEN = '#4f8a6a', PINK = '#e8a8a0';
+    // Florence : le Duomo et sa coupole de Brunelleschi.
+    const ddx = x + 0.5 - 150;
+    if (Math.abs(ddx) <= 1.5 && fb >= 62 && fb < 70) return fb >= 68 ? '#e0c27a' : MARBLE;
+    if (fb >= 38 && fb < 62 && (ddx / 19) ** 2 + ((fb - 38) / 24) ** 2 <= 1) {
+      if (Math.round(ddx) % 7 === 0) return MARBLE;
+      return (fb + Math.round(ddx)) % 6 === 0 ? '#a8432c' : '#c8553a';
+    }
+    if (fb >= 28 && fb < 38 && Math.abs(ddx) <= 21) return fb === 37 ? '#c9c2b4' : (Math.round(ddx) % 5 === 0 ? GREEN : (fb === 32 && Math.round(ddx) % 5 === 2 ? '#3b2f4a' : MARBLE));
+    if (x >= 110 && x <= 192 && fb < 28) {
+      if (fb >= 22 && fb < 28 && x > 120 && x < 180) return '#c8553a';
+      if (fb >= 22) return null;
+      return x % 6 === 0 ? GREEN : (fb % 7 === 3 && x % 6 === 3 ? PINK : MARBLE);
+    }
+    // Campanile de Giotto.
+    if (x >= 205 && x <= 214 && fb < 84) {
+      if (fb >= 80) return x % 2 ? MARBLE : null;
+      const band = fb % 14;
+      if (x === 205 || x === 214) return GREEN;
+      if (band >= 4 && band <= 9 && x >= 208 && x <= 211) return fb > 50 ? '#3b2f4a' : PINK;
+      return MARBLE;
+    }
+    // Palazzo Vecchio et sa tour crénelée.
+    if (x >= 268 && x <= 275 && fb >= 36 && fb < 84) return (fb >= 76 && fb < 80) ? ((x % 2) ? '#a88a5a' : null) : (fb >= 80 && x >= 270 && x <= 273 ? '#a88a5a' : (fb === 60 && x >= 270 && x <= 273 ? '#f4efe4' : '#b89a6a'));
+    if (x >= 250 && x <= 290 && fb < 38) return fb >= 34 ? (x % 3 === 0 ? null : '#a88a5a') : (fb % 9 === 4 && x % 5 === 2 ? '#3b2f4a' : '#c4a676');
+    // Sienne : la Torre del Mangia (brique, couronne de pierre blanche).
+    if (x >= 466 && x <= 473 && fb >= 30 && fb < 104) {
+      if (fb >= 96) return x >= 468 && x <= 471 ? MARBLE : null;
+      if (fb >= 88) return (fb === 88 || fb >= 93) && (x % 2 === 0 || fb === 88) ? MARBLE : (fb > 88 ? '#d9d0c0' : MARBLE);
+      return (fb % 4 === 0) ? '#9a4530' : '#b8553a';
+    }
+    if (x >= 440 && x <= 512 && fb < 32) {
+      if (fb >= 28) return x % 4 === 0 ? null : '#9a4530';
+      if (fb < 12) return MARBLE;
+      return fb % 8 === 3 && x % 6 === 1 ? MARBLE : '#b8553a';
+    }
+    // La cathédrale de Sienne : campanile et murs rayés noir et blanc.
+    if (x >= 548 && x <= 555 && fb < 80) {
+      if (fb >= 70) return Math.abs(x + 0.5 - 551.5) <= 4 - (fb - 70) * 0.4 ? '#2a2a33' : null;
+      return ((fb / 3) | 0) % 2 ? '#2a2a33' : MARBLE;
+    }
+    if (Math.abs(x + 0.5 - 530) <= 7 && fb >= 34 && fb < 44 && ((x + 0.5 - 530) / 7) ** 2 + ((fb - 34) / 10) ** 2 <= 1) return '#d9d6ce';
+    if (x >= 515 && x <= 546 && fb < 34) return ((fb / 3) | 0) % 2 ? '#2a2a33' : MARBLE;
+    // Cyprès, vignes et collines toscanes.
+    const ci = Math.floor(x / 23), ccx = ci * 23 + 11, ch = 14 + hash(ci * 5 + 1) % 14;
+    if (hash(ci * 7) % 3 !== 0 && fb < ch && Math.abs(x + 0.5 - ccx) <= 2.2 * Math.sin(Math.PI * Math.min(1, (fb + 2) / (ch + 2)))) return (x + fb) % 3 ? '#2f5a3a' : '#3c6a46';
+    const hill = 20 + 12 * Math.sin(x / 640 * TAU * 3 + 1) + 6 * Math.sin(x / 640 * TAU * 7);
+    if (fb < hill) {
+      if (fb < hill - 3 && (fb + Math.floor(x / 3)) % 5 === 0) return '#6f8f4a';
+      return fb > hill - 3 ? '#a8b86a' : '#8fa65a';
+    }
+    const far2 = 34 + 10 * Math.sin(x / 640 * TAU * 2 + 2);
+    if (fb < far2) return '#a6a8c8';
+    return null;
+  });
+  // Toscane : le Ponte Vecchio et ses boutiques, palais ocre aux volets verts au bord de l'Arno.
+  const tuscMid = paintStrip(480, 56, (x, y) => {
+    const fb = 55 - y;
+    if (x >= 120 && x <= 300) {
+      const lx = x - 120;
+      // Trois arches au-dessus de l'eau.
+      if (fb < 14) {
+        const a = lx % 60, d = Math.abs(a - 30);
+        if (fb < 11 * Math.sqrt(Math.max(0, 1 - (d / 24) ** 2))) return (fb + x) % 9 === 0 ? '#6f9aa8' : '#4f7a8a';
+        return fb === 13 ? '#9a7a4a' : '#b8955a';
+      }
+      if (fb < 30) {
+        const shop = Math.floor(lx / 12), sx = lx % 12;
+        if (fb >= 28) return '#c4603a';
+        if (sx === 0) return '#8a6a3a';
+        if (fb >= 18 && fb <= 24 && sx >= 3 && sx <= 8) return sx === 3 || sx === 8 ? '#3f7a4a' : '#4a3a3a';
+        return ['#e0a050', '#d98a4a', '#e8b860', '#c97a40'][hash(shop * 7 + 3) % 4];
+      }
+      if (fb < 36 && lx >= 20 && lx <= 160) return fb === 35 ? '#c4603a' : (lx % 8 === 4 && fb === 32 ? '#4a3a3a' : '#e8c080');
+      return null;
+    }
+    const pi = Math.floor(x / 30), lx = x % 30, ph = 22 + hash(pi * 9 + 2) % 10;
+    if (fb >= ph + 3) return null;
+    if (fb >= ph) return lx === 0 || lx === 29 ? null : '#c4603a';
+    if (fb < 3) return '#9a7a4a';
+    const cy = (fb - 4) % 10, cx = lx % 8;
+    if (cy >= 2 && cy <= 7 && cx >= 2 && cx <= 5 && lx < 27) return cx === 2 || cx === 5 ? '#3f7a4a' : '#4a3a3a';
+    return ['#e0b46e', '#e8c890', '#d9985a', '#f0d0a0'][hash(pi * 3) % 4];
+  });
+
+  // Cap Canaveral : l'océan au loin, le grand hangar d'assemblage, les tours de lancement.
+  const capeFar = paintStrip(640, 100, (x, y) => {
+    const fb = 99 - y;
+    // Hangar d'assemblage géant.
+    if (x >= 120 && x <= 180 && fb < 74) {
+      if (fb >= 72) return '#9aa0b4';
+      if (x >= 132 && x <= 146 && fb >= 10 && fb < 62) return ((fb / 4) | 0) % 2 ? '#2f6db5' : '#ffffff';
+      return (x - 120) % 10 === 0 ? '#b8bccb' : '#dfe2ea';
+    }
+    // Deux aires de tir : tour de service, mât paratonnerre, fusée blanche.
+    for (const cx of [380, 520]) {
+      const dx = x - cx;
+      if (dx === 14 && fb < 82) return '#5a5f75';
+      if (dx >= 0 && dx <= 8 && fb < 52) return (dx === 0 || dx === 8 || fb % 6 === 0) ? '#d7263d' : ((dx + fb) % 6 === 0 ? '#b81f33' : null);
+      if (dx >= -10 && dx <= -4 && fb < 46) return fb >= 40 ? (Math.abs(dx + 7) <= (46 - fb) * 0.6 ? '#f4f4f8' : null) : (dx === -4 ? '#cfd3e0' : '#f4f4f8');
+    }
+    if (fb < 8) return (x + fb) % 6 === 0 ? '#5f8a5a' : '#4f7a4a';
+    if (fb < 16) return fb === 15 ? '#bfe0f4' : (hash(x * 3 + fb) % 13 === 0 ? '#9fd0ee' : '#5aa0d8');
+    return null;
+  });
+  // Cap Canaveral : palmiers, dunes et une petite tribune de spectateurs.
+  function palmPix(x, fb, cx, h) {
+    const tx = cx + (fb / h) ** 2 * 5;
+    if (fb < h && Math.abs(x + 0.5 - tx) <= 1.2) return fb % 3 === 0 ? '#7a5a3a' : '#9a7448';
+    for (const a of [0.15, 0.75, 1.5, 2.3, 2.95]) {
+      for (let k = 2; k <= 14; k++) {
+        const fx = cx + 5 + Math.cos(a) * k, fy = h + Math.sin(a) * k * 0.7 - 0.035 * k * k;
+        if (Math.abs(x + 0.5 - fx) <= 1 && Math.abs(fb - fy) <= 1) return k % 4 === 0 ? '#2f6b3a' : '#3f8a4a';
+      }
+    }
+    return null;
+  }
+  const capeMid = paintStrip(480, 50, (x, y) => {
+    const fb = 49 - y;
+    for (const [cx, h] of [[30, 34], [52, 28], [200, 38], [330, 30], [350, 36], [450, 26]]) {
+      const c = palmPix(x, fb, cx, h);
+      if (c) return c;
+    }
+    if (x >= 240 && x <= 300 && fb < 16) {
+      if (fb >= 14) return '#d7263d';
+      if ((fb === 4 || fb === 8 || fb === 12)) return '#dfe2ea';
+      if (fb > 4 && (fb % 4) !== 0 && x % 3 === 0) return ['#ff7fae', '#4db8ff', '#ffd84a', '#7fe08a'][hash(x * 3 + fb) % 4];
+      return x === 240 || x === 300 ? '#9aa0b4' : null;
+    }
+    const dune = 6 + 3 * Math.sin(x * 0.04) + 2 * Math.sin(x * 0.11);
+    if (fb < dune) return hash(x * 7 + fb * 5) % 9 === 0 ? '#8a9a5a' : '#e0cf9a';
+    return null;
+  });
+
   const WORLDS = [
     { name: 'MONDE DES GLACES', accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
@@ -1497,7 +1895,10 @@
     { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
     { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
     { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
-    { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] }
+    { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
+    { name: 'HONG KONG', accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
+    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#4a5a9e', '#6a74b4', '#9a8cc0', '#d49aa8', '#f2a98a', '#f8c28a', '#fbd9a0', '#fde9c0'] },
+    { name: 'CAP CANAVERAL', accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
   ];
 
   // ---------- Écran ----------
@@ -1713,7 +2114,51 @@
     return [W + 50 * K - u * (W + 130 * K) - R * Math.sin(a), Math.max(safe.t + 2 * R + 14, H * 0.38) + Math.sin(u * 9) * 3 * K + R * (Math.cos(a) - 1)];
   };
 
-  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5];
+  // Hong Kong : le lion de la danse du lion (tourné vers la gauche), tête haute ou basse.
+  const lionFrames = [0, 1].map(f => outlinedSprite(34, 25, (x, y) => {
+    const hy = 9 + f, RED = '#d7263d', GOLD = '#f2c230';
+    for (const ex of [5, 11]) {
+      const d = Math.hypot(x - ex, y - (hy - 2));
+      if (d < 1.1) return '#1d171b';
+      if (d < 2.4) return '#ffffff';
+    }
+    if (Math.hypot(x - 8, y - (hy - 6.5)) < 1.6) return '#ffffff';
+    if (f === 1 && x >= 2 && x <= 13 && y >= hy + 3 && y <= hy + 5) return y < hy + 4 ? '#ffffff' : '#3a1a2a';
+    if (ell(x, y, 8, hy, 7.5, 7)) return ell(x, y, 8, hy, 6, 5.6) ? RED : GOLD;
+    if (y >= hy + 6 && y <= hy + 8 && x >= 1 && x <= 15) return Math.floor(x) % 2 ? '#ffffff' : '#ffe9a8';
+    if (ell(x, y, 23, 10, 11, 5.5)) return (Math.floor(x) + Math.floor(y)) % 4 === 0 ? GOLD : RED;
+    if (y >= 15 && y < 17 && x >= 13 && x <= 33) return Math.floor(x) % 2 ? '#ffffff' : GOLD;
+    if (ell(x, y, 33, 7, 1.6, 2.5)) return GOLD;
+    for (const lx of [10, 14, 25, 29]) {
+      const off = (Math.floor(lx / 4) + f) % 2 ? 1 : -1;
+      if (Math.abs(x - (lx + (y > 19 ? off : 0))) < 1.3 && y >= 17 && y < 23) return '#ffd84a';
+      if (Math.abs(x - (lx + off)) < 1.6 && y >= 23 && y < 25) return '#1d171b';
+    }
+    return null;
+  }, '#3a1a2a'));
+  // Hong Kong : feu d'artifice au-dessus du port (moment, position, couleur).
+  const FIREWORKS = [[1, 0.2, 0.22, 0], [1.8, 0.55, 0.16, 1], [2.6, 0.8, 0.26, 2], [3.6, 0.35, 0.14, 3], [4.4, 0.65, 0.28, 4], [5.2, 0.15, 0.18, 5], [6.2, 0.5, 0.2, 0], [7, 0.85, 0.15, 2]];
+  // Toscane : les chevaux du Palio, chaque jockey aux couleurs de son quartier.
+  const PALIO = ['#d7263d', '#2f6db5', '#f2c230', '#2e8b57', '#8a3fb5', '#ff8a1f'];
+  const horseFrames = PALIO.map(col => [0, 1].map(f => outlinedSprite(27, 22, (x, y) => {
+    if (ell(x, y, 13.5, 2.2, 1.8, 1.5)) return col;
+    if (ell(x, y, 15.2, 3.4, 0.8, 0.8)) return '#f3d3b8';
+    if (ell(x, y, 12.5, 6, 2.4, 2.6)) return col;
+    if (segDist(x, y, 11, 8, 9, 11)[0] < 0.9) return '#ffffff';
+    if (ell(x, y, 22.5, 7.5, 3, 2)) return '#8a5a34';
+    if (x >= 21.5 && x <= 22.5 && y >= 4.5 && y <= 6) return '#5e3a20';
+    if (segDist(x, y, 18, 12, 21.5, 7.5)[0] < 2.2) return segDist(x, y, 17, 10.5, 20.5, 6)[0] < 0.8 ? '#3a2a1a' : '#8a5a34';
+    if (ell(x, y, 12, 13, 8, 4)) return '#8a5a34';
+    if (segDist(x, y, 4.5, 11, 0.5, 15)[0] < 1.3) return '#3a2a1a';
+    const legs = f === 0 ? [[17, 15, 21, 21], [15, 15, 12, 21], [7, 15, 3, 21], [9, 15, 11, 21]] : [[17, 15, 16, 20], [15, 15, 18, 20], [7, 15, 9, 20], [9, 15, 6, 20]];
+    for (const [ax, ay, bx, by] of legs) {
+      const [d, t] = segDist(x, y, ax, ay, bx, by);
+      if (d < 1.1) return t > 0.85 ? '#2a2433' : '#7a4a2a';
+    }
+    return null;
+  }, '#2a1a12')));
+
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5, 8.5, 8];
   let ev = null, evSeg = -1, evFx = [], shake = 0;
   let reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
@@ -1730,9 +2175,12 @@
     evFx = [];
     Sound.event(w);
   }
+  const palioStreet = () => Math.round(H * 0.82 - (camY - camBase()) * 0.3) + 2 * evK();
+  // Les chevaux du Palio dépassent le personnage, chacun à sa vitesse.
+  const paliox = (t, dur, i) => -60 * evK() + (t / dur) * (W + 300 * evK()) * (0.9 + (i % 3) * 0.08) - i * 34 * evK() + Math.sin(t * 2 + i * 1.7) * 6 * evK();
   function updateEvent(dt) {
     shake *= Math.exp(-dt * 10);
-    for (const q of evFx) { q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
+    for (const q of evFx) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.g || 0) * dt; q.life -= dt; }
     evFx = evFx.filter(q => q.life > 0);
     if (!ev) return;
     ev.t += dt;
@@ -1749,6 +2197,20 @@
       ev.lastFrame = frame;
     } else if (ev.w === 1 && (ev.t < 1.2 || ev.t > dur - 1.2)) {
       shake = Math.max(shake, 0.8);
+    } else if (ev.w === 7) {
+      for (const [f, fx, fy, c] of FIREWORKS) {
+        if (ev.t - dt < f && ev.t >= f) {
+          const x = W * fx, y = Math.max(safe.t + 24, H * fy), cols = [RAINBOW[c], '#ffffff', RAINBOW[(c + 2) % 6]], sp = evK();
+          for (let i = 0; i < 56; i++) {
+            const a = i / 56 * TAU, v = rand(40, 80) * sp;
+            evFx.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(1.3, 2), max: 2, s: sp, col: cols[i % 3], g: 20 * sp });
+          }
+        }
+      }
+    } else if (ev.w === 8 && ev.t > 0.6 && ev.t < dur - 0.5 && Math.random() < 0.5) {
+      // Poussière soulevée par les sabots.
+      const K = evK(), x = paliox(ev.t, dur, (Math.random() * 6) | 0) + 8 * K;
+      evFx.push({ x, y: palioStreet() - rand(0, 3) * K, vx: -rand(10, 30) * K, vy: -rand(5, 20) * K, life: rand(0.4, 0.8), max: 0.8, s: K / 2, col: '#e8d4a8', g: 30 * K });
     } else if (ev.w === 6) {
       // Deux petites flammes, crachées droit devant le dragon.
       const u = ev.t / dur;
@@ -1844,6 +2306,18 @@
       }
       ctx.globalAlpha = 1;
       for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
+    } else if (ev.w === 7) {
+      // La danse du lion traverse la rue en sautillant.
+      const s = K + 1, spr = lionFrames[Math.floor(t * 4) % 2], street = Math.round(H * 0.84 - (camY - camBase()) * 0.3) + 4 * K;
+      const x = Math.round(W + 40 * K - u * (W + 120 * K)), hop = Math.round(Math.abs(Math.sin(t * 6)) * 4 * K);
+      ctx.drawImage(spr, x, street - spr.height * s - hop, spr.width * s, spr.height * s);
+    } else if (ev.w === 8) {
+      // Le Palio : six chevaux au galop.
+      const s = K + 1, street = palioStreet();
+      for (let i = 5; i >= 0; i--) {
+        const spr = horseFrames[i][(Math.floor(t * 9) + i) % 2];
+        ctx.drawImage(spr, Math.round(paliox(t, dur, i)), street - spr.height * s - (i % 2) * 3 * K, spr.width * s, spr.height * s);
+      }
     } else if (ev.w === 6) {
       // Le dragon de Ljubljana bat des ailes et suit la direction de son vol (looping compris).
       const s = K + 1, spr = dragonFrames[Math.floor(t * 6) % 2];
@@ -1859,7 +2333,7 @@
   function drawEventFx() {
     for (const q of evFx) {
       const a = q.life / q.max;
-      ctx.fillStyle = a > 0.75 ? '#fff3b0' : a > 0.5 ? '#ffd84a' : a > 0.25 ? '#ff9f43' : '#ff5e3a';
+      ctx.fillStyle = q.col || (a > 0.75 ? '#fff3b0' : a > 0.5 ? '#ffd84a' : a > 0.25 ? '#ff9f43' : '#ff5e3a');
       ctx.fillRect(Math.round(q.x), Math.round(q.y), 2 * q.s, 2 * q.s);
     }
   }
@@ -1880,8 +2354,16 @@
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
-  // Ordre des mondes : la Slovénie (6) vient après Paris ; le 5 est le niveau bonus.
-  const CYCLE = [0, 1, 2, 3, 4, 6], BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
+  // Une partie = 4 mondes tirés au hasard parmi 8, puis le départ en fusée à Cap Canaveral (9).
+  // Le 5 est le Pays des Bonbons (niveau bonus).
+  const MAIN_WORLDS = [0, 1, 2, 3, 4, 6, 7, 8], ROUTE_LEN = 4, LAUNCH_WORLD = 9;
+  const BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
+  let route = [0], launch = null, launchEnd = false;
+  function pickRoute() {
+    const pool = MAIN_WORLDS.slice();
+    for (let i = pool.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, ROUTE_LEN);
+  }
   let tresor = +store.get('tresor', '0') || 0, bonus = false, bonusEnd = false, unlockCard = 0, bonusBtn = null;
   // Pour tester sans attendre : le lien se terminant par #bonus, ou 5 touchers sur le numéro de version.
   // Ce déblocage de test ne modifie pas le vrai trésor et s'arrête quand on recharge la page.
@@ -1891,7 +2373,7 @@
   // Pendant le passage des nuages (et un court moment après), le personnage est protégé.
   const GRACE = 1.2;
   let graceUntil = 0;
-  const shielded = () => trans !== null || time < graceUntil;
+  const shielded = () => trans !== null || time < graceUntil || (launch !== null && player.x > launch.pl.x);
 
   function resetWorld() {
     platforms = [{ x: -300, w: 620, top: 0, s: 0, seed: 1 }];
@@ -1900,6 +2382,7 @@
     camX = player.x - W * 0.28;
     camY = camBase();
     world = 0; genWorld = 0; trans = null; plane = null; worldCard = 0; petals = [];
+    route = [0]; launch = null; launchEnd = false;
     ev = null; evFx = []; evSeg = -1; shake = 0;
     Sound.setSong(0);
     while (lastPlat().x + lastPlat().w < camX + W + 200) genNext();
@@ -1936,8 +2419,19 @@
       for (let k = 0; k < n && x0 + k * 14 < pl.x + pl.w - 6; k++) gems.push({ x: x0 + k * 14, y: baseTopOf(pl) - 16, ph: Math.random() * 6 });
     }
   }
+  // Cap Canaveral : une longue piste en béton qui mène à la fusée, puis du béton à perte de vue.
+  function genLaunch(last) {
+    const lastTop = baseTopOf(last), s = LAUNCH_WORLD * 3;
+    if (launch) { platforms.push({ x: last.x + last.w, w: 300, top: last.top, s, seed: 5 }); return; }
+    const top = clamp(Math.round(lastTop + rand(-10, 10)), -40, 40), gap = gapFor(top - lastTop);
+    const pl = { x: last.x + last.w + gap, w: 900, top, s, seed: 3 };
+    platforms.push(pl);
+    launch = { phase: 'run', t: 0, pl, padX: pl.x + 420, fx: [], lift: 0, dark: 0, inside: false, n: 4 };
+    for (let k = 0; k < 10; k++) gems.push({ x: pl.x + 60 + k * 26, y: top - 16 - Math.sin(k / 9 * Math.PI) * 26, ph: Math.random() * 6 });
+  }
   function genNext() {
     const last = lastPlat(), lastTop = baseTopOf(last), r = Math.random();
+    if (genWorld === LAUNCH_WORLD) { genLaunch(last); return; }
     // Au tout début, on garde des blocs simples.
     const candy = genWorld === BONUS_WORLD;
     const kind = last.x + last.w < 700 ? 'block'
@@ -1948,7 +2442,7 @@
       const top = clamp(Math.round(lastTop + rand(-10, 30)), -60, 60);
       const gap = gapFor(top - lastTop);
       const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(40, 64)), top, depth: 14, tramp: true });
-      pl.s = 21;
+      pl.s = 30;
       addGems(last, pl, gap);
       for (let k = 0; k < 4; k++) gems.push({ x: pl.x + pl.w / 2 + k * 14, y: top - 60 - k * 6, ph: Math.random() * 6 });
       return;
@@ -2096,10 +2590,14 @@
     time += dt;
     if (mode === 'dying' || mode === 'gameover') { updateEnd(dt); return; }
     if (bonus && mode === 'play') { updateBonus(dt); return; }
+    if (launch && launch.phase !== 'run') { updateLaunch(dt); return; }
     const p = player;
     for (const pl of platforms) if (pl.amp) pl.top = pl.baseTop + Math.sin(time * pl.w2 + pl.ph) * pl.amp;
     if (p.grounded && p.on && p.on.amp) p.y = p.on.top;
     if (mode === 'play') speed = Math.min(135, speed + dt * 0.45);
+    // Sur la piste de lancement, le personnage avance tout seul et ralentit jusqu'à la fusée.
+    const onRunway = launch !== null && p.x > launch.pl.x + 4;
+    if (onRunway) { jumpBuffer = 0; holding = false; speed = Math.min(speed, Math.max(14, (launch.padX - p.x) * 1.4)); }
 
     // Pilote automatique sur l'écran titre, et pendant le passage des nuages
     // pour que le personnage arrive toujours sur une plateforme.
@@ -2162,6 +2660,9 @@
     if (!p.grounded) p.on = null;
     p.x = nx; p.y = ny;
     p.coyote = p.grounded ? 0.1 : p.coyote - dt;
+    if (onRunway && mode === 'play' && p.grounded && p.x >= launch.padX - 1) {
+      launch.phase = 'board'; launch.t = 0; launch.x0 = p.x; launch.y0 = p.y;
+    }
 
     const nxt = nextPlatformAhead();
     if (!p.grounded && p.vy > 0 && p.y > Math.max(p.lastTop, nxt.top) + 70) {
@@ -2223,15 +2724,112 @@
     updateWorld(dt);
     if (mode === 'play') {
       const dist = Math.floor((p.x - distStart) / 16);
-      const target = CYCLE[Math.floor(dist / WORLD_EVERY) % CYCLE.length];
-      if (target !== genWorld && !trans) startTransition(target);
       const seg = Math.floor(dist / WORLD_EVERY);
-      if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld) { evSeg = seg; startEvent(world); }
+      const target = seg < route.length ? route[seg] : LAUNCH_WORLD;
+      if (target !== genWorld && !trans) startTransition(target);
+      if (dist % WORLD_EVERY >= WORLD_EVERY / 2 && seg !== evSeg && !trans && world === genWorld && world !== LAUNCH_WORLD) { evSeg = seg; startEvent(world); }
       if (dist > bests[gameMode]) bests[gameMode] = dist;
       saveT -= dt;
       if (saveT <= 0) { saveT = 2; store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor); }
     }
     if (unlockCard > 0) unlockCard -= dt;
+  }
+
+  // ---------- Fin de partie : embarquement, compte à rebours et décollage ----------
+  const LAUNCH_RS = 2;
+  const rocketX = () => Math.round(launch.padX + 30);
+  const portPos = () => [rocketX() - rocketSpr.width * LAUNCH_RS / 2 + (PORT.x + 0.5) * LAUNCH_RS, launch.pl.top - rocketSpr.height * LAUNCH_RS - launch.lift + (PORT.y + 0.5) * LAUNCH_RS];
+  function updateLaunch(dt) {
+    const L = launch, p = player, rx = rocketX(), top = L.pl.top;
+    L.t += dt;
+    if (L.phase === 'board') {
+      // Le doudou saute jusqu'au hublot et s'installe dans la fusée.
+      const u = clamp(L.t / 0.8, 0, 1), [hx, hy] = portPos();
+      p.x = L.x0 + (hx - L.x0) * ease(u);
+      p.y = L.y0 + (hy + heroH() / 2 - L.y0) * u - Math.sin(Math.PI * u) * 34;
+      if (u >= 1 && !L.inside) { L.inside = true; burst(hx, hy, 14, ['#ffffff', '#fff3b0', '#ffb3d9'], 50, 0); Sound.land(); }
+      if (L.t >= 1.3) { L.phase = 'count'; L.t = 0; }
+    } else if (L.phase === 'count') {
+      const n = 3 - Math.floor(L.t);
+      if (n !== L.n && n >= 1) { L.n = n; Sound.countdown(false); }
+      if (L.t >= 1.5 && !L.rumble) { L.rumble = true; Sound.rocket(); }
+      if (L.t >= 3) { L.phase = 'lift'; L.t = 0; Sound.countdown(true); }
+    } else {
+      L.lift = L.t * L.t * 16;
+      shake = Math.max(shake, 1.4 * clamp(1 - L.t / 3, 0, 1));
+      L.dark = clamp((L.t - 1.5) / 2.5, 0, 1);
+      if (L.t >= 4.8 && mode === 'play') endLaunch();
+    }
+    // Fumée au pied de la fusée, puis flammes pendant la montée.
+    const firing = L.phase === 'lift' || (L.phase === 'count' && L.t > 2.2);
+    if (firing && L.lift < 140) {
+      for (let i = 0; i < 2; i++) {
+        const side = Math.random() < 0.5 ? -1 : 1;
+        L.fx.push({ x: rx + side * rand(6, 14), y: top - 2, vx: side * rand(30, 80), vy: rand(-10, -2), r: rand(2, 4), grow: rand(4, 8), life: rand(1, 1.8), max: 1.8 });
+      }
+    }
+    for (const q of L.fx) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= Math.exp(-dt * 1.5); q.r += q.grow * dt; q.life -= dt; }
+    L.fx = L.fx.filter(q => q.life > 0);
+    shake *= Math.exp(-dt * 6);
+    updateWorld(dt);
+    for (const q of particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; q.life -= dt; }
+    particles = particles.filter(q => q.life > 0);
+    for (const q of popups) { q.y -= 14 * dt; q.life -= dt * 0.8; }
+    popups = popups.filter(q => q.life > 0);
+  }
+  function endLaunch() {
+    launchEnd = true;
+    bests[gameMode] = Math.max(bests[gameMode], Math.floor((player.x - distStart) / 16));
+    btnPause.hidden = true; btnHome.hidden = true;
+    store.set(BEST_KEY[gameMode], bests[gameMode]); store.set('tresor', tresor);
+    Sound.stop();
+    gameOver();
+  }
+  // Une bouffée de fumée ronde, en pixels.
+  function smokePuff(x, y, r, col) {
+    const X = Math.round(x), Y = Math.round(y), R = Math.max(1, Math.round(r)), h = Math.round(R * 0.7);
+    ctx.fillStyle = col;
+    ctx.fillRect(X - R, Y - h, 2 * R, 2 * h);
+    ctx.fillRect(X - h, Y - R, 2 * h, 2 * R);
+  }
+  // La fusée sur son aire de tir, la tour de service rouge, la fumée et les flammes.
+  function drawLaunchPad() {
+    if (!launch) return;
+    const L = launch, rs = LAUNCH_RS, rx = rocketX(), top = Math.round(L.pl.top), tx = rx + 26;
+    ctx.fillStyle = '#d7263d';
+    ctx.fillRect(tx, top - 104, 2, 104); ctx.fillRect(tx + 10, top - 104, 2, 104);
+    for (let y = top - 104; y < top; y += 8) {
+      ctx.fillRect(tx, y, 12, 1);
+      for (let k = 0; k < 8; k++) ctx.fillRect(tx + 1 + Math.round(k * 1.25), y + k, 1, 1);
+    }
+    ctx.fillRect(tx - 2, top - 108, 16, 4);
+    ctx.fillStyle = '#5a5f75'; ctx.fillRect(tx + 6, top - 128, 1, 20);
+    const armOut = L.phase === 'run' || L.phase === 'board' || (L.phase === 'count' && L.t < 1.5);
+    ctx.fillStyle = '#9aa0b4'; ctx.fillRect(tx - (armOut ? 8 : 2), top - 44, armOut ? 8 : 2, 3);
+    const rw = rocketSpr.width * rs, rh = rocketSpr.height * rs, ry = Math.round(top - rh - L.lift);
+    if (L.phase === 'lift' || (L.phase === 'count' && L.t > 2.2)) {
+      const fr = Math.floor(time * 14), fl = 10 + (fr % 3) * 3 + Math.min(20, L.lift * 0.2);
+      ctx.fillStyle = '#ff5e3a'; ctx.fillRect(rx - 6, ry + rh - 2, 12, fl);
+      ctx.fillStyle = '#ff9f43'; ctx.fillRect(rx - 4, ry + rh - 2, 8, fl * 0.75);
+      ctx.fillStyle = '#ffe14d'; ctx.fillRect(rx - 2, ry + rh - 2, 4, fl * 0.45);
+    }
+    ctx.drawImage(rocketSpr, rx - rw / 2, ry, rw, rh);
+    if (L.inside) drawPorthole(rx - rw / 2, ry, rs);
+    for (const q of L.fx) {
+      ctx.globalAlpha = 0.7 * Math.min(1, q.life / q.max * 1.6);
+      smokePuff(q.x, q.y, q.r, q.life > q.max * 0.8 ? '#fff3b0' : '#f4f4f8');
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Le ciel devient l'espace pendant la montée de la fusée.
+  function drawLaunchSky() {
+    if (!launch || launch.dark <= 0) return;
+    ctx.globalAlpha = 0.88 * launch.dark; ctx.fillStyle = '#141033'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = launch.dark;
+    for (let i = 0; i < 60; i++) {
+      ctx.fillStyle = (time * 2 + i) % 5 < 0.6 ? '#fff3b0' : '#ffffff';
+      ctx.fillRect(hash(i * 7 + 2) % W, hash(i * 11 + 5) % H, 1, 1);
+    }
+    ctx.globalAlpha = 1;
   }
 
   // ---------- Niveau bonus : pluie de bonbons, vol en ballon, fusée vers la Lune ----------
@@ -2638,6 +3236,7 @@
   }
   function drawTrail() {
     const p = player;
+    if (launch && launch.phase !== 'run') return;
     let j = trail.length - 1;
     for (let x = Math.round(p.x) - 6; x > camX - 4; x -= 2) {
       while (j > 0 && trail[j].x > x) j--;
@@ -2649,6 +3248,7 @@
   }
   function drawPlayer() {
     const p = player;
+    if (launch && launch.inside) return;
     if (mode === 'dying') {
       // Yeux fermés, puis la tête en bas pendant la chute.
       const spr = hero().framesB[0];
@@ -2729,6 +3329,24 @@
       drawEiffelSparkle(far);
       drawWater(far, '#7a83b8', '#ffd9b0');
       drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+    } else if (world === 7) {
+      drawDisc(moonC, W * 0.8, H * 0.18);
+      const far = H * 0.6 - vOff * 0.12, lake = far + 12;
+      drawStrip(hkFar, 0.1, far, '#1a2448');
+      drawStrip(hkBoats, 0.2, lake, '#1a2448');
+      drawWater(lake, '#1a2448', '#ff9ad8');
+      drawStrip(hkMid, 0.3, H * 0.84 - vOff * 0.3, '#2a2438');
+    } else if (world === 8) {
+      drawDisc(sunC, W * 0.22, H * 0.36);
+      drawBgClouds();
+      const far = H * 0.62 - vOff * 0.12;
+      drawStrip(tuscFar, 0.1, far, '#4f7a8a');
+      drawWater(far, '#4f7a8a', '#ffe0b0');
+      drawStrip(tuscMid, 0.3, H * 0.82 - vOff * 0.3, '#c08a5a');
+    } else if (world === 9) {
+      drawBgClouds();
+      drawStrip(capeFar, 0.1, H * 0.72 - vOff * 0.12, '#4f7a4a');
+      drawStrip(capeMid, 0.3, H * 0.84 - vOff * 0.3, '#e0cf9a');
     } else if (world === 6) {
       drawBgClouds();
       const far = H * 0.62 - vOff * 0.12, lake = far + 16;
@@ -2892,10 +3510,10 @@
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
     ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
     y += 8;
-    rainbowText(bonusEnd ? 'SUR LA LUNE !' : 'GAME OVER', cx, y, 16);
+    rainbowText(bonusEnd ? 'SUR LA LUNE !' : launchEnd ? 'BON VOYAGE !' : 'GAME OVER', cx, y, 16);
     y += 18;
     if (bonusEnd) text('QUEL VOYAGE !', cx, y, 8, '#fff3b0', 'center');
-    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
+    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : launchEnd ? 'MISSION ACCOMPLIE' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
     y += 14;
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
     ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
@@ -2938,6 +3556,7 @@
       ctx.translate(Math.round((Math.random() * 2 - 1) * shake), Math.round((Math.random() * 2 - 1) * shake));
     }
     drawBackground();
+    drawLaunchSky();
     if (bonus && bp) drawBonus();
     else {
     drawEvent();
@@ -2951,6 +3570,7 @@
     }
     ctx.globalAlpha = 1;
     drawPlatforms();
+    drawLaunchPad();
     for (const s of gems) ctx.drawImage(sprStar, Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
     ctx.restore();
     drawPetals();
@@ -2979,10 +3599,12 @@
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
       text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
       if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
+      if (launch && launch.phase === 'count') rainbowText(String(Math.max(1, 3 - Math.floor(launch.t))), cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
+      if (launch && launch.phase === 'lift' && launch.t < 2) rainbowText('DECOLLAGE !', cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
-        rainbowText(bonus ? 'BONUS' : 'MONDE ' + (CYCLE.indexOf(world) + 1), cx, cy, 16);
+        rainbowText(bonus ? 'BONUS' : world === LAUNCH_WORLD ? 'FINALE' : 'MONDE ' + (route.indexOf(world) + 1) + '/' + ROUTE_LEN, cx, cy, 16);
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
@@ -3052,7 +3674,8 @@
     bonus = false; bonusEnd = false;
     mode = 'play';
     distStart = player.x; starsCount = 0; speed = 80; streak = 0; runBest = bests[gameMode]; evSeg = -1;
-    if (genWorld !== 0) { if (!trans) startTransition(0); }
+    route = pickRoute(); launch = null; launchEnd = false;
+    if (genWorld !== route[0]) { if (!trans) startTransition(route[0]); }
     else if (!trans) worldCard = 3;
     btnPause.hidden = false; btnHome.hidden = false;
     Sound.start();
@@ -3061,6 +3684,7 @@
     if (mode !== 'play') return;
     if (paused) setPaused(false);
     if (bonus) { bonus = false; store.set('tresor', tresor); backToMenu(); return; }
+    if (launch) { backToMenu(); return; }
     mode = 'title'; speed = 70; holding = false;
     btnPause.hidden = true; btnHome.hidden = true;
   }
