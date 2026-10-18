@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v17';
+  const VERSION = 'v18';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -212,21 +212,21 @@
         bassPat: [0, 12, 7, 12, 0, 12, 7, 5],
         drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [6, 14] }
       }),
-      song({ // Bonjour Paris : valse musette à l'accordéon, « boum-tchac-tchac »
-        bpm: 180, spb: 12, lead: ACCORDION, detune: 0.006, bass: SOFTBASS, stab: STAB, stabs: [4, 8], altFifth: true,
+      song({ // Paris en émeute : valse musette nerveuse en mi mineur, caisse claire de fanfare (composition originale)
+        bpm: 204, spb: 12, lead: ACCORDION, detune: 0.008, bass: SLAP, stab: STAB, stabs: [4, 8], altFifth: true,
         chords: {
-          G: { b: 43, a: [55, 59, 62, 67] }, D7: { b: 50, a: [54, 57, 60, 62] }, C: { b: 48, a: [55, 60, 64, 67] },
-          Em: { b: 40, a: [52, 55, 59, 64] }, Am: { b: 45, a: [57, 60, 64, 69] }
+          Em: { b: 40, a: [52, 55, 59, 64] }, B7: { b: 47, a: [51, 54, 57, 59] }, Am: { b: 45, a: [57, 60, 64, 69] },
+          C: { b: 48, a: [55, 60, 64, 67] }
         },
-        prog: ['G', 'G', 'D7', 'D7', 'D7', 'D7', 'G', 'G', 'C', 'C', 'G', 'Em', 'Am', 'D7', 'G', 'G'],
+        prog: ['Em', 'Em', 'B7', 'B7', 'B7', 'B7', 'Em', 'Em', 'Am', 'Am', 'Em', 'Em', 'C', 'B7', 'Em', 'Em'],
         mel: [
-          'D6 - B5 - G5 -', 'D6 E6 D6 C6 B5 -', 'C6 - A5 - F#5 -', 'A5 B5 A5 G5 F#5 -',
-          'D6 - C6 - A5 -', 'F#6 E6 D6 C6 A5 -', 'B5 - G5 - D5 -', 'G5 A5 B5 C6 D6 -',
-          'E6 - G6 - E6 -', 'C6 D6 E6 F6 G6 -', 'D6 - B5 - G5 -', 'B5 C6 B5 A5 G5 -',
-          'A5 - C6 - E6 -', 'D6 C6 A5 F#5 D5 -', 'G5 - B5 - D6 -', 'G6 - - - . .'
+          'B5 - G5 - E5 -', 'B5 C6 B5 A5 G5 -', 'A5 - F#5 - D#5 -', 'F#5 G5 F#5 E5 D#5 -',
+          'B5 - A5 - F#5 -', 'D#6 C6 B5 A5 F#5 -', 'G5 - E5 - B4 -', 'E5 F#5 G5 A5 B5 -',
+          'C6 - E6 - C6 -', 'A5 B5 C6 D6 E6 -', 'B5 - G5 - E5 -', 'G5 A5 G5 F#5 E5 -',
+          'E6 - C6 - G5 -', 'F#6 E6 D#6 C6 B5 -', 'E6 - B5 - G5 -', 'E6 - - - . .'
         ],
         bassPat: [0, null, null, null, null, null],
-        drums: { kick: [0], hat: 4 }
+        drums: { kick: [0], snare: [4, 8], hat: 2 }
       }),
       song({ // Pays des Bonbons (niveau bonus) : « Korobeiniki », chanson populaire russe (domaine public),
         // l'air rendu célèbre par Tetris, dans un arrangement original façon console.
@@ -467,7 +467,9 @@
           noiseSweep(t, 3, 900, 1500, 0.1, 'bandpass');
           for (let k = 0; k < 14; k++) nz(t + rand(0.1, 2.4), 0.04, 0.06, 'highpass', 2500, 0, sfx);
         } else if (w === 4) {
-          noiseSweep(t + 0.8, 3.5, 300, 2200, 0.16, 'lowpass');
+          // Les boucliers qui avancent au pas, puis le « pfff » des grenades lacrymogènes.
+          for (let k = 0; k * 0.5 < EVENT_DUR[4] - 1; k++) drum(t + k * 0.5, 90, 50, 0.15, 0.3);
+          GAS_THROWS.forEach(g => { nz(t + g, 0.06, 0.25, 'highpass', 2500, 0, sfx); nz(t + g + 0.9, 1.4, 0.07, 'highpass', 3000, 0, sfx); });
         } else {
           // Le dragon : un petit grondement, puis deux souffles de feu.
           fm(sfx, t + 0.3, 140, 0.9, Object.assign({}, SLAP, { vol: 0.14, glide: 0.55, sus: 0.8 }));
@@ -504,7 +506,7 @@
     v: '#3d4660', z: '#f4f1ea', o: '#4a5062', q: '#33384a', T: '#c2603a', t: '#953f22',
     // Hélice de l'avion
     A: '#a3a9bb',
-    // Licorne volante, reine, avions de la patrouille
+    // Licorne volante, reine, CRS
     m: '#ff9ecf', M: '#b48be8', V: '#a46bff', U: '#8fb7e8', j: '#f2f2f2', i: '#f3d3b8', x: '#3c4f7a',
     // Douliam, le doudou en tricot vert d'eau
     Q: '#a8d8b0', X: '#86bf91', Z: '#c6ead0', D: '#79b386', F: '#f4f1ea'
@@ -849,7 +851,7 @@
         return (y - 6) % 8 === 0 ? '#d6d3cb' : '#e6e4de';
       }
     },
-    // Bonjour Paris
+    // Paris en émeute
     { // toit en zinc sur façade haussmannienne à balcons
       top: ['#a9b6cc', '#7c8aa6', '#5d6a85'], deep: '#c9bda4',
       body(x, y) {
@@ -860,13 +862,18 @@
         return cy === 0 ? '#c4ab82' : ((y - 6) % 6 === 0 ? '#d2bb93' : '#dfcaa3');
       }
     },
-    { // pile de macarons
-      top: ['#ffe0ec', '#f7a8c4', '#d982a4'], drip: true, deep: '#c9b6f2',
+    { // barricade de palettes et de poubelles vertes
+      top: ['#c99a5e', '#a0703f', '#6b4226'], deep: '#4e3020',
+      topPat(x, y) { return y <= 2 ? (x % 5 === 0 ? '#6b4226' : '#c99a5e') : (y === 5 ? '#6b4226' : '#a0703f'); },
       body(x, y) {
-        const band = ((y - 6) / 10) | 0, by = (y - 6) % 10;
-        if (by >= 8) return '#fff6e6';
-        const col = ['#b8e0c8', '#f7a8c4', '#fde7a3', '#c9b6f2'][band % 4];
-        return (by === 6 || by === 7) && (x + band) % 3 === 0 ? '#ffffff' : col;
+        const cy = (y - 6) % 20, row = ((y - 6) / 20) | 0, cx = (x + row * 7) % 16;
+        if (cy >= 10) {
+          if (cy === 10) return '#1f5a36';
+          if (cx === 0 || cx === 15) return '#2a2433';
+          return cx % 4 === 1 ? '#2e8b57' : '#3fa66a';
+        }
+        if (cy % 3 === 2) return '#4e3020';
+        return (x + row * 5) % 12 === 0 ? '#6b4226' : '#b8864f';
       }
     },
     { // pavés parisiens
@@ -1337,12 +1344,39 @@
     }
     if (fb < 1) return '#bdb9b0';
     if (b.awning && fb >= 8 && fb <= 10) return fb === 8 && lx % 3 === 0 ? null : (lx % 4 < 2 ? b.awning : '#fff4e6');
-    if (fb < 8) return (lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6) ? (lx % 6 === 0 ? '#2a2433' : '#3f5170') : '#d2bb93';
+    if (fb < 8) {
+      if (!(lx >= 2 && lx <= b.w - 3 && fb >= 1 && fb <= 6)) return '#d2bb93';
+      // Vitrines protégées par des planches.
+      if (hash(b.x * 3 + 1) % 3 !== 0) return lx % 5 === 0 ? '#8a6a44' : ((lx + fb) % 7 === 0 ? '#a0703f' : '#c99a5e');
+      return lx % 6 === 0 ? '#2a2433' : '#3f5170';
+    }
     const cy = (fb - 12) % 9, cx = lx % 7;
     if (fb >= 12 && cy === 0 && cx >= 1 && cx <= 5) return '#2a2433';
     if (fb >= 12 && cy === 1 && cx >= 2 && cx <= 4 && hash(b.x) % 2 === 0) return cx === 3 ? '#e8392b' : '#2e8b57';
     if (fb >= 12 && cx >= 2 && cx <= 4 && cy >= 2 && cy <= 7) return cy === 7 ? '#8fa3c8' : '#5d6f96';
     return lx === 0 ? '#bfa57c' : (fb % 6 === 0 ? '#d2bb93' : '#dfcaa3');
+  });
+
+  // Paris en émeute : voitures brûlées, barricade de pneus, palettes et poubelles, poubelle en feu.
+  const RIOT_FIRES = [[26, 11], [145, 15], [420, 10]];
+  const parisRiot = paintStrip(480, 26, (x, y) => {
+    const fb = 25 - y;
+    for (const cx of [26, 306]) {
+      const dx = x + 0.5 - cx;
+      if (fb < 4 && (Math.hypot(dx + 9, fb - 2) <= 2.6 || Math.hypot(dx - 9, fb - 2) <= 2.6)) return '#1d171b';
+      if (fb >= 2 && fb < 7 && Math.abs(dx) <= 15) return (x + fb) % 5 === 0 ? '#7a4a3a' : '#3a3036';
+      if (fb >= 7 && fb < 11 && Math.abs(dx) <= 8 - (fb - 7)) return fb >= 8 && Math.abs(dx) <= 6 - (fb - 7) ? '#1d171b' : '#4a4250';
+    }
+    if (x >= 118 && x <= 172) {
+      const top = 15 - Math.abs(x + 0.5 - 145) * 0.45;
+      if (fb < top) {
+        if (Math.hypot(((x - 118) % 9) - 4, (fb % 9) - 4) <= 3.5 && fb < 9) return Math.hypot(((x - 118) % 9) - 4, (fb % 9) - 4) <= 1.5 ? '#5a5f75' : '#1d171b';
+        if (x >= 136 && x <= 146 && fb >= 6) return x % 3 === 0 ? '#1f5a36' : '#2e8b57';
+        return fb % 3 === 2 ? '#4e3020' : '#b8864f';
+      }
+    }
+    if (x >= 415 && x <= 425 && fb < 9) return fb === 8 ? '#1f5a36' : (x % 3 === 0 ? '#2e8b57' : '#3fa66a');
+    return null;
   });
 
   // Pays des Bonbons : collines de bonbons gélifiés, sucettes géantes, sucres d'orge.
@@ -1495,7 +1529,7 @@
     { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
     { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
     { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
-    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
+    { name: 'PARIS EN EMEUTE', accent: '#d7263d', sky: ['#3a2f4a', '#55405a', '#7a4f5e', '#a35f5a', '#c46e55', '#de8a50', '#eda85a', '#f4c47e'] },
     { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
     { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] }
   ];
@@ -1640,12 +1674,18 @@
   ];
   const QUEEN_B = QUEEN_A.slice();
   QUEEN_B[1] = '.UUUUUU...'; QUEEN_B[2] = 'UUUUUUUU..'; QUEEN_B[3] = '.jiiiij.i.'; QUEEN_B[4] = '.jiKiKj.U.';
-  // Paris : un avion de la patrouille, tourné vers la droite.
-  const JET = ['K', 'KK', 'KxxxxxxxxK', '.KxxxxxxxxxK', '..KKxxKKK'];
+  // Paris : un CRS avec casque, visière et bouclier, tourné vers la gauche (deux pas).
+  const CRS_A = [
+    '....KKKK....', '...KqqqqK...', '..KqqqqqqK..', '..KUUUqqqK..', '..KUiiqqqK..', '...KKKKKK...',
+    '.KKKKxxxxK..', 'KgggKxxxxxK.', 'KgggKxxxxxK.', 'KgggKxxxxK..', 'KgggKxxxxK..', 'KgggKxxxxK..',
+    'KgggKxxxxK..', '.KKKKqqqqK..', '...KqK.KqK..', '...KqK.KqK..', '..KKK..KKK..'
+  ];
+  const CRS_B = CRS_A.slice();
+  CRS_B[14] = '..KqK...KqK.'; CRS_B[15] = '..KqK...KqK.'; CRS_B[16] = '.KKK...KKK..';
   const padRows = rows => { const w = Math.max(...rows.map(r => r.length)); return rows.map(r => r.padEnd(w, '.')); };
   const unicornSpr = makeSprite(padRows(UNICORN));
   const queenFrames = [makeSprite(padRows(QUEEN_A)), makeSprite(padRows(QUEEN_B))];
-  const jetSpr = makeSprite(padRows(JET));
+  const crsFrames = [makeSprite(padRows(CRS_A)), makeSprite(padRows(CRS_B))];
   // Drapeau britannique.
   const unionJack = paintStrip(12, 8, (x, y) => {
     const dx = Math.abs(x + 0.5 - 6), dy = Math.abs(y + 0.5 - 4);
@@ -1713,7 +1753,10 @@
     return [W + 50 * K - u * (W + 130 * K) - R * Math.sin(a), Math.max(safe.t + 2 * R + 14, H * 0.38) + Math.sin(u * 9) * 3 * K + R * (Math.cos(a) - 1)];
   };
 
-  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5];
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 9, 0, 7.5];
+  // Paris : moments où les CRS lancent une grenade lacrymogène, et les nuages de gaz.
+  const GAS_THROWS = [1.4, 2.6, 3.8, 5, 6.2];
+  let gas = [];
   let ev = null, evSeg = -1, evFx = [], shake = 0;
   let reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
@@ -1730,8 +1773,38 @@
     evFx = [];
     Sound.event(w);
   }
+  const crsStreet = () => Math.round(H * 0.78 - (camY - camBase()) * 0.3) + 6;
+  function updateGas(dt) {
+    const K = evK(), street = crsStreet();
+    for (const g of gas) {
+      if (g.can) {
+        g.vy += 200 * K * dt; g.x += g.vx * dt; g.y += g.vy * dt;
+        if (g.y >= street - 2 * K) {
+          g.can = false; g.life = 0;
+          for (let i = 0; i < 10; i++) gas.push({ x: g.x + rand(-10, 10) * K, y: street - rand(2, 14) * K, vx: -rand(5, 18) * K, vy: -rand(3, 10) * K, life: rand(3, 4.5), max: 4.5, r: rand(4, 7) * K, grow: rand(3, 6) * K });
+        }
+      } else { g.x += g.vx * dt; g.y += g.vy * dt; g.r += g.grow * dt; g.life -= dt; }
+    }
+    gas = gas.filter(g => g.life > 0);
+  }
+  function drawGas() {
+    for (const g of gas) {
+      if (g.can) { ctx.fillStyle = '#5a5f75'; ctx.fillRect(Math.round(g.x), Math.round(g.y), 2 * evK(), 3 * evK()); continue; }
+      ctx.globalAlpha = 0.42 * Math.min(1, g.life / g.max * 1.5);
+      smokePuff(g.x, g.y, g.r, '#f2f2f2');
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Une bouffée ronde en pixels (fumée, gaz).
+  function smokePuff(x, y, r, col) {
+    const X = Math.round(x), Y = Math.round(y), R = Math.max(1, Math.round(r)), h = Math.round(R * 0.7);
+    ctx.fillStyle = col;
+    ctx.fillRect(X - R, Y - h, 2 * R, 2 * h);
+    ctx.fillRect(X - h, Y - R, 2 * h, 2 * R);
+  }
   function updateEvent(dt) {
     shake *= Math.exp(-dt * 10);
+    updateGas(dt);
     for (const q of evFx) { q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
     evFx = evFx.filter(q => q.life > 0);
     if (!ev) return;
@@ -1749,6 +1822,13 @@
       ev.lastFrame = frame;
     } else if (ev.w === 1 && (ev.t < 1.2 || ev.t > dur - 1.2)) {
       shake = Math.max(shake, 0.8);
+    } else if (ev.w === 4) {
+      for (const g of GAS_THROWS) {
+        if (ev.t - dt < g && ev.t >= g) {
+          const K = evK(), cx = W + 10 * K - (g / dur) * (W + 120 * K);
+          gas.push({ x: cx, y: crsStreet() - 20 * K, vx: -rand(60, 100) * K, vy: -rand(70, 100) * K, can: true, life: 6, max: 6, r: 2 });
+        }
+      }
     } else if (ev.w === 6) {
       // Deux petites flammes, crachées droit devant le dragon.
       const u = ev.t / dur;
@@ -1832,18 +1912,12 @@
         if (k % 3 === 0) ctx.drawImage(unionJack, x + K, gy - 10 * K - bob, 4 * K, 3 * K);
       }
     } else if (ev.w === 4) {
-      // La patrouille passe en laissant des traînées bleu, blanc, rouge.
-      const lx = Math.round(-60 * K + u * (W + 160 * K)), ly = Math.round(Math.max(safe.t + 40, H * 0.2) + Math.sin(u * Math.PI * 2) * 4);
-      const F = [[0, 0, 1], [-14, -8, 0], [-14, 8, 2], [-28, -16, 0], [-28, 16, 2], [-28, 0, 1], [-42, -8, 0], [-42, 8, 2]];
-      const SMOKE = ['#1f4fbf', '#ffffff', '#e3262e'];
-      ctx.globalAlpha = 0.85 * fade;
-      for (const [dx, dy, c] of F) {
-        ctx.fillStyle = SMOKE[c];
-        const x1 = lx + dx * K;
-        if (x1 > 0) ctx.fillRect(0, ly + (dy + 2) * K, x1, 3 * K);
+      // Une ligne de CRS avance au pas dans la rue et lance du gaz lacrymogène (sans blessés : c'est un dessin animé).
+      const s = K + 1, street = crsStreet(), x0 = Math.round(W + 10 * K - u * (W + 120 * K));
+      for (let i = 0; i < 6; i++) {
+        const spr = crsFrames[(Math.floor(t * 4) + i) % 2], bob = (Math.floor(t * 4) + i) % 2 ? 0 : s;
+        ctx.drawImage(spr, x0 + i * 13 * s, street - spr.height * s + bob - s, spr.width * s, spr.height * s);
       }
-      ctx.globalAlpha = 1;
-      for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
     } else if (ev.w === 6) {
       // Le dragon de Ljubljana bat des ailes et suit la direction de son vol (looping compris).
       const s = K + 1, spr = dragonFrames[Math.floor(t * 6) % 2];
@@ -1900,7 +1974,7 @@
     camX = player.x - W * 0.28;
     camY = camBase();
     world = 0; genWorld = 0; trans = null; plane = null; worldCard = 0; petals = [];
-    ev = null; evFx = []; evSeg = -1; shake = 0;
+    ev = null; evFx = []; gas = []; evSeg = -1; shake = 0;
     Sound.setSong(0);
     while (lastPlat().x + lastPlat().w < camX + W + 200) genNext();
   }
@@ -1989,7 +2063,7 @@
   }
   function switchWorld(w) {
     world = w;
-    ev = null; evFx = []; shake = 0;
+    ev = null; evFx = []; gas = []; shake = 0;
     for (const pl of platforms) { pl.s = w * 3 + (pl.s % 3); pl.img = null; }
     Sound.setSong(w);
     plane = { t: 0 };
@@ -1997,6 +2071,7 @@
     petals = [];
     if (w === 1) for (let i = 0; i < 26; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6) });
     if (w === 3) for (let i = 0; i < 40; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), rain: true });
+    if (w === 4) for (let i = 0; i < 24; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), ember: true });
     if (w === BONUS_WORLD) for (let i = 0; i < 30; i++) petals.push({ x: rand(0, W), y: rand(0, H), ph: rand(0, 6), candy: RAINBOW[i % 6] });
   }
   function updateWorld(dt) {
@@ -2010,6 +2085,11 @@
     if (worldCard > 0) worldCard -= dt;
     for (const q of petals) {
       if (q.rain) { q.x -= (25 + speed * 0.2) * dt; q.y += 130 * dt; }
+      else if (q.ember) {
+        q.x += (-12 - speed * 0.15) * dt + Math.sin(time * 3 + q.ph) * 10 * dt;
+        q.y -= 22 * dt;
+        if (q.y < -4) { q.y = H + 2; q.x = rand(0, W + 20); }
+      }
       else {
         q.x += (-16 - speed * 0.15) * dt + Math.sin(time * 2 + q.ph) * 8 * dt;
         q.y += 14 * dt;
@@ -2722,13 +2802,18 @@
       drawWater(far, '#6f86b0', '#c9d6ee');
       drawStrip(londonMid, 0.3, H * 0.88 - vOff * 0.3, '#4a5268');
     } else if (world === 4) {
-      drawDisc(sunC, W * 0.72, H * 0.42);
       drawBgClouds();
-      const far = H * 0.78 - 34 - vOff * 0.12;
+      const far = H * 0.78 - 34 - vOff * 0.12, mid = H * 0.78 - vOff * 0.3;
+      for (const x of tileXs(parisFar.width, 0.1, [300, 470, 600])) drawSmoke(x, far - 12, 16, 1);
       drawStrip(parisFar, 0.1, far, '#7a83b8');
       drawEiffelSparkle(far);
-      drawWater(far, '#7a83b8', '#ffd9b0');
-      drawStrip(parisMid, 0.3, H * 0.78 - vOff * 0.3, '#5a5f75');
+      drawWater(far, '#7a83b8', '#ffb070');
+      drawStrip(parisMid, 0.3, mid, '#5a5f75');
+      drawStrip(parisRiot, 0.3, mid + 4, '#5a5f75');
+      for (const [fx, fb] of RIOT_FIRES) for (const x of tileXs(parisRiot.width, 0.3, [fx])) {
+        drawSmoke(x, mid + 4 - fb - 8, 14, 1.2);
+        drawFlames(x, mid + 4 - fb);
+      }
     } else if (world === 6) {
       drawBgClouds();
       const far = H * 0.62 - vOff * 0.12, lake = far + 16;
@@ -2756,6 +2841,31 @@
       ctx.fillRect(Math.round(x), y, 2 + hash(i) % 4, 1);
     }
   }
+  // Positions à l'écran des éléments d'une bande de décor (avec la parallaxe).
+  function tileXs(tw, par, xs) {
+    const off = mod(Math.round(camX * par), tw), out = [];
+    for (let x0 = -off - tw; x0 < W + tw; x0 += tw) for (const x of xs) if (x0 + x > -60 && x0 + x < W + 60) out.push(x0 + x);
+    return out;
+  }
+  // Panache de fumée qui monte et part avec le vent.
+  function drawSmoke(x, y, n, sz) {
+    for (let k = 0; k < n; k++) {
+      const f = (time * 0.35 + k / n) % 1;
+      ctx.globalAlpha = 0.75 * (1 - f * f);
+      smokePuff(x - f * n * 3 * sz + Math.sin(time + k) * 2, y - f * n * 5 * sz, (3 + f * 10) * sz, f < 0.3 ? '#3a3036' : '#5e5464');
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Petites flammes qui dansent.
+  function drawFlames(x, y) {
+    const X = Math.round(x), Y = Math.round(y), fr = Math.floor(time * 12);
+    for (let i = -4; i <= 4; i++) {
+      const h = (5 - Math.abs(i)) * 1.6 + hash(i * 7 + 40 + fr * 13) % 4;
+      ctx.fillStyle = '#e8392b'; ctx.fillRect(X + i, Y - Math.round(h), 1, Math.round(h));
+      ctx.fillStyle = '#ff9f43'; ctx.fillRect(X + i, Y - Math.round(h * 0.65), 1, Math.round(h * 0.65));
+      if (Math.abs(i) <= 2) { ctx.fillStyle = '#ffe14d'; ctx.fillRect(X + i, Y - Math.round(h * 0.35), 1, Math.round(h * 0.35)); }
+    }
+  }
   // La tour Eiffel qui scintille au coucher du soleil.
   function drawEiffelSparkle(base) {
     const tw = parisFar.width, off = mod(Math.round(camX * 0.1), tw), bottom = Math.round(base) - 1;
@@ -2775,6 +2885,7 @@
   function drawPetals() {
     for (const q of petals) {
       if (q.rain) { ctx.fillStyle = '#e6eefa'; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 3); continue; }
+      if (q.ember) { ctx.fillStyle = Math.floor(time * 6 + q.ph) % 2 ? '#ffd84a' : '#ff7a3a'; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 1); continue; }
       if (q.candy) { ctx.fillStyle = q.candy; ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); continue; }
       ctx.fillStyle = q.ph > 3 ? '#ffc0d9' : '#ff9ec4';
       if (Math.floor(time * 4 + q.ph) % 2) ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 1);
@@ -2953,6 +3064,7 @@
     drawPlatforms();
     for (const s of gems) ctx.drawImage(sprStar, Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
     ctx.restore();
+    drawGas();
     drawPetals();
     drawCurtain();
 

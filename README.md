@@ -35,7 +35,7 @@ Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde s
 2. **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
 3. **La Grosse Pomme** : Empire State Building, Chrysler Building, pont de Brooklyn, statue de la Liberté, châteaux d'eau ; musique jazzy-funky.
 4. **Escale à Londres** : Big Ben et le Parlement, la London Eye, Tower Bridge, le dôme de St Paul, la Tamise, maisons colorées ; pop anglaise des années 60.
-5. **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
+5. **Paris en émeute** (version dessin animé, sans blessés) : tour Eiffel, Opéra Garnier, Arc de Triomphe et Sacré-Cœur sous un ciel enfumé, panaches de fumée, voitures brûlées, barricades de palettes et de poubelles, vitrines protégées par des planches, braises qui s'envolent ; plateformes en toits de zinc, barricades et pavés ; valse musette nerveuse en mi mineur.
 6. **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
@@ -44,7 +44,7 @@ Tous les 100 m, un rideau de nuages traverse l'écran et le jeu passe au monde s
 - **Japon** : un monstre géant sort de terre et crache du feu.
 - **New York** : un gorille géant tape sur sa poitrine en haut de l'Empire State Building.
 - **Londres** : la reine salue la foule depuis le balcon de Buckingham Palace.
-- **Paris** : une patrouille d'avions passe en laissant des traînées bleu, blanc, rouge.
+- **Paris** : une ligne de CRS avance au pas avec ses boucliers et lance des grenades de gaz lacrymogène, qui font de grands nuages blancs.
 - **Slovénie** : le dragon de Ljubljana traverse le ciel, fait un looping et crache deux petites flammes.
 
 Après le 6e monde, on repart au Monde des Glaces.
