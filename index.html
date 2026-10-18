@@ -150,7 +150,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v24';
+  const VERSION = 'v25';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -4125,10 +4125,12 @@
   }, { passive: false });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
+  // L'atelier photo garde les gestes normaux (boutons photo, curseur, champ du nom, défilement).
+  const inCreator = e => e.target.closest && e.target.closest('#creator');
   document.addEventListener('touchstart', e => {
-    if (!(e.target.closest && e.target.closest('button'))) e.preventDefault();
+    if (!(e.target.closest && e.target.closest('button')) && !inCreator(e)) e.preventDefault();
   }, { passive: false });
-  document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  document.addEventListener('touchmove', e => { if (!inCreator(e)) e.preventDefault(); }, { passive: false });
   // Sur iOS, l'audio ne démarre qu'après un geste « complet » : on relance au relâchement.
   document.addEventListener('touchend', () => Sound.init());
   document.addEventListener('click', () => Sound.init());
