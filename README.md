@@ -38,17 +38,17 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à 
 - **Bonjour Paris** : tour Eiffel qui scintille, Opéra Garnier, Arc de Triomphe, Sacré-Cœur, la Seine, immeubles haussmanniens avec géraniums aux balcons ; valse musette à l'accordéon.
 - **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
 - **Hong Kong**, de nuit : Victoria Peak, la Bank of China Tower et l'IFC, une jonque aux voiles rouges et le Star Ferry sur le port, enseignes au néon, tramway « ding-ding » et taxi rouge ; plateformes en paniers vapeur à dim sum, enseignes lumineuses et échafaudages en bambou ; pop cantonaise à la flûte.
-- **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
+- **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; les hautes tours de San Gimignano ; la tour penchée de Pise et son baptistère ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
-- **Glaces** : une licorne traverse le ciel en laissant un grand arc-en-ciel.
+- **Glaces** : une licorne au galop (crinière pastel, corne dorée, queue arc-en-ciel) traverse le ciel en laissant un grand arc-en-ciel.
 - **Japon** : un monstre géant sort de terre et crache du feu.
 - **New York** : un gorille géant tape sur sa poitrine en haut de l'Empire State Building.
 - **Londres** : la reine salue la foule depuis le balcon de Buckingham Palace.
 - **Paris** : une patrouille d'avions passe en laissant des traînées bleu, blanc, rouge.
 - **Slovénie** : le dragon de Ljubljana traverse le ciel, fait un looping et crache deux petites flammes.
-- **Hong Kong** : une danse du lion traverse la rue pendant qu'un feu d'artifice éclate au-dessus du port.
+- **Hong Kong** : une danse du dragon passe sur les toits (un long dragon rouge et or qui ondule au bout des perches de ses danseurs) pendant qu'un feu d'artifice éclate au-dessus du port.
 - **Toscane** : les chevaux du Palio de Sienne passent au galop, chaque jockey aux couleurs de son quartier.
 
 ### La fin : le décollage à Cap Canaveral

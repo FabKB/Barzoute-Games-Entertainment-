@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v20';
+  const VERSION = 'v23';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -526,7 +526,7 @@
         } else if (w === 4) {
           noiseSweep(t + 0.8, 3.5, 300, 2200, 0.16, 'lowpass');
         } else if (w === 7) {
-          // Danse du lion : tambour et cymbales ; feu d'artifice : sifflement puis « boum ».
+          // Danse du dragon : tambour et cymbales ; feu d'artifice : sifflement puis « boum ».
           for (let k = 0; k * 0.25 < EVENT_DUR[7] - 1; k++) {
             if (k % 4 !== 3) drum(t + k * 0.25, k % 4 === 0 ? 120 : 160, 60, 0.18, k % 4 === 0 ? 0.45 : 0.25);
             if (k % 4 === 0) nz(t + k * 0.25, 0.3, 0.07, 'highpass', 5000, 0, sfx);
@@ -1797,6 +1797,27 @@
     }
     if (Math.abs(x + 0.5 - 530) <= 7 && fb >= 34 && fb < 44 && ((x + 0.5 - 530) / 7) ** 2 + ((fb - 34) / 10) ** 2 <= 1) return '#d9d6ce';
     if (x >= 515 && x <= 546 && fb < 34) return ((fb / 3) | 0) % 2 ? '#2a2a33' : MARBLE;
+    // San Gimignano : ses hautes tours de pierre, serrées sur leur colline.
+    for (const [tx, tw, th] of [[328, 6, 52], [337, 5, 66], [345, 7, 74], [355, 5, 58], [362, 6, 70], [371, 5, 48], [379, 6, 62], [388, 5, 44]]) {
+      if (x >= tx && x < tx + tw && fb < th) {
+        if (fb >= th - 2) return (x - tx) % 2 ? '#a8864a' : null;
+        if ((fb % 9 === 4 || fb % 9 === 5) && x === tx + (tw >> 1)) return '#4a3a2a';
+        return x === tx ? '#a8864a' : (hash(x * 3 + fb * 7) % 7 === 0 ? '#b8955a' : '#d4b483');
+      }
+    }
+    if (x >= 320 && x <= 398 && fb < 20) return fb >= 17 ? (x % 4 === 0 ? null : '#b8955a') : (fb % 6 === 3 && x % 5 === 1 ? '#4a3a2a' : '#c9a878');
+    // Pise : la tour penchée (marbre blanc, galeries à arcades, clocher) et le baptistère.
+    const lean = fb * 0.12, pdx = x + 0.5 - 606 - lean;
+    if (fb < 62 && Math.abs(pdx) <= (fb >= 54 ? 4.5 : 6)) {
+      if (fb >= 60) return Math.floor(pdx) % 2 ? '#ecebe6' : null;
+      if (Math.abs(pdx) > (fb >= 54 ? 3.6 : 5.2)) return '#c9c6be';
+      const tier = fb % 7;
+      if (tier === 0) return '#bdbab0';
+      if (fb >= 7 && tier >= 2 && tier <= 5 && Math.floor(pdx + 6) % 3 === 1) return tier === 2 ? '#d9d6ce' : '#8f8b82';
+      return '#f4f2ec';
+    }
+    if (fb < 22 && (x + 0.5 - 578) ** 2 / 100 + (fb - 8) ** 2 / 196 <= 1) return fb >= 18 ? '#c9c6be' : (fb % 5 === 2 && x % 3 === 0 ? '#bdbab0' : '#f4f2ec');
+    if (x >= 566 && x <= 590 && fb < 9) return x % 4 === 0 && fb > 2 ? '#bdbab0' : '#f4f2ec';
     // Cyprès, vignes et collines toscanes.
     const ci = Math.floor(x / 23), ccx = ci * 23 + 11, ch = 14 + hash(ci * 5 + 1) % 14;
     if (hash(ci * 7) % 3 !== 0 && fb < ch && Math.abs(x + 0.5 - ccx) <= 2.2 * Math.sin(Math.PI * Math.min(1, (fb + 2) / (ch + 2)))) return (x + fb) % 3 ? '#2f5a3a' : '#3c6a46';
@@ -1806,7 +1827,7 @@
       return fb > hill - 3 ? '#a8b86a' : '#8fa65a';
     }
     const far2 = 34 + 10 * Math.sin(x / 640 * TAU * 2 + 2);
-    if (fb < far2) return '#a6a8c8';
+    if (fb < far2) return '#a9b8c4';
     return null;
   });
   // Toscane : le Ponte Vecchio et ses boutiques, palais ocre aux volets verts au bord de l'Arno.
@@ -1897,7 +1918,7 @@
     { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
     { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
     { name: 'HONG KONG', accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
-    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#4a5a9e', '#6a74b4', '#9a8cc0', '#d49aa8', '#f2a98a', '#f8c28a', '#fbd9a0', '#fde9c0'] },
+    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
     { name: 'CAP CANAVERAL', accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
   ];
 
@@ -1910,7 +1931,7 @@
   const btnHome = document.getElementById('btnHome');
   let W = 320, H = 180, SCALE = 1, PX = 1;
   const safe = { l: 0, r: 0, t: 0, b: 0 };
-  let skyCs = [], sunC = mk(1, 1), moonC = mk(1, 1);
+  let skyCs = [], sunC = mk(1, 1), moonC = mk(1, 1), goldSunC = mk(1, 1);
   const camBase = () => -H * 0.66;
 
   function buildSky() {
@@ -1935,6 +1956,8 @@
     });
     const R = Math.max(10, Math.round(Math.min(W, H) * 0.13));
     sunC = disc(R, (x, y, d, r) => (d > r - 2 && (x + y) % 2 === 0) ? '#ff9a85' : '#ff5e57');
+    // Soleil doré de l'après-midi toscan.
+    goldSunC = disc(R, (x, y, d, r) => (d > r - 2 && (x + y) % 2 === 0) ? '#fff4c0' : (d < r * 0.45 ? '#fff0a0' : '#ffd84a'));
     moonC = disc(Math.round(R * 0.7), (x, y) => hash(x * 31 + y * 17) % 9 === 0 ? '#efdfb6' : '#fff4d6');
   }
 
@@ -2015,25 +2038,47 @@
     return null;
   }, '#1d171b'));
 
-  // Glaces : la licorne volante (tournée vers la droite), crinière rose et queue arc-en-ciel.
-  const UNICORN = [
-    '.....................Y',
-    '....................YK',
-    '...............mM..YK',
-    '..............mMmKKwwK',
-    '.............mMmKwwwwwK',
-    '............mMmKwwKwwwwK',
-    '...........mMmKwwwwwwwwwK',
-    '..RO.......mMKwwwwwKKKKK',
-    '.ROYG.....mMKwwwwwK',
-    'ROYGB.KKKKKKwwwwwwK',
-    '.YGBVKwwwwwwwwwwwK',
-    '..BV.KwwwwwwwwwwwK',
-    '.....KwwwwwwwwwwK',
-    '....KwK.KwK.KwK.KwK',
-    '...KwK...KwK..KwK..KwK',
-    '...KK.....KK...KK....KK'
-  ];
+  // Glaces : la licorne volante (tournée vers la droite) : crinière pastel, corne dorée,
+  // queue arc-en-ciel ; deux images de galop.
+  const unicornFrames = [0, 1].map(f => outlinedSprite(42, 31, (x, y) => {
+    const W0 = '#ffffff', SH = '#ece4f7';
+    // Grand œil brillant, cils, joue rose, naseau.
+    if (Math.hypot(x - 33, y - 6.6) < 0.7) return '#ffffff';
+    if (Math.hypot(x - 33.5, y - 7.4) < 1.6) return '#3b2550';
+    if (x > 34.5 && x < 36 && y > 5 && y < 6) return '#3b2550';
+    if (Math.hypot(x - 34.5, y - 10.4) < 1.2) return '#ffb3d9';
+    if (Math.hypot(x - 39.4, y - 10.2) < 0.6) return '#c97aa8';
+    // Corne torsadée.
+    { const [d, t] = segDist(x, y, 33.5, 3.4, 38.5, 0.2); if (d < 1.6 - t * 0.9) return Math.floor(t * 5) % 2 ? '#e9a42a' : '#ffd84a'; }
+    // Oreille.
+    if (ell(x, y, 29.5, 3.6, 1.2, 2.2)) return ell(x, y, 29.5, 4, 0.6, 1.4) ? '#ffb3d9' : W0;
+    // Crinière qui ondule.
+    const mane = [[31, 3.6], [27, 5], [23.5, 8], [20, 10.5], [16.5, 11.5]];
+    for (let k = 0; k < mane.length - 1; k++) {
+      const [ax, ay] = mane[k], [bx, by] = mane[k + 1], wob = Math.sin(k * 1.7 + f * 2) * 1.2;
+      const [d] = segDist(x, y, ax, ay - 1.4 + wob, bx, by - 1.4 + wob);
+      if (d < 3 - k * 0.35) return ['#ff9ecf', '#b48be8', '#9fd8ff'][(Math.floor(x + y) >> 1) % 3];
+    }
+    // Tête, museau, encolure, corps.
+    if (ell(x, y, 37.5, 9.8, 3.2, 2.6)) return W0;
+    if (ell(x, y, 32.5, 7.6, 4.6, 3.8)) return W0;
+    if (segDist(x, y, 23, 15, 30, 8)[0] < 3.8) return W0;
+    if (ell(x, y, 18, 17, 10.5, 5.6)) return y > 19.5 ? SH : W0;
+    // Pattes : tendues en avant et en arrière, ou repliées.
+    const legs = f === 0
+      ? [[25, 19, 31, 24], [23, 19, 29, 26], [12, 19, 6, 24], [14, 19, 8, 26]]
+      : [[25, 19, 26, 26], [23, 19, 21, 26], [12, 19, 13, 26], [14, 19, 16, 26]];
+    for (const [ax, ay, bx, by] of legs) {
+      const [d, t] = segDist(x, y, ax, ay, bx, by);
+      if (d < 1.5) return t > 0.8 ? '#ffd84a' : (t < 0.3 ? W0 : SH);
+    }
+    // Queue arc-en-ciel qui flotte.
+    if (x < 9.5) {
+      const cy = 15 + Math.sin((9 - x) * 0.55 + f * 1.5) * 2.2 - (9 - x) * 0.25, band = Math.floor(y - cy + 3);
+      if (band >= 0 && band < 6) return ['#ff4d6d', '#ff9f43', '#ffe14d', '#4ee08a', '#4db8ff', '#a46bff'][band];
+    }
+    return null;
+  }, '#3b2550'));
   // Londres : la reine qui salue (deux positions du bras).
   const QUEEN_A = [
     '..UUUU....', '.UUUUUU..i', 'UUUUUUUU.i', '.jiiiij..U', '.jiKiKj..U', '..iiRii.U.', '..UwwwUUU.',
@@ -2044,7 +2089,6 @@
   // Paris : un avion de la patrouille, tourné vers la droite.
   const JET = ['K', 'KK', 'KxxxxxxxxK', '.KxxxxxxxxxK', '..KKxxKKK'];
   const padRows = rows => { const w = Math.max(...rows.map(r => r.length)); return rows.map(r => r.padEnd(w, '.')); };
-  const unicornSpr = makeSprite(padRows(UNICORN));
   const queenFrames = [makeSprite(padRows(QUEEN_A)), makeSprite(padRows(QUEEN_B))];
   const jetSpr = makeSprite(padRows(JET));
   // Drapeau britannique.
@@ -2114,28 +2158,58 @@
     return [W + 50 * K - u * (W + 130 * K) - R * Math.sin(a), Math.max(safe.t + 2 * R + 14, H * 0.38) + Math.sin(u * 9) * 3 * K + R * (Math.cos(a) - 1)];
   };
 
-  // Hong Kong : le lion de la danse du lion (tourné vers la gauche), tête haute ou basse.
-  const lionFrames = [0, 1].map(f => outlinedSprite(34, 25, (x, y) => {
-    const hy = 9 + f, RED = '#d7263d', GOLD = '#f2c230';
-    for (const ex of [5, 11]) {
-      const d = Math.hypot(x - ex, y - (hy - 2));
-      if (d < 1.1) return '#1d171b';
-      if (d < 2.4) return '#ffffff';
+  // Hong Kong : la danse du dragon. La tête (tournée vers la gauche), bouche fermée ou ouverte.
+  const dragonHeadFrames = [false, true].map(open => outlinedSprite(34, 30, (x, y) => {
+    const RED = '#d7263d', GOLD = '#f2c230';
+    // Gros yeux globuleux et sourcils dorés.
+    if (Math.hypot(x - 13.4, y - 8.6) < 0.6) return '#ffffff';
+    if (Math.hypot(x - 14, y - 9.4) < 1.6) return '#1d171b';
+    if (ell(x, y, 15, 9, 3.4, 3.2)) return '#ffffff';
+    if (ell(x, y, 15.5, 5.4, 4.4, 1.5)) return GOLD;
+    // Bois dorés.
+    for (const [ax, ay, bx, by, w] of [[19, 7, 28, 1.5, 1.9], [23.5, 4.5, 24.5, 0.6, 1.3], [21, 6, 31, 5, 1.4]]) {
+      const [d, t] = segDist(x, y, ax, ay, bx, by);
+      if (d < w - t * 0.7) return GOLD;
     }
-    if (Math.hypot(x - 8, y - (hy - 6.5)) < 1.6) return '#ffffff';
-    if (f === 1 && x >= 2 && x <= 13 && y >= hy + 3 && y <= hy + 5) return y < hy + 4 ? '#ffffff' : '#3a1a2a';
-    if (ell(x, y, 8, hy, 7.5, 7)) return ell(x, y, 8, hy, 6, 5.6) ? RED : GOLD;
-    if (y >= hy + 6 && y <= hy + 8 && x >= 1 && x <= 15) return Math.floor(x) % 2 ? '#ffffff' : '#ffe9a8';
-    if (ell(x, y, 23, 10, 11, 5.5)) return (Math.floor(x) + Math.floor(y)) % 4 === 0 ? GOLD : RED;
-    if (y >= 15 && y < 17 && x >= 13 && x <= 33) return Math.floor(x) % 2 ? '#ffffff' : GOLD;
-    if (ell(x, y, 33, 7, 1.6, 2.5)) return GOLD;
-    for (const lx of [10, 14, 25, 29]) {
-      const off = (Math.floor(lx / 4) + f) % 2 ? 1 : -1;
-      if (Math.abs(x - (lx + (y > 19 ? off : 0))) < 1.3 && y >= 17 && y < 23) return '#ffd84a';
-      if (Math.abs(x - (lx + off)) < 1.6 && y >= 23 && y < 25) return '#1d171b';
+    // Truffe ronde.
+    if (Math.hypot(x - 2.6, y - 11.6) < 0.8) return '#1d171b';
+    if (ell(x, y, 3, 11, 2.8, 2.4)) return GOLD;
+    // Gueule et barbe.
+    const jaw = open ? 21 : 18.3;
+    if (open && x >= 1.5 && x <= 13 && y >= 16 && y < 20) {
+      if (y < 17.2) return Math.floor(x) % 2 ? '#ffffff' : '#3a1a2a';
+      return x < 5 ? '#ff7a8a' : '#3a1a2a';
     }
+    if (ell(x, y, 7.5, jaw, 6.5, 2.2)) return RED;
+    if (x >= 3 && x <= 14 && y >= jaw + 1.5 && y < jaw + 7 - Math.abs(x - 8.5) * 0.4) return (Math.floor(x) + Math.floor((y - jaw) / 2)) % 2 ? '#ffffff' : GOLD;
+    if (x >= 1 && x <= 13 && y >= 15 && y < 16) return GOLD;
+    if (ell(x, y, 6.5, 13, 7, 3.4)) return RED;
+    // Crinière blanche et dorée derrière la tête.
+    if (x > 22 && ell(x, y, 27, 15, 6.5, 11)) return Math.floor(x) % 2 ? '#ffffff' : GOLD;
+    if (ell(x, y, 17, 13, 9, 7)) return (Math.floor(x) + Math.floor(y)) % 5 === 0 ? GOLD : RED;
     return null;
   }, '#3a1a2a'));
+  // Un anneau du corps : écailles rouge et or, ventre clair, petite crête dorée.
+  const dragonRing = outlinedSprite(14, 15, (x, y) => {
+    for (const sx of [3.5, 7, 10.5]) if (y < 4.5 && Math.abs(x - sx) < (4.5 - y) * 0.9) return '#f2c230';
+    if (!ell(x, y, 7, 9, 6.2, 5.8)) return null;
+    if (y > 12.2) return '#ffe9a8';
+    return (Math.floor(x) + 2 * Math.floor(y)) % 6 < 1 ? '#f2c230' : '#d7263d';
+  }, '#3a1a2a');
+  // Le bout de la queue : une touffe en éventail.
+  const dragonTail = outlinedSprite(14, 15, (x, y) => {
+    const a = Math.atan2(y - 8, x - 1), r = Math.hypot(x - 1, y - 8);
+    if (r < 12 && Math.abs(a) < 0.9) return Math.floor(a * 6 + 6) % 2 ? '#f2c230' : '#ffffff';
+    return null;
+  }, '#3a1a2a');
+  // Un danseur qui porte une perche (deux pas).
+  const dancerFrames = [0, 1].map(f => outlinedSprite(9, 14, (x, y) => {
+    if (ell(x, y, 4.5, 2.6, 2.2, 2.2)) return y < 2 ? '#2a2433' : '#f3d3b8';
+    if (x >= 2 && x <= 7 && y >= 4.5 && y < 9.5) return y >= 8 && y < 9 ? '#d7263d' : '#ffd84a';
+    const lx = f ? [2.5, 6.5] : [3.5, 5.5];
+    for (const L of lx) if (Math.abs(x - L) < 1.1 && y >= 9.5 && y < 14) return y >= 12.5 ? '#1d171b' : '#2a2433';
+    return null;
+  }, '#1d171b'));
   // Hong Kong : feu d'artifice au-dessus du port (moment, position, couleur).
   const FIREWORKS = [[1, 0.2, 0.22, 0], [1.8, 0.55, 0.16, 1], [2.6, 0.8, 0.26, 2], [3.6, 0.35, 0.14, 3], [4.4, 0.65, 0.28, 4], [5.2, 0.15, 0.18, 5], [6.2, 0.5, 0.2, 0], [7, 0.85, 0.15, 2]];
   // Toscane : les chevaux du Palio, chaque jockey aux couleurs de son quartier.
@@ -2188,7 +2262,7 @@
     if (ev.t >= dur) { ev = null; return; }
     if (ev.w === 0) {
       const [x, y] = unicornPos(ev.t, dur), last = ev.path[ev.path.length - 1];
-      if (!last || x - last.x >= 2) ev.path.push({ x: x + 2 * s, y: y + 8 * s });
+      if (!last || x - last.x >= 2) ev.path.push({ x: x + 3 * evK(), y: y + 15 * evK() - 3 * s });
     } else if (ev.w === 2) {
       // Une secousse à chaque coup sur la poitrine, plus forte quand le gorille passe devant le personnage.
       const phase = ev.t % 1.6, frame = phase < 0.9 ? Math.floor(phase / 0.15) % 2 : 0;
@@ -2244,7 +2318,8 @@
       for (const p of ev.path) for (let i = 0; i < 6; i++) { ctx.fillStyle = RAINBOW[i]; ctx.fillRect(Math.round(p.x), Math.round(p.y) + i * s, 2, s); }
       ctx.globalAlpha = 1;
       const [x, y] = unicornPos(t, dur);
-      ctx.drawImage(unicornSpr, Math.round(x), Math.round(y + Math.sin(t * 8) * s), unicornSpr.width * s, unicornSpr.height * s);
+      const uni = unicornFrames[Math.floor(t * 5) % 2];
+      ctx.drawImage(uni, Math.round(x), Math.round(y + Math.sin(t * 8) * s), uni.width * K, uni.height * K);
     } else if (ev.w === 1) {
       // Le monstre sort de terre, crache du feu, puis redescend.
       const s = K + 1, spr = kaijuFrames[t > 1.6 && t < 4.6 ? 1 : 0];
@@ -2307,10 +2382,25 @@
       ctx.globalAlpha = 1;
       for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
     } else if (ev.w === 7) {
-      // La danse du lion passe sur les toits en sautillant, au-dessus des plateformes.
-      const s = K + 1, spr = lionFrames[Math.floor(t * 4) % 2], street = Math.round(Math.min(H * 0.84 - (camY - camBase()) * 0.3 - 30 * K, H * 0.58));
-      const x = Math.round(W + 40 * K - u * (W + 120 * K)), hop = Math.round(Math.abs(Math.sin(t * 6)) * 4 * K);
-      ctx.drawImage(spr, x, street - spr.height * s - hop, spr.width * s, spr.height * s);
+      // La danse du dragon : le long dragon ondule au bout des perches de ses danseurs, sur les toits.
+      const s = K + 1, N = 9, gap = 11 * s, base = Math.round(Math.min(H * 0.84 - (camY - camBase()) * 0.3 - 30 * K, H * 0.58));
+      const len = 24 * s + N * gap, x0 = Math.round(W + 10 * K - u * (W + len + 40 * K));
+      const bodyY = base - 24 * s, wave = k => Math.round(bodyY + Math.sin(t * 5 - k * 0.8) * 9 * K);
+      const segX = k => x0 + 22 * s + k * gap;
+      // Danseurs et perches.
+      for (let k = -1; k < N; k++) {
+        const dx = k < 0 ? x0 + 12 * s : segX(k), d = dancerFrames[(Math.floor(t * 6) + k + 2) % 2];
+        ctx.fillStyle = '#7a4a2a';
+        ctx.fillRect(dx, wave(k), K, base - 7 * s - wave(k));
+        ctx.drawImage(d, dx - Math.round(4.5 * s), base - d.height * s, d.width * s, d.height * s);
+      }
+      // Le corps, de la queue vers la tête, avec des anneaux intermédiaires pour qu'il soit continu.
+      ctx.drawImage(dragonTail, segX(N - 1) + 4 * s, wave(N - 0.6) - 8 * s, dragonTail.width * s, dragonTail.height * s);
+      for (let k = N - 1; k >= -0.5; k -= 0.5) {
+        ctx.drawImage(dragonRing, segX(k) - 7 * s, wave(k) - 9 * s, dragonRing.width * s, dragonRing.height * s);
+      }
+      const hd = dragonHeadFrames[Math.floor(t * 3) % 2];
+      ctx.drawImage(hd, x0 - 4 * s, wave(-1.5) - 15 * s, hd.width * s, hd.height * s);
     } else if (ev.w === 8) {
       // Le Palio : six chevaux au galop.
       const s = K + 1, street = palioStreet();
@@ -3337,11 +3427,11 @@
       drawWater(lake, '#1a2448', '#ff9ad8');
       drawStrip(hkMid, 0.3, H * 0.84 - vOff * 0.3, '#2a2438');
     } else if (world === 8) {
-      drawDisc(sunC, W * 0.22, H * 0.36);
+      drawDisc(goldSunC, W * 0.78, H * 0.2);
       drawBgClouds();
       const far = H * 0.62 - vOff * 0.12;
       drawStrip(tuscFar, 0.1, far, '#4f7a8a');
-      drawWater(far, '#4f7a8a', '#ffe0b0');
+      drawWater(far, '#4f7a8a', '#fff4c0');
       drawStrip(tuscMid, 0.3, H * 0.82 - vOff * 0.3, '#c08a5a');
     } else if (world === 9) {
       drawBgClouds();
