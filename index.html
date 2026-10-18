@@ -91,7 +91,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v22';
+  const VERSION = 'v23';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -1797,6 +1797,27 @@
     }
     if (Math.abs(x + 0.5 - 530) <= 7 && fb >= 34 && fb < 44 && ((x + 0.5 - 530) / 7) ** 2 + ((fb - 34) / 10) ** 2 <= 1) return '#d9d6ce';
     if (x >= 515 && x <= 546 && fb < 34) return ((fb / 3) | 0) % 2 ? '#2a2a33' : MARBLE;
+    // San Gimignano : ses hautes tours de pierre, serrées sur leur colline.
+    for (const [tx, tw, th] of [[328, 6, 52], [337, 5, 66], [345, 7, 74], [355, 5, 58], [362, 6, 70], [371, 5, 48], [379, 6, 62], [388, 5, 44]]) {
+      if (x >= tx && x < tx + tw && fb < th) {
+        if (fb >= th - 2) return (x - tx) % 2 ? '#a8864a' : null;
+        if ((fb % 9 === 4 || fb % 9 === 5) && x === tx + (tw >> 1)) return '#4a3a2a';
+        return x === tx ? '#a8864a' : (hash(x * 3 + fb * 7) % 7 === 0 ? '#b8955a' : '#d4b483');
+      }
+    }
+    if (x >= 320 && x <= 398 && fb < 20) return fb >= 17 ? (x % 4 === 0 ? null : '#b8955a') : (fb % 6 === 3 && x % 5 === 1 ? '#4a3a2a' : '#c9a878');
+    // Pise : la tour penchée (marbre blanc, galeries à arcades, clocher) et le baptistère.
+    const lean = fb * 0.12, pdx = x + 0.5 - 606 - lean;
+    if (fb < 62 && Math.abs(pdx) <= (fb >= 54 ? 4.5 : 6)) {
+      if (fb >= 60) return Math.floor(pdx) % 2 ? '#ecebe6' : null;
+      if (Math.abs(pdx) > (fb >= 54 ? 3.6 : 5.2)) return '#c9c6be';
+      const tier = fb % 7;
+      if (tier === 0) return '#bdbab0';
+      if (fb >= 7 && tier >= 2 && tier <= 5 && Math.floor(pdx + 6) % 3 === 1) return tier === 2 ? '#d9d6ce' : '#8f8b82';
+      return '#f4f2ec';
+    }
+    if (fb < 22 && (x + 0.5 - 578) ** 2 / 100 + (fb - 8) ** 2 / 196 <= 1) return fb >= 18 ? '#c9c6be' : (fb % 5 === 2 && x % 3 === 0 ? '#bdbab0' : '#f4f2ec');
+    if (x >= 566 && x <= 590 && fb < 9) return x % 4 === 0 && fb > 2 ? '#bdbab0' : '#f4f2ec';
     // Cyprès, vignes et collines toscanes.
     const ci = Math.floor(x / 23), ccx = ci * 23 + 11, ch = 14 + hash(ci * 5 + 1) % 14;
     if (hash(ci * 7) % 3 !== 0 && fb < ch && Math.abs(x + 0.5 - ccx) <= 2.2 * Math.sin(Math.PI * Math.min(1, (fb + 2) / (ch + 2)))) return (x + fb) % 3 ? '#2f5a3a' : '#3c6a46';
