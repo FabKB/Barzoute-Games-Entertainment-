@@ -2307,8 +2307,8 @@
       ctx.globalAlpha = 1;
       for (const [dx, dy] of F) ctx.drawImage(jetSpr, lx + dx * K, ly + dy * K, jetSpr.width * K, jetSpr.height * K);
     } else if (ev.w === 7) {
-      // La danse du lion traverse la rue en sautillant.
-      const s = K + 1, spr = lionFrames[Math.floor(t * 4) % 2], street = Math.round(H * 0.84 - (camY - camBase()) * 0.3) + 4 * K;
+      // La danse du lion passe sur les toits en sautillant, au-dessus des plateformes.
+      const s = K + 1, spr = lionFrames[Math.floor(t * 4) % 2], street = Math.round(Math.min(H * 0.84 - (camY - camBase()) * 0.3 - 30 * K, H * 0.58));
       const x = Math.round(W + 40 * K - u * (W + 120 * K)), hop = Math.round(Math.abs(Math.sin(t * 6)) * 4 * K);
       ctx.drawImage(spr, x, street - spr.height * s - hop, spr.width * s, spr.height * s);
     } else if (ev.w === 8) {
