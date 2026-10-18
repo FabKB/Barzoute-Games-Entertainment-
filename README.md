@@ -42,13 +42,13 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à 
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
-- **Glaces** : une licorne traverse le ciel en laissant un grand arc-en-ciel.
+- **Glaces** : une licorne au galop (crinière pastel, corne dorée, queue arc-en-ciel) traverse le ciel en laissant un grand arc-en-ciel.
 - **Japon** : un monstre géant sort de terre et crache du feu.
 - **New York** : un gorille géant tape sur sa poitrine en haut de l'Empire State Building.
 - **Londres** : la reine salue la foule depuis le balcon de Buckingham Palace.
 - **Paris** : une patrouille d'avions passe en laissant des traînées bleu, blanc, rouge.
 - **Slovénie** : le dragon de Ljubljana traverse le ciel, fait un looping et crache deux petites flammes.
-- **Hong Kong** : une danse du lion traverse la rue pendant qu'un feu d'artifice éclate au-dessus du port.
+- **Hong Kong** : une danse du dragon passe sur les toits (un long dragon rouge et or qui ondule au bout des perches de ses danseurs) pendant qu'un feu d'artifice éclate au-dessus du port.
 - **Toscane** : les chevaux du Palio de Sienne passent au galop, chaque jockey aux couleurs de son quartier.
 
 ### La fin : le décollage à Cap Canaveral
