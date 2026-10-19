@@ -14,10 +14,13 @@
 <meta name="apple-mobile-web-app-title" content="Glace Licorne">
 <!-- ARTIFACT-START -->
 <title>Glace Licorne</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
 <style>
+  /* Police pixel « Press Start 2P » incluse avec le jeu (licence SIL OFL, voir fonts/OFL.txt). */
+  @font-face {
+    font-family: "Press Start 2P";
+    src: url("fonts/PressStart2P-Regular.ttf") format("truetype");
+    font-display: swap;
+  }
   /* Plein écran : un seul canvas pixel art, deux boutons flottants. */
   :root {
     --night: #1f1533;
@@ -66,8 +69,8 @@
   .btns button:active { background: var(--pink); color: var(--ink); }
   .btns button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
   .btns svg { width: 24px; height: 24px; shape-rendering: crispEdges; }
-  /* Atelier « doudou en photo » : une fenêtre par-dessus le jeu. */
-  #creator {
+  /* Fenêtres par-dessus le jeu : atelier photo, galerie, contrôle parental, Atelier illimité. */
+  .overlay {
     position: fixed; inset: 0; z-index: 5;
     display: flex;
     padding: calc(8px + env(safe-area-inset-top, 0px)) 8px calc(8px + env(safe-area-inset-bottom, 0px));
@@ -76,7 +79,9 @@
     touch-action: manipulation;
     overflow: auto;
   }
-  #creator[hidden] { display: none; }
+  .overlay[hidden] { display: none; }
+  /* Ordre d'empilement : la galerie, puis l'atelier, puis l'achat, puis le contrôle parental tout devant. */
+  #gallery { z-index: 5; } #creator { z-index: 6; } #paywall { z-index: 7; } #gate { z-index: 8; }
   .cr-box {
     width: min(100%, 420px); margin: auto;
     background: #5b3f86; border: 3px solid var(--cream);
@@ -86,7 +91,7 @@
   .cr-box p { margin: 0; color: var(--cream); }
   /* Téléphone à l'horizontale : tout tient sur la hauteur de l'écran. */
   @media (max-height: 480px) {
-    #creator { font-size: 8px; }
+    .overlay { font-size: 8px; }
     .cr-box { width: min(100%, 560px); gap: 6px; padding: 8px; }
     .cr-btn, .cr-box button { padding: 6px 8px; }
   }
@@ -107,6 +112,27 @@
     background: var(--cream); color: var(--ink); border: 3px solid var(--ink);
     -webkit-user-select: text; user-select: text;
   }
+  .cr-box button.link { background: none; border: none; color: #d6fff0; text-decoration: underline; padding: 4px; }
+  .ga-list { display: grid; gap: 8px; max-height: 46vh; overflow: auto; }
+  .ga-item { display: flex; align-items: center; gap: 8px; background: #3b2550; border: 2px solid var(--ink); padding: 6px; text-align: left; }
+  .ga-item.sel { border-color: #fff3b0; }
+  .ga-item canvas { width: 54px; height: 60px; object-fit: contain; image-rendering: pixelated; flex: none; }
+  .ga-body { flex: 1; display: grid; gap: 6px; min-width: 0; }
+  .ga-name { color: #ffffff; }
+  .ga-name input { font: inherit; width: 8em; padding: 4px; text-transform: uppercase; background: var(--cream); color: var(--ink); border: 2px solid var(--ink); -webkit-user-select: text; user-select: text; }
+  .ga-acts { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ga-acts button { padding: 5px 6px; font-size: 8px; }
+  .ga-acts button.del { background: #c83c6e; }
+  #gateA {
+    font: inherit; font-size: 14px; width: 5em; margin: 0 auto; padding: 6px; text-align: center;
+    background: var(--cream); color: var(--ink); border: 3px solid var(--ink);
+    -webkit-user-select: text; user-select: text;
+  }
+  .pw-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: #ffffff; }
+  .pw-list li::before { content: "★ "; color: #ffd84a; }
+  #pwArt { display: block; margin: 0 auto; width: min(100%, 300px); height: auto; image-rendering: pixelated; }
+  #pwPrice { font-size: 14px; color: #fff3b0; }
+  .pw-test { color: #ffb3d9; }
   #safe {
     position: fixed;
     visibility: hidden;
@@ -127,7 +153,52 @@
   <button id="btnSound" type="button" aria-label="Couper le son"></button>
 </div>
 <div id="safe" aria-hidden="true"></div>
-<div id="creator" role="dialog" aria-modal="true" aria-labelledby="crTitle" hidden>
+<div id="paywall" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pwTitle" hidden>
+  <div class="cr-box">
+    <h2 id="pwTitle">ATELIER ILLIMITE</h2>
+    <canvas id="pwArt" width="150" height="40" aria-hidden="true"></canvas>
+    <ul class="pw-list">
+      <li>Crée autant de doudous que tu veux</li>
+      <li>Un seul achat, pour toujours</li>
+      <li>Sans abonnement et sans publicité</li>
+      <li>Les photos restent dans le téléphone</li>
+    </ul>
+    <p id="pwPrice"></p>
+    <div class="cr-row">
+      <button id="pwBuy" type="button">DEBLOQUER</button>
+      <button id="pwLater" type="button" class="alt">PLUS TARD</button>
+    </div>
+    <button id="pwRestore" type="button" class="link">RESTAURER MES ACHATS</button>
+    <p id="pwMsg"></p>
+  </div>
+</div>
+<div id="gate" class="overlay" role="dialog" aria-modal="true" aria-labelledby="gateTitle" hidden>
+  <div class="cr-box">
+    <h2 id="gateTitle">DEMANDE A UN ADULTE</h2>
+    <p>Cette partie est réservée aux parents.</p>
+    <p id="gateQ"></p>
+    <input id="gateA" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" aria-labelledby="gateQ">
+    <p id="gateMsg"></p>
+    <div class="cr-row">
+      <button id="gateOk" type="button">VALIDER</button>
+      <button id="gateCancel" type="button" class="alt">ANNULER</button>
+    </div>
+  </div>
+</div>
+<div id="gallery" class="overlay" role="dialog" aria-modal="true" aria-labelledby="gaTitle" hidden>
+  <div class="cr-box">
+    <h2 id="gaTitle">MES DOUDOUS</h2>
+    <p id="gaInfo"></p>
+    <div id="gaList" class="ga-list"></div>
+    <div class="cr-row">
+      <button id="gaNew" type="button">+ NOUVEAU DOUDOU</button>
+      <button id="gaClose" type="button" class="alt">FERMER</button>
+    </div>
+    <button id="gaRestore" type="button" class="link">RESTAURER MES ACHATS</button>
+    <button id="gaReset" type="button" class="link" hidden>ANNULER L'ACHAT (TEST)</button>
+  </div>
+</div>
+<div id="creator" class="overlay" role="dialog" aria-modal="true" aria-labelledby="crTitle" hidden>
   <div class="cr-box">
     <h2 id="crTitle">NOUVEAU DOUDOU</h2>
     <p>Pose ton doudou sur un fond uni (drap, mur, table) et prends-le en entier.</p>
@@ -150,7 +221,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v25';
+  const VERSION = 'v26';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -844,7 +915,25 @@
     });
     charFrames(customChar);
   }
-  try { const saved = JSON.parse(store.get('doudou', 'null')); if (saved && saved.rows && saved.pal) setCustom(saved); } catch (e) { /* doudou illisible : la case reste vide */ }
+  function clearCustom() { Object.assign(customChar, { empty: true, name: 'PHOTO' }); }
+  // Tous les doudous en photo ; la 5e case montre celui qui est choisi.
+  let doudous = [], doudouSel = null;
+  const saveDoudous = () => { store.set('doudous', JSON.stringify(doudous)); store.set('doudou-sel', doudouSel || ''); };
+  function applySel() {
+    const d = doudous.find(x => x.id === doudouSel) || doudous[0];
+    if (d) { doudouSel = d.id; setCustom(d); } else { doudouSel = null; clearCustom(); }
+  }
+  function loadDoudous() {
+    try { doudous = JSON.parse(store.get('doudous', '[]')) || []; } catch (e) { doudous = []; }
+    if (!doudous.length) {
+      // Version précédente du jeu : un seul doudou, gardé sous un autre nom.
+      try { const old = JSON.parse(store.get('doudou', 'null')); if (old && old.rows && old.pal) { doudous = [Object.assign({ id: 'd1' }, old)]; saveDoudous(); } } catch (e) { /* illisible */ }
+    }
+    doudous = doudous.filter(d => d && d.id && d.rows && d.pal);
+    doudouSel = store.get('doudou-sel', '');
+    applySel();
+  }
+  loadDoudous();
   const IDLE_FPS = 5;
   const idleSprite = (c, blink, offset = 0) => (blink ? c.framesB : c.frames)[(Math.floor(time * IDLE_FPS) + offset) % 4];
   let charIdx = clamp(parseInt(store.get('perso', '0'), 10) || 0, 0, CHARS.length - 1);
@@ -3598,7 +3687,7 @@
   }
 
   // Écran titre : choix du personnage.
-  let cards = [], retakeBtn = null;
+  let cards = [], galleryBtn = null;
   // Appareil photo en pixels (16 × 12 à l'échelle 1).
   function drawCamera(x, y, s, col) {
     const r = (a, b, w, h) => ctx.fillRect(Math.round(x + a * s), Math.round(y + b * s), Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)));
@@ -3623,7 +3712,7 @@
     const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8;
     const mby = Math.min(top + nrows * (ch + 12) + (nrows - 1) * gap + 10, hint - 16);
     const total = cols * cw + (cols - 1) * gap;
-    cards = []; retakeBtn = null;
+    cards = []; galleryBtn = null;
     CHARS.forEach((c, i) => {
       const x = Math.round(cx - total / 2) + (i % cols) * (cw + gap);
       const top = y0 + 72 + Math.floor(i / cols) * (ch + 12 + gap);
@@ -3643,10 +3732,12 @@
       }
       text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
       cards.push({ x, y: top, w: cw, h: ch + 12 });
-      // Petit appareil photo dans le coin pour refaire son doudou.
+      // Petite grille dans le coin : la galerie de tous les doudous.
       if (c.custom && !c.empty) {
-        drawCamera(x + cw - 13, top + 3, 0.6, '#ffffff');
-        retakeBtn = { x: x + cw - 22, y: top - 4, w: 26, h: 22 };
+        ctx.fillStyle = '#ffffff';
+        for (const [gx, gy] of [[0, 0], [5, 0], [0, 5], [5, 5]]) ctx.fillRect(x + cw - 13 + gx, top + 3 + gy, 4, 4);
+        if (doudous.length > 1) text(String(doudous.length), x + cw - 16, top + 3, 8, '#fff3b0', 'right');
+        galleryBtn = { x: x + cw - 24, y: top - 4, w: 28, h: 22 };
       }
     });
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
@@ -3912,7 +4003,7 @@
         return;
       }
       if (e) {
-        if (hit(retakeBtn, lx, ly)) { openCreator(); return; }
+        if (hit(galleryBtn, lx, ly)) { openGallery(); return; }
         const i = cards.findIndex(c => hit(c, lx, ly));
         if (i >= 0 && CHARS[i].empty) { openCreator(); return; }
         if (i >= 0) pick(i);
@@ -4067,7 +4158,7 @@
   function openCreator() {
     holding = false;
     crImg = null; crRes = null; crOk.disabled = true;
-    crName.value = customChar.empty ? 'DOUDOU' : customChar.name;
+    crName.value = ('DOUDOU' + (doudous.length ? doudous.length + 1 : '')).slice(0, 7);
     crMsg.textContent = 'Le fond retiré apparaît en rose sur la photo.';
     creator.hidden = false;
     drawCreator();
@@ -4108,25 +4199,145 @@
   }
   crTol.addEventListener('input', rebuildCreator);
   document.getElementById('crCancel').addEventListener('click', closeCreator);
+  const cleanName = v => (v.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || 'DOUDOU').slice(0, 7);
   crOk.addEventListener('click', () => {
     if (!crRes || !crRes.rows) return;
-    const name = (crName.value.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || 'DOUDOU').slice(0, 7);
-    const data = { name, rows: crRes.rows, pal: crRes.pal };
-    setCustom(data);
-    store.set('doudou', JSON.stringify(data));
+    const d = { id: 'd' + Date.now().toString(36), name: cleanName(crName.value), rows: crRes.rows, pal: crRes.pal };
+    doudous.push(d); doudouSel = d.id;
+    saveDoudous(); applySel();
     pick(CHARS.indexOf(customChar));
     closeCreator();
+    if (!gallery.hidden) renderGallery();
   });
 
+  // ---------- Achats : « Atelier illimité », un achat unique ----------
+  // Mode test : l'achat est simulé, sans paiement. Dans l'app, ces trois fonctions
+  // appelleront le système d'achat d'Apple et de Google.
+  const FREE_DOUDOUS = 1;
+  const Shop = {
+    test: true,
+    price: '2,99 €',
+    owned: () => store.get('atelier', '0') === '1',
+    buy: () => new Promise(res => setTimeout(() => { store.set('atelier', '1'); res(true); }, 600)),
+    restore: () => new Promise(res => setTimeout(() => res(store.get('atelier', '0') === '1'), 400))
+  };
+  const canCreate = () => doudous.length < FREE_DOUDOUS || Shop.owned();
+  function newDoudou() {
+    if (canCreate()) openCreator();
+    else openGate(openPaywall);
+  }
+
+  // Galerie : choisir, renommer, supprimer ses doudous.
+  const gallery = document.getElementById('gallery'), gaList = document.getElementById('gaList');
+  function openGallery() { holding = false; gallery.hidden = false; renderGallery(); }
+  function closeGallery() { gallery.hidden = true; }
+  function renderGallery() {
+    const owned = Shop.owned();
+    document.getElementById('gaInfo').textContent = owned
+      ? 'Atelier illimité : crée autant de doudous que tu veux !'
+      : (doudous.length ? 'Ton doudou est offert. Pour en créer d\'autres, il faut l\'Atelier illimité.' : 'Ton premier doudou est offert !');
+    document.getElementById('gaReset').hidden = !(Shop.test && owned);
+    gaList.textContent = '';
+    if (!doudous.length) { const p0 = document.createElement('p'); p0.textContent = 'Pas encore de doudou en photo.'; gaList.append(p0); }
+    for (const d of doudous) {
+      const item = document.createElement('div');
+      item.className = 'ga-item' + (d.id === doudouSel ? ' sel' : '');
+      item.append(makeSprite(d.rows, Object.assign({ K: OUT }, d.pal)));
+      const name = document.createElement('div');
+      name.className = 'ga-name'; name.textContent = d.name;
+      const acts = document.createElement('div');
+      acts.className = 'ga-acts';
+      const btn = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (cls) b.className = cls; b.addEventListener('click', fn); acts.append(b); return b; };
+      btn(d.id === doudouSel ? 'CHOISI' : 'CHOISIR', '', () => {
+        doudouSel = d.id; saveDoudous(); applySel(); pick(CHARS.indexOf(customChar)); closeGallery();
+      });
+      btn('RENOMMER', 'alt', () => {
+        const input = document.createElement('input');
+        input.maxLength = 7; input.value = d.name; input.setAttribute('aria-label', 'Nouveau nom');
+        name.textContent = ''; name.append(input); input.focus();
+        acts.textContent = '';
+        btn('OK', '', () => { d.name = cleanName(input.value); saveDoudous(); applySel(); renderGallery(); });
+      });
+      const del = btn('SUPPRIMER', 'del', () => {
+        // Deux touchers pour éviter les accidents.
+        if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = 'SUR ?'; return; }
+        doudous = doudous.filter(x => x !== d);
+        if (doudouSel === d.id) doudouSel = null;
+        saveDoudous(); applySel();
+        if (CHARS[charIdx].empty) pick(0);
+        renderGallery();
+      });
+      const body = document.createElement('div');
+      body.className = 'ga-body';
+      body.append(name, acts);
+      item.append(body);
+      gaList.append(item);
+    }
+  }
+  document.getElementById('gaNew').addEventListener('click', newDoudou);
+  document.getElementById('gaClose').addEventListener('click', closeGallery);
+  document.getElementById('gaRestore').addEventListener('click', () => doRestore(document.getElementById('gaInfo')));
+  document.getElementById('gaReset').addEventListener('click', () => { store.set('atelier', '0'); renderGallery(); });
+
+  // Contrôle parental : une multiplication écrite en lettres, avant d'afficher l'achat.
+  const gate = document.getElementById('gate'), gateA = document.getElementById('gateA'), gateMsg = document.getElementById('gateMsg');
+  const NUMS = ['', '', '', 'TROIS', 'QUATRE', 'CINQ', 'SIX', 'SEPT', 'HUIT', 'NEUF'];
+  let gateAnswer = 0, gateNext = null;
+  function openGate(next) {
+    const a = 3 + ((Math.random() * 7) | 0), b = 3 + ((Math.random() * 7) | 0);
+    gateAnswer = a * b; gateNext = next;
+    document.getElementById('gateQ').textContent = 'Combien font ' + NUMS[a] + ' fois ' + NUMS[b] + ' ?';
+    gateA.value = ''; gateMsg.textContent = '';
+    gate.hidden = false;
+  }
+  document.getElementById('gateOk').addEventListener('click', () => {
+    if (parseInt(gateA.value, 10) === gateAnswer) { gate.hidden = true; if (gateNext) gateNext(); }
+    else { gateMsg.textContent = 'Ce n\'est pas la bonne réponse.'; gateA.value = ''; }
+  });
+  document.getElementById('gateCancel').addEventListener('click', () => { gate.hidden = true; });
+
+  // Écran d'achat de l'Atelier illimité.
+  const paywall = document.getElementById('paywall'), pwMsg = document.getElementById('pwMsg'), pwBuy = document.getElementById('pwBuy');
+  function openPaywall() {
+    document.getElementById('pwPrice').textContent = Shop.price;
+    pwMsg.textContent = Shop.test ? 'MODE TEST : aucun paiement réel.' : '';
+    pwMsg.className = Shop.test ? 'pw-test' : '';
+    pwBuy.disabled = false;
+    const g = document.getElementById('pwArt').getContext('2d');
+    g.clearRect(0, 0, 150, 40);
+    CHARS.filter(c => !c.empty).slice(0, 5).forEach((c, i) => { const f = c.frames[0]; g.drawImage(f, 5 + i * 29 + (24 - f.width) / 2, 38 - f.height); });
+    paywall.hidden = false;
+  }
+  function closePaywall() { paywall.hidden = true; }
+  pwBuy.addEventListener('click', () => {
+    pwBuy.disabled = true; pwMsg.textContent = 'Un instant…';
+    Shop.buy().then(ok => {
+      if (!ok) { pwBuy.disabled = false; pwMsg.textContent = 'Achat annulé.'; return; }
+      Sound.unlock(); closePaywall();
+      if (!gallery.hidden) renderGallery();
+      openCreator();
+    }, () => { pwBuy.disabled = false; pwMsg.textContent = 'L\'achat n\'a pas pu se faire. Réessaie plus tard.'; });
+  });
+  document.getElementById('pwLater').addEventListener('click', closePaywall);
+  document.getElementById('pwRestore').addEventListener('click', () => doRestore(pwMsg));
+  function doRestore(out) {
+    out.textContent = 'Recherche de tes achats…';
+    Shop.restore().then(ok => {
+      out.textContent = ok ? 'Atelier illimité retrouvé !' : 'Aucun achat à restaurer.';
+      if (ok && !paywall.hidden) setTimeout(closePaywall, 900);
+      if (!gallery.hidden) setTimeout(renderGallery, ok ? 900 : 1600);
+    }, () => { out.textContent = 'Impossible de vérifier les achats. Réessaie plus tard.'; });
+  }
+
   window.addEventListener('pointerdown', e => {
-    if (e.target.closest && (e.target.closest('button') || e.target.closest('#creator'))) return;
+    if (e.target.closest && (e.target.closest('button') || e.target.closest('.overlay'))) return;
     e.preventDefault();
     press(e);
   }, { passive: false });
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
-  // L'atelier photo garde les gestes normaux (boutons photo, curseur, champ du nom, défilement).
-  const inCreator = e => e.target.closest && e.target.closest('#creator');
+  // Les fenêtres (atelier photo, galerie, achat) gardent les gestes normaux : boutons, curseur, champs, défilement.
+  const inCreator = e => e.target.closest && e.target.closest('.overlay');
   document.addEventListener('touchstart', e => {
     if (!(e.target.closest && e.target.closest('button')) && !inCreator(e)) e.preventDefault();
   }, { passive: false });
@@ -4136,7 +4347,8 @@
   document.addEventListener('click', () => Sound.init());
 
   window.addEventListener('keydown', e => {
-    if (!creator.hidden) { if (e.code === 'Escape') closeCreator(); return; }
+    const open = [...document.querySelectorAll('.overlay')].filter(o => !o.hidden);
+    if (open.length) { if (e.code === 'Escape') open[open.length - 1].hidden = true; return; }
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter') {
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
