@@ -221,7 +221,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v26';
+  const VERSION = 'v27';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -3703,25 +3703,31 @@
     text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
     if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
     const hint = Math.round(H - safe.b - 14);
-    // Une seule rangée de cartes si elle tient, sinon deux rangées de deux.
-    const top = y0 + 72, gap = 6;
-    const cols = CHARS.length * 62 + (CHARS.length - 1) * gap <= W - 8 ? CHARS.length : 2;
-    const nrows = Math.ceil(CHARS.length / cols);
-    const room = (hint - 22 - top - (nrows - 1) * gap) / nrows;
-    const s = room >= 70 ? 2 : 1;
-    const cw = Math.max(22 * s + 12, 62), ch = 32 * s + 8;
-    const mby = Math.min(top + nrows * (ch + 12) + (nrows - 1) * gap + 10, hint - 16);
+    // Autant de cartes par rangée que la largeur le permet (5, 3 ou 2), pour que toutes restent visibles.
+    // Écran trop bas pour plusieurs rangées : une seule rangée de cartes étroites, sans les noms dedans,
+    // et le nom du personnage choisi écrit en dessous (mode compact).
+    const top = y0 + 72, gap = 6, n = CHARS.length;
+    let cols = clamp(Math.floor((W - 8 + gap) / (62 + gap)), 2, n);
+    let nrows = Math.ceil(n / cols);
+    const compact = nrows > 1 && top + nrows * 52 + (nrows - 1) * gap + 26 > hint;
+    if (compact) { cols = n; nrows = 1; }
+    // En compact, on garde la place du nom et du bouton de mode sous la rangée.
+    const room = compact ? hint - top - 52 : (hint - 22 - top - (nrows - 1) * gap) / nrows;
+    const s = room >= 72 ? 2 : 1;
+    const ch = 32 * s + 8, lab = compact ? 0 : 12;
+    const cw = compact ? Math.min(62, Math.floor((W - 8 - (n - 1) * gap) / n)) : Math.max(22 * s + 12, 62);
+    const mby = Math.min(top + nrows * (ch + lab) + (nrows - 1) * gap + (compact ? 24 : 10), hint - 16);
     const total = cols * cw + (cols - 1) * gap;
     cards = []; galleryBtn = null;
     CHARS.forEach((c, i) => {
       const x = Math.round(cx - total / 2) + (i % cols) * (cw + gap);
-      const top = y0 + 72 + Math.floor(i / cols) * (ch + 12 + gap);
+      const top = y0 + 72 + Math.floor(i / cols) * (ch + lab + gap);
       const sel = i === charIdx;
       ctx.fillStyle = sel ? 'rgba(122, 92, 160, 0.92)' : 'rgba(59, 37, 80, 0.88)';
-      ctx.fillRect(x, top, cw, ch + 12);
+      ctx.fillRect(x, top, cw, ch + lab);
       ctx.fillStyle = sel ? '#fff3b0' : '#ffffff';
-      ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + 11, cw, 1);
-      ctx.fillRect(x, top, 1, ch + 12); ctx.fillRect(x + cw - 1, top, 1, ch + 12);
+      ctx.fillRect(x, top, cw, 1); ctx.fillRect(x, top + ch + lab - 1, cw, 1);
+      ctx.fillRect(x, top, 1, ch + lab); ctx.fillRect(x + cw - 1, top, 1, ch + lab);
       if (c.empty) {
         // Case vide : un appareil photo pour créer son doudou.
         drawCamera(Math.round(x + cw / 2 - 8 * s), top + Math.round(ch / 2 - 6 * s), s, Math.floor(time * 2) % 2 ? '#fff3b0' : '#ffffff');
@@ -3730,8 +3736,8 @@
         const spr = idleSprite(c, ((time + i * 1.1) % 3.2) < 0.12, i);
         ctx.drawImage(spr, Math.round(x + cw / 2 - spr.width * s / 2), top + ch - spr.height * s, spr.width * s, spr.height * s);
       }
-      text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
-      cards.push({ x, y: top, w: cw, h: ch + 12 });
+      if (!compact) text(c.name, Math.round(x + cw / 2), top + ch + 2, 8, sel ? '#fff3b0' : '#ffffff', 'center');
+      cards.push({ x, y: top, w: cw, h: ch + lab });
       // Petite grille dans le coin : la galerie de tous les doudous.
       if (c.custom && !c.empty) {
         ctx.fillStyle = '#ffffff';
@@ -3740,6 +3746,7 @@
         galleryBtn = { x: x + cw - 24, y: top - 4, w: 28, h: 22 };
       }
     });
+    if (compact) text(hero().name, cx, top + ch + 6, 8, '#fff3b0', 'center');
     // Bouton de mode : on le touche pour passer de ZEN à DÉFI.
     const zen = gameMode === 'zen';
     ctx.font = '8px "Press Start 2P", ui-monospace, Menlo, monospace';
