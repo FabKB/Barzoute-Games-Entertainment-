@@ -221,7 +221,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v27';
+  const VERSION = 'v28';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -2127,7 +2127,10 @@
   }
 
   function resize() {
-    const vw = window.innerWidth, vh = window.innerHeight;
+    let vw = window.innerWidth, vh = window.innerHeight;
+    // Page pas encore dimensionnée (une app peut l'afficher avant de lui donner sa taille) :
+    // taille provisoire pour démarrer quand même, puis on réessaie.
+    if (!(vw > 0 && vh > 0)) { vw = 480; vh = 360; setTimeout(resize, 200); }
     SCALE = Math.min(vw / 240, vh / 180);
     W = Math.ceil(vw / SCALE);
     H = Math.ceil(vh / SCALE);
