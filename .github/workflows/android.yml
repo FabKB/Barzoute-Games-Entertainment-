@@ -1,11 +1,15 @@
 # Compile l'app Android (APK de test) à chaque envoi sur la branche « app ».
-# L'APK se télécharge depuis l'onglet Actions de GitHub, dans les « Artifacts » de l'exécution.
+# L'APK est publié dans la Release « App Android (test) » du dépôt (lien fixe :
+# Releases > android-test), et aussi dans les « Artifacts » de l'exécution.
 name: App Android
 
 on:
   push:
     branches: [app]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   apk:
@@ -27,7 +31,20 @@ jobs:
       - name: Compiler l'APK de test
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
+      - name: Renommer l'APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk glace-licorne-test.apk
       - uses: actions/upload-artifact@v4
         with:
           name: glace-licorne-android-test
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: glace-licorne-test.apk
+      - name: Publier l'APK dans la Release « App Android (test) »
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-test
+          target_commitish: ${{ github.sha }}
+          name: App Android (test)
+          prerelease: true
+          body: |
+            APK de test de Glace Licorne, compilé automatiquement depuis la branche « app » (commit ${{ github.sha }}).
+            Sur un téléphone Android : télécharger glace-licorne-test.apk, l'ouvrir et autoriser l'installation.
+          files: glace-licorne-test.apk

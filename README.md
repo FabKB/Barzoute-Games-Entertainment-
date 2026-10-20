@@ -103,7 +103,7 @@ Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la pol
 
 Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync`.
 
-**Android** : à chaque envoi sur la branche `app`, GitHub Actions compile un APK de test. On le télécharge dans l'onglet **Actions** du dépôt, exécution « App Android », rubrique **Artifacts**. Il s'installe sur un téléphone Android en autorisant l'installation d'applications inconnues.
+**Android** : à chaque envoi sur la branche `app`, GitHub Actions compile un APK de test et le publie dans la Release **« App Android (test) »** : sur la page du dépôt, rubrique **Releases** (à droite sur ordinateur, plus bas sur téléphone), fichier `glace-licorne-test.apk`. Il s'installe sur un téléphone Android en autorisant l'installation d'applications inconnues.
 
 **iOS** : la compilation demande un Mac ; elle se fera avec un service de compilation en ligne (étape suivante).
 
