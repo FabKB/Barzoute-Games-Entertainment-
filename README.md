@@ -18,7 +18,7 @@ Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la mu
 
 Sur l'écran de choix, la case **+ NOUVEAU** (avec un appareil photo) permet de transformer n'importe quel doudou en personnage jouable :
 
-1. Pose le doudou sur un **fond uni** (drap, mur, table) bien différent de ses couleurs, et prends-le en entier.
+1. Pose le doudou sur un **fond** bien différent de ses couleurs (drap, mur, table, parquet), au milieu de la photo, et prends-le en entier. Le jeu apprend les couleurs du fond sur les bords de la photo et celles du doudou au centre. Un doudou blanc sur un fond blanc reste très difficile.
 2. Touche **PRENDRE UNE PHOTO** (ou **CHOISIR UNE PHOTO** dans l'album).
 3. L'aperçu montre la photo, avec le fond retiré en rose, et le personnage en pixel art à côté. Si un morceau du doudou disparaît (par exemple un doudou blanc sur un fond blanc), touche le doudou sur la photo (une croix montre l'endroit choisi) ; tu peux aussi régler le curseur **FOND**, qui se règle tout seul pour chaque photo : baisse-le si un morceau disparaît, monte-le s'il reste du fond. Le curseur **LUMIÈRE** éclaircit ou assombrit le personnage ; il se règle aussi tout seul et éclaircit les photos trop sombres.
 4. Donne-lui un nom (7 lettres maximum) et touche **VALIDER**.
@@ -101,7 +101,7 @@ Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la pol
 
 - **Identifiant de l'app** : `com.barzoute.glacelicorne` (dans `capacitor.config.json`). Il pourra encore changer jusqu'à la première publication dans les boutiques, plus après.
 - **Données** : dans l'app, les doudous, l'achat et les records sont aussi gardés dans le stockage de l'app (extension Preferences), plus sûr que celui de la page.
-- **Compteur d'images** : en bas à droite, « 60 FPS x3 » donne le nombre d'images par seconde et la finesse de l'image. S'il reste sous 50 pendant 2 secondes, le jeu baisse la finesse pour redevenir fluide.
+- **Compteur d'images** : en bas à droite, « 60 FPS x3 » donne le nombre d'images par seconde et la finesse de l'image. S'il reste sous 50 pendant 3 secondes de jeu, le jeu baisse la finesse d'un cran (une seule fois) pour redevenir fluide.
 - **Autorisations** : appareil photo (et album sur iOS), avec un texte qui explique que la photo reste dans le téléphone.
 
 Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync`.

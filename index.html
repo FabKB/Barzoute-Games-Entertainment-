@@ -235,7 +235,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v33';
+  const VERSION = 'v34';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -3859,15 +3859,16 @@
   let lastT = performance.now();
   const DT = 1 / 120;
   // Images par seconde, mesurées toutes les demi-secondes. Si le jeu reste sous 50 images/s
-  // pendant 2 s, on dessine en résolution plus basse (les pixels restent nets).
+  // pendant 3 s de jeu, on dessine une fois en résolution plus basse (les pixels restent nets).
   let fps = 0, fpsN = 0, fpsT = 0, slowT = 0;
   function measureFps(dt) {
     fpsN++; fpsT += dt;
     if (fpsT < 0.5) return;
     fps = Math.round(fpsN / fpsT); fpsN = 0;
-    if (fps < 50 && !paused && !document.hidden) slowT += fpsT; else slowT = 0;
+    if (fps < 50 && mode === 'play' && !paused && !document.hidden) slowT += fpsT; else slowT = 0;
     fpsT = 0;
-    if (slowT >= 2 && PX > 1) { slowT = 0; pxCap = PX - 1; resize(); }
+    // Une seule baisse de finesse au plus : un ralentissement passager ne rend pas l'image floue pour toujours.
+    if (slowT >= 3 && PX > 1 && pxCap === 99) { slowT = 0; pxCap = PX - 1; resize(); }
   }
   function frame(now) {
     let dt = (now - lastT) / 1000;
@@ -4001,22 +4002,7 @@
     const fx = t((R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047), fy = t(R * 0.2126 + G * 0.7152 + B * 0.0722), fz = t((R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883);
     return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
   }
-  // Seuil d'Otsu : la valeur qui sépare le mieux deux groupes de valeurs (ici, le fond et le doudou).
-  function otsu(vals, max) {
-    const B = 64, hist = new Float64Array(B);
-    for (const v of vals) hist[Math.min(B - 1, Math.floor(v / max * B))]++;
-    let sum = 0, total = 0;
-    for (let b = 0; b < B; b++) { sum += b * hist[b]; total += hist[b]; }
-    let sB = 0, wB = 0, best = 0, bestB = 0;
-    for (let b = 0; b < B; b++) {
-      wB += hist[b]; if (!wB || wB === total) continue;
-      sB += b * hist[b];
-      const mB = sB / wB, mF = (sum - sB) / (total - wB), v = wB * (total - wB) * (mB - mF) ** 2;
-      if (v > best) { best = v; bestB = b; }
-    }
-    return (bestB + 1) * max / B;
-  }
-  // tol : écart de couleur au-delà duquel un pixel n'est plus du fond (null = réglage automatique).
+  // tol : sévérité envers le fond, de 4 à 80 (24 = neutre, plus haut = on retire plus de fond ; null = automatique).
   // seed : endroit touché sur la photo (de 0 à 1), pour dire où est le doudou.
   function photoToRows(img, tol, seed, light) {
     // 1. Photo réduite pour travailler vite.
@@ -4036,36 +4022,71 @@
       // Image déjà détourée (par exemple avec l'appareil photo de l'iPhone) : on garde sa transparence.
       for (let i = 0; i < n; i++) cand[i] = d[i * 4 + 3] >= 128 ? 1 : 0;
     } else {
-      // 2. Le fond : quatre couleurs typiques prises sur les bords (ombres, dégradés, motifs simples).
-      const L = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) { const c = toLab(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]); L[i * 3] = c[0]; L[i * 3 + 1] = c[1]; L[i * 3 + 2] = c[2]; }
-      const dl = (i, c) => Math.hypot(L[i * 3] - c[0], L[i * 3 + 1] - c[1], L[i * 3 + 2] - c[2]);
-      let cents = [0, 0.25, 0.5, 0.75].map(f => { const i = border[Math.floor(f * border.length)]; return [L[i * 3], L[i * 3 + 1], L[i * 3 + 2]]; });
-      for (let it = 0; it < 6; it++) {
-        const acc = cents.map(() => [0, 0, 0, 0]);
-        for (const i of border) {
-          let bi = 0, bd = Infinity;
-          cents.forEach((c, q) => { const v = dl(i, c); if (v < bd) { bd = v; bi = q; } });
-          const a = acc[bi]; a[0] += L[i * 3]; a[1] += L[i * 3 + 1]; a[2] += L[i * 3 + 2]; a[3]++;
-        }
-        cents = cents.map((c, q) => acc[q][3] ? [acc[q][0] / acc[q][3], acc[q][1] / acc[q][3], acc[q][2] / acc[q][3]] : c);
+      // 2. Couleurs du doudou contre couleurs du fond. Au départ, le fond est appris sur les bords de la photo
+      // et le doudou au centre (ou là où on a touché) ; puis on recommence plusieurs fois avec le résultat,
+      // pour que chaque camp apprenne ses vraies couleurs (une main, une table, un mur…).
+      if (usedTol == null) usedTol = 24;
+      const T = (usedTol - 24) / 8;
+      const bin = new Uint16Array(n);
+      // Case de couleur en Lab (proche de la vue) : 8 niveaux de clarté, 32 × 32 nuances fines.
+      for (let i = 0; i < n; i++) {
+        const c = toLab(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
+        bin[i] = clamp(c[0] / 12.5 | 0, 0, 7) << 10 | clamp((c[1] + 64) / 4 | 0, 0, 31) << 5 | clamp((c[2] + 64) / 4 | 0, 0, 31);
       }
-      const dBg = new Float32Array(n);
-      for (let i = 0; i < n; i++) { let m = Infinity; for (const c of cents) m = Math.min(m, dl(i, c)); dBg[i] = m; }
-      // Réglage automatique : le seuil qui sépare le mieux « proche du fond » et « loin du fond ».
-      if (usedTol == null) usedTol = clamp(otsu(dBg, 120), 6, 28);
-      const T = usedTol;
-      // 3. On « remplit » le fond depuis les bords : proche d'une couleur du fond, ou changement en douceur.
-      const bg = new Uint8Array(n), stack = [];
-      for (const i of border) if (!bg[i] && dBg[i] < T) { bg[i] = 1; stack.push(i); }
-      while (stack.length) {
-        const i = stack.pop();
-        for (const j of near(i, i % w)) {
-          if (j < 0 || j >= n || bg[j]) continue;
-          if (dBg[j] < T || (dBg[j] < T * 1.8 && Math.hypot(L[j * 3] - L[i * 3], L[j * 3 + 1] - L[i * 3 + 1], L[j * 3 + 2] - L[i * 3 + 2]) < T * 0.3)) { bg[j] = 1; stack.push(j); }
-        }
+      const cx0 = seed ? seed[0] * w : w / 2, cy0 = seed ? seed[1] * h : h / 2;
+      // Préférence douce pour le centre (ou l'endroit touché) : positive près du doudou, négative loin.
+      const prior = new Float32Array(n), fg0 = new Uint8Array(n), bg0 = new Uint8Array(n);
+      const band = Math.max(2, Math.round(Math.min(w, h) * 0.06));
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, u = (x - cx0) / (w * 0.45), v = (y - cy0) / (h * 0.45), r2 = u * u + v * v;
+        prior[i] = r2 < 1 ? (seed ? 1.2 : 0.6) * (1 - r2) : -2 * (r2 - 1);
+        fg0[i] = r2 < (seed ? 0.08 : 0.25) ? 1 : 0;
+        bg0[i] = x < band || y < band || x >= w - band || y >= h - band ? 1 : 0;
       }
-      for (let i = 0; i < n; i++) cand[i] = 1 - bg[i];
+      // Histogramme de couleurs, adouci avec les couleurs voisines.
+      const NB = 8192;
+      const hist = mask => {
+        const H = new Float32Array(NB), S = new Float32Array(NB); let tot = 0;
+        for (let i = 0; i < n; i++) if (mask[i]) { H[bin[i]]++; tot++; }
+        for (let l = 0; l < 8; l++) for (let a = 0; a < 32; a++) for (let b = 0; b < 32; b++) {
+          let v = 0;
+          for (let dl = -1; dl <= 1; dl++) for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) {
+            const L = l + dl, A = a + da, B = b + db;
+            if (L >= 0 && A >= 0 && B >= 0 && L < 8 && A < 32 && B < 32) v += H[L << 10 | A << 5 | B] * (dl || da || db ? 0.4 : 1);
+          }
+          S[l << 10 | a << 5 | b] = v;
+        }
+        let sum = 0; for (let q = 0; q < NB; q++) sum += S[q];
+        for (let q = 0; q < NB; q++) S[q] = Math.log((S[q] + 0.2) / (sum + NB * 0.2));
+        return tot ? S : null;
+      };
+      // Flou d'un tableau (moyenne sur un carré de 5 × 5) : le contour devient régulier.
+      const blur = a => {
+        const t = new Float32Array(n);
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let v = 0, c = 0; for (let k = -2; k <= 2; k++) { const xx = x + k; if (xx >= 0 && xx < w) { v += a[y * w + xx]; c++; } } t[y * w + x] = v / c; }
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let v = 0, c = 0; for (let k = -2; k <= 2; k++) { const yy = y + k; if (yy >= 0 && yy < h) { v += t[yy * w + x]; c++; } } a[y * w + x] = v / c; }
+      };
+      // Au centre, on ne garde pour commencer que la moitié des pixels les moins ressemblants aux bords.
+      {
+        const Hb = hist(bg0), vals = [];
+        for (let i = 0; i < n; i++) if (fg0[i]) vals.push(Hb[bin[i]]);
+        vals.sort((p, q) => p - q);
+        const cut = vals[Math.floor(vals.length * 0.5)];
+        for (let i = 0; i < n; i++) if (fg0[i] && Hb[bin[i]] > cut) fg0[i] = 0;
+      }
+      let fgM = fg0, bgM = bg0;
+      const lo = new Float32Array(n);
+      for (let it = 0; it < 5; it++) {
+        const Hf = hist(fgM), Hb = hist(bgM);
+        if (!Hf || !Hb) break;
+        for (let i = 0; i < n; i++) lo[i] = clamp(Hf[bin[i]] - Hb[bin[i]], -5, 5) + prior[i];
+        blur(lo); blur(lo);
+        for (let i = 0; i < n; i++) cand[i] = lo[i] > T ? 1 : 0;
+        // Le bord de la photo reste du fond pour l'apprentissage, même si le doudou le touche.
+        // On réapprend seulement avec les pixels dont on est sûr, pour ne pas déborder petit à petit.
+        bgM = new Uint8Array(n); fgM = new Uint8Array(n);
+        for (let i = 0; i < n; i++) { bgM[i] = lo[i] < T - 0.7 || bg0[i] ? 1 : 0; fgM[i] = lo[i] > T + 0.7 && !bg0[i] ? 1 : 0; }
+      }
     }
     // 4. Le morceau à garder : celui qu'on a touché, sinon le plus gros et le plus central.
     const lab = new Int32Array(n).fill(-1), sizes = {};
@@ -4088,8 +4109,8 @@
       for (let i = 0; i < n; i++) if (lab[i] >= 0) { const dd = (i % w - sx) ** 2 + (((i / w) | 0) - sy) ** 2; if (dd < bd) { bd = dd; best = lab[i]; } }
     }
     if (best < 0) for (const key in sizes) if (best < 0 || sizes[key] > sizes[best]) best = +key;
-    // 5. On bouche les trous à l'intérieur du doudou (un ventre blanc sur fond blanc, par exemple),
-    // puis on lisse le contour.
+    // 5. On bouche les petits trous à l'intérieur du doudou (un reflet, un ventre blanc sur fond blanc) ;
+    // un grand trou (un anneau, une poignée) reste ouvert. Puis on lisse le contour.
     let keep = new Uint8Array(n);
     {
       const out = new Uint8Array(n), st = [];
@@ -4097,6 +4118,32 @@
       while (st.length) {
         const i = st.pop();
         for (const j of near(i, i % w)) if (j >= 0 && j < n && !out[j] && lab[j] !== best) { out[j] = 1; st.push(j); }
+      }
+      let size = 0;
+      for (let i = 0; i < n; i++) if (lab[i] === best) size++;
+      // Le fond juste autour du doudou (à 1 à 4 pixels de son bord).
+      const ring = [];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (!out[i]) continue;
+        let close = false;
+        for (let dy = -4; dy <= 4 && !close; dy += 2) for (let dx = -4; dx <= 4; dx += 2) { const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h && lab[yy * w + xx] === best) { close = true; break; } }
+        if (close) ring.push(i);
+      }
+      for (let s0 = 0; s0 < n; s0++) {
+        if (out[s0] || lab[s0] === best) continue;
+        const hole = [s0]; out[s0] = 2;
+        for (let q = 0; q < hole.length; q++) for (const j of near(hole[q], hole[q] % w)) if (j >= 0 && j < n && !out[j] && lab[j] !== best) { out[j] = 2; hole.push(j); }
+        // Un grand trou reste ouvert seulement s'il a la couleur du fond autour du doudou…
+        let fill = hole.length < size * 0.06;
+        if (!fill) {
+          // … et il ressemble à au moins un quart de ce fond (un fond peut avoir des zones d'ombre).
+          const mean = list => { const m = [0, 0, 0]; for (const i of list) for (let q = 0; q < 3; q++) m[q] += d[i * 4 + q]; return m.map(v => v / Math.max(1, list.length)); };
+          const m = mean(hole); let like = 0;
+          for (const i of ring) if (Math.hypot(d[i * 4] - m[0], d[i * 4 + 1] - m[1], d[i * 4 + 2] - m[2]) < 40) like++;
+          fill = like < ring.length * 0.25;
+        }
+        if (fill) for (const i of hole) out[i] = 0;
       }
       for (let i = 0; i < n; i++) keep[i] = best >= 0 && !out[i] ? 1 : 0;
       const sm = new Uint8Array(n);
@@ -4140,12 +4187,15 @@
       }
     }
     // 7. Lumière : les photos de téléphone sortent souvent trop sombres. Sans réglage (light null),
-    // on éclaircit jusqu'à une luminosité moyenne d'environ 140 ; le curseur LUMIÈRE va de 0 à 100 (50 = photo telle quelle).
+    // on éclaircit la photo jusqu'à une clarté moyenne d'environ 130 ; le curseur LUMIÈRE va de 0 à 100 (50 = photo telle quelle).
     // Puis couleurs plus franches et 6 couleurs principales (k-moyennes).
     const px = cells.filter(Boolean);
     if (light == null) {
-      const m = px.reduce((a, c) => a + c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11, 0) / Math.max(1, px.length);
-      const g = m > 1 && m < 140 ? Math.max(0.45, Math.log(140 / 255) / Math.log(m / 255)) : 1;
+      // Clarté de toute la photo (pas seulement du doudou) : un doudou noir bien éclairé reste noir.
+      let m = 0;
+      for (let i = 0; i < n; i++) m += d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11;
+      m /= n;
+      const g = m > 1 && m < 130 ? Math.max(0.45, Math.log(130 / 255) / Math.log(m / 255)) : 1;
       light = clamp(Math.round(50 - 35 * Math.log2(g)), 0, 100);
     }
     const gam = 2 ** ((50 - light) / 35);
@@ -4225,8 +4275,13 @@
     const put = (x, y, ch, open = true) => { if (filled(x, y)) { feat[y * tw + x] = ch; if (!open) blinkFeat[y * tw + x] = ch; } };
     // Couleur du pelage à côté d'un œil, pour le fermer quand il cligne (la photo peut avoir un œil sombre dessous).
     const fur = (x, y) => { for (const [u, v] of [[x, y - 1], [x - 1, y], [x + 1, y], [x, y - 2]]) if (filled(u, v) && !keepDark[v * tw + u]) return letters[labels[v * tw + u] * 3]; return null; };
+    // Sur un doudou très sombre, yeux blancs et bouche rose ; sinon yeux noirs et bouche foncée.
+    const under = [];
+    for (const x of [eyes.l, eyes.r]) for (const [u, v] of [[x, eyes.y - 1], [x - 1, eyes.y], [x + 1, eyes.y], [x, eyes.y + 2]]) if (filled(u, v) && !keepDark[v * tw + u]) under.push(centers[labels[v * tw + u]]);
+    const darkFace = under.length && under.reduce((a, c) => a + c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11, 0) / under.length < 80;
+    const EYE = darkFace ? 'u' : 's', MOUTH = darkFace ? 'v' : 't';
     for (const ex of [eyes.l, eyes.r]) {
-      put(ex, eyes.y, 's'); put(ex, eyes.y + 1, 's', false);
+      put(ex, eyes.y, EYE); put(ex, eyes.y + 1, EYE, false);
       const f = fur(ex, eyes.y); if (f && filled(ex, eyes.y)) blinkFeat[eyes.y * tw + ex] = f;
     }
     {
@@ -4234,11 +4289,11 @@
       const gap = eyes.r - eyes.l, c0 = eyes.l + Math.floor(gap / 2), c1 = eyes.l + Math.ceil(gap / 2);
       let my = eyes.y + 3;
       for (let y = eyes.y + 1; y <= eyes.y + 4 && y < th; y++) if (keepDark[y * tw + c0] || keepDark[y * tw + c1]) my = y + 1;
-      if (gap % 2 === 0) { const mx = eyes.l + gap / 2; put(mx - 1, my, 't', false); put(mx, my + 1, 't', false); put(mx + 1, my, 't', false); }
-      else { const mx = eyes.l + (gap - 1) / 2; put(mx - 1, my, 't', false); put(mx, my + 1, 't', false); put(mx + 1, my + 1, 't', false); put(mx + 2, my, 't', false); }
+      if (gap % 2 === 0) { const mx = eyes.l + gap / 2; put(mx - 1, my, MOUTH, false); put(mx, my + 1, MOUTH, false); put(mx + 1, my, MOUTH, false); }
+      else { const mx = eyes.l + (gap - 1) / 2; put(mx - 1, my, MOUTH, false); put(mx, my + 1, MOUTH, false); put(mx + 1, my + 1, MOUTH, false); put(mx + 2, my, MOUTH, false); }
     }
     // 10. Lumière : reflet en haut, ombre en bas ; puis contour sombre et une marge pour l'animation.
-    const pal = { s: '#160f22', t: '#5a1e2e' };
+    const pal = { s: '#160f22', t: '#5a1e2e', u: '#ffffff', v: '#ff8fb0' };
     centers.forEach((m, i) => {
       pal[letters[i * 3]] = mixHex(m, m, 0);
       pal[letters[i * 3 + 1]] = mixHex(m, [255, 255, 255], 0.28);
@@ -4326,8 +4381,11 @@
     const input = document.getElementById(id);
     input.addEventListener('change', () => { loadPhoto(input.files && input.files[0]); input.value = ''; });
   }
-  crTol.addEventListener('input', () => { crAuto = false; rebuildCreator(); });
-  crLum.addEventListener('input', () => { crLumAuto = false; rebuildCreator(); });
+  // Le calcul prend un moment sur téléphone : quand le curseur bouge vite, on ne refait que le dernier réglage.
+  let crQueued = false;
+  const queueRebuild = () => { if (crQueued) return; crQueued = true; setTimeout(() => { crQueued = false; rebuildCreator(); }, 30); };
+  crTol.addEventListener('input', () => { crAuto = false; queueRebuild(); });
+  crLum.addEventListener('input', () => { crLumAuto = false; queueRebuild(); });
   // Toucher le doudou sur la photo : le jeu garde ce morceau-là.
   crView.addEventListener('pointerdown', e => {
     if (!crImg || !crPhoto) return;
