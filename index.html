@@ -155,78 +155,78 @@
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="game" role="img" aria-label="Jeu Glace Licorne : touche l'écran pour sauter de plateforme en plateforme"></canvas></div>
+<div id="stage"><canvas id="game" role="img" aria-label="Jeu Glace Licorne : touche l'écran pour sauter de plateforme en plateforme" data-en-label="Glace Licorne game: tap the screen to jump from platform to platform"></canvas></div>
 <div class="btns">
-  <button id="btnHome" type="button" aria-label="Changer de personnage" hidden>
+  <button id="btnHome" type="button" aria-label="Changer de personnage" data-en-label="Change character" hidden>
     <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="1" width="2" height="1" fill="currentColor"/><rect x="4" y="2" width="4" height="1" fill="currentColor"/><rect x="3" y="3" width="6" height="1" fill="currentColor"/><rect x="2" y="4" width="8" height="1" fill="currentColor"/><rect x="1" y="5" width="10" height="1" fill="currentColor"/><rect x="2" y="6" width="8" height="5" fill="currentColor"/><rect x="5" y="8" width="2" height="3" fill="#3b2550"/></svg>
   </button>
   <button id="btnPause" type="button" aria-label="Pause" hidden>
     <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="2" width="2" height="8" fill="currentColor"/><rect x="7" y="2" width="2" height="8" fill="currentColor"/></svg>
   </button>
-  <button id="btnSound" type="button" aria-label="Couper le son"></button>
+  <button id="btnSound" type="button" aria-label="Couper le son" data-en-label="Sound off"></button>
 </div>
 <div id="safe" aria-hidden="true"></div>
 <div id="paywall" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pwTitle" hidden>
   <div class="cr-box">
-    <h2 id="pwTitle">ATELIER ILLIMITE</h2>
+    <h2 id="pwTitle" data-en="UNLIMITED WORKSHOP">ATELIER ILLIMITE</h2>
     <canvas id="pwArt" width="150" height="40" aria-hidden="true"></canvas>
     <ul class="pw-list">
-      <li>Crée autant de doudous que tu veux</li>
-      <li>Un seul achat, pour toujours</li>
-      <li>Sans abonnement et sans publicité</li>
-      <li>Les photos restent dans le téléphone</li>
+      <li data-en="Make as many toys as you like">Crée autant de doudous que tu veux</li>
+      <li data-en="One purchase, forever">Un seul achat, pour toujours</li>
+      <li data-en="No subscription and no ads">Sans abonnement et sans publicité</li>
+      <li data-en="Photos stay on the device">Les photos restent dans le téléphone</li>
     </ul>
     <p id="pwPrice"></p>
     <div class="cr-row">
-      <button id="pwBuy" type="button">DEBLOQUER</button>
-      <button id="pwLater" type="button" class="alt">PLUS TARD</button>
+      <button id="pwBuy" type="button" data-en="UNLOCK">DEBLOQUER</button>
+      <button id="pwLater" type="button" class="alt" data-en="LATER">PLUS TARD</button>
     </div>
-    <button id="pwRestore" type="button" class="link">RESTAURER MES ACHATS</button>
+    <button id="pwRestore" type="button" class="link" data-en="RESTORE PURCHASES">RESTAURER MES ACHATS</button>
     <p id="pwMsg"></p>
   </div>
 </div>
 <div id="gate" class="overlay" role="dialog" aria-modal="true" aria-labelledby="gateTitle" hidden>
   <div class="cr-box">
-    <h2 id="gateTitle">DEMANDE A UN ADULTE</h2>
-    <p>Cette partie est réservée aux parents.</p>
+    <h2 id="gateTitle" data-en="ASK A GROWN-UP">DEMANDE A UN ADULTE</h2>
+    <p data-en="This part is for parents only.">Cette partie est réservée aux parents.</p>
     <p id="gateQ"></p>
     <input id="gateA" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" aria-labelledby="gateQ">
     <p id="gateMsg"></p>
     <div class="cr-row">
-      <button id="gateOk" type="button">VALIDER</button>
-      <button id="gateCancel" type="button" class="alt">ANNULER</button>
+      <button id="gateOk" type="button" data-en="OK">VALIDER</button>
+      <button id="gateCancel" type="button" class="alt" data-en="CANCEL">ANNULER</button>
     </div>
   </div>
 </div>
 <div id="gallery" class="overlay" role="dialog" aria-modal="true" aria-labelledby="gaTitle" hidden>
   <div class="cr-box">
-    <h2 id="gaTitle">MES DOUDOUS</h2>
+    <h2 id="gaTitle" data-en="MY TOYS">MES DOUDOUS</h2>
     <p id="gaInfo"></p>
     <div id="gaList" class="ga-list"></div>
     <div class="cr-row">
-      <button id="gaNew" type="button">+ NOUVEAU DOUDOU</button>
-      <button id="gaClose" type="button" class="alt">FERMER</button>
+      <button id="gaNew" type="button" data-en="+ NEW TOY">+ NOUVEAU DOUDOU</button>
+      <button id="gaClose" type="button" class="alt" data-en="CLOSE">FERMER</button>
     </div>
-    <button id="gaRestore" type="button" class="link">RESTAURER MES ACHATS</button>
-    <button id="gaReset" type="button" class="link" hidden>ANNULER L'ACHAT (TEST)</button>
+    <button id="gaRestore" type="button" class="link" data-en="RESTORE PURCHASES">RESTAURER MES ACHATS</button>
+    <button id="gaReset" type="button" class="link" hidden data-en="CANCEL PURCHASE (TEST)">ANNULER L'ACHAT (TEST)</button>
   </div>
 </div>
 <div id="creator" class="overlay" role="dialog" aria-modal="true" aria-labelledby="crTitle" hidden>
   <div class="cr-box">
-    <h2 id="crTitle">NOUVEAU DOUDOU</h2>
-    <p id="crTip">Pose ton doudou sur un fond uni d'une autre couleur que lui (drap, mur, table) et prends-le en entier.</p>
+    <h2 id="crTitle" data-en="NEW TOY">NOUVEAU DOUDOU</h2>
+    <p id="crTip" data-en="Put your toy on a plain background of a different colour (sheet, wall, table) and get all of it in the photo.">Pose ton doudou sur un fond uni d'une autre couleur que lui (drap, mur, table) et prends-le en entier.</p>
     <div class="cr-row" id="crPick">
-      <label class="cr-btn">PRENDRE UNE PHOTO<input id="crCam" type="file" accept="image/*" capture="environment"></label>
-      <label class="cr-btn alt">CHOISIR UNE PHOTO<input id="crLib" type="file" accept="image/*"></label>
+      <label class="cr-btn"><span data-en="TAKE A PHOTO">PRENDRE UNE PHOTO</span><input id="crCam" type="file" accept="image/*" capture="environment"></label>
+      <label class="cr-btn alt"><span data-en="PICK A PHOTO">CHOISIR UNE PHOTO</span><input id="crLib" type="file" accept="image/*"></label>
     </div>
-    <canvas id="crView" width="240" height="120" aria-label="Aperçu : la photo à gauche, le personnage à droite"></canvas>
-    <p id="crMsg">Le fond retiré apparaît en rose sur la photo.</p>
-    <label class="cr-field" id="crTolRow">FOND <input id="crTol" type="range" min="4" max="80" value="24" aria-label="Force du détourage"></label>
-    <label class="cr-field" id="crLumRow">LUMIÈRE <input id="crLum" type="range" min="0" max="100" value="50" aria-label="Lumière du personnage"></label>
-    <label class="cr-field" id="crNameRow">NOM <input id="crName" type="text" maxlength="7" autocomplete="off" spellcheck="false" value="DOUDOU"></label>
+    <canvas id="crView" width="240" height="120" aria-label="Aperçu : la photo à gauche, le personnage à droite" data-en-label="Preview: the photo on the left, the character on the right"></canvas>
+    <p id="crMsg" data-en="The removed background shows in pink on the photo.">Le fond retiré apparaît en rose sur la photo.</p>
+    <label class="cr-field" id="crTolRow"><span data-en="BACKGROUND">FOND</span> <input id="crTol" type="range" min="4" max="80" value="24" aria-label="Force du détourage" data-en-label="Background removal strength"></label>
+    <label class="cr-field" id="crLumRow"><span data-en="LIGHT">LUMIÈRE</span> <input id="crLum" type="range" min="0" max="100" value="50" aria-label="Lumière du personnage" data-en-label="Character brightness"></label>
+    <label class="cr-field" id="crNameRow"><span data-en="NAME">NOM</span> <input id="crName" type="text" maxlength="7" autocomplete="off" spellcheck="false" value="DOUDOU"></label>
     <div class="cr-row" id="crDone">
-      <button id="crOk" type="button" disabled>VALIDER</button>
-      <button id="crCancel" type="button" class="alt">ANNULER</button>
+      <button id="crOk" type="button" disabled data-en="OK">VALIDER</button>
+      <button id="crCancel" type="button" class="alt" data-en="CANCEL">ANNULER</button>
     </div>
   </div>
 </div>
@@ -235,7 +235,16 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v34';
+  const VERSION = 'v35';
+  // Langue du téléphone : français si sa première langue est le français, anglais sinon.
+  const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
+  const T = (fr, en) => (LANG === 'fr' ? fr : en);
+  // Les fenêtres (atelier, galerie, achat…) sont écrites en français ; leur version anglaise est dans data-en.
+  document.documentElement.lang = LANG;
+  if (LANG === 'en') {
+    for (const el of document.querySelectorAll('[data-en]')) el.textContent = el.dataset.en;
+    for (const el of document.querySelectorAll('[data-en-label]')) el.setAttribute('aria-label', el.dataset.enLabel);
+  }
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -1981,16 +1990,16 @@
   });
 
   const WORLDS = [
-    { name: 'MONDE DES GLACES', accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
-    { name: 'VOYAGE AU JAPON', accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
-    { name: 'LA GROSSE POMME', accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
-    { name: 'ESCALE A LONDRES', accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
-    { name: 'BONJOUR PARIS', accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
-    { name: 'PAYS DES BONBONS', accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
-    { name: 'BALADE EN SLOVENIE', accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
-    { name: 'HONG KONG', accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
-    { name: 'DOLCE TOSCANA', accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
-    { name: 'CAP CANAVERAL', accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
+    { name: T('MONDE DES GLACES', 'ICE CREAM WORLD'), accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
+    { name: T('VOYAGE AU JAPON', 'TRIP TO JAPAN'), accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
+    { name: T('LA GROSSE POMME', 'THE BIG APPLE'), accent: '#3d4d8c', sky: ['#1d2556', '#29376f', '#3d4d8c', '#5f63a6', '#9374b0', '#d4869e', '#ffa985', '#ffd395'] },
+    { name: T('ESCALE A LONDRES', 'STOPOVER IN LONDON'), accent: '#d7263d', sky: ['#5a6fa8', '#6f84b8', '#8b9cc6', '#a8b4d2', '#c4c9dc', '#dcd8e2', '#efe2dc', '#fbeedd'] },
+    { name: T('BONJOUR PARIS', 'BONJOUR PARIS'), accent: '#2f6db5', sky: ['#3d5a9e', '#5a74b4', '#7f8fc6', '#b3a3cf', '#e3a9c3', '#f6b8ae', '#fccfa2', '#fde5bd'] },
+    { name: T('PAYS DES BONBONS', 'CANDY LAND'), accent: '#e8304a', sky: ['#ff9ecf', '#ffb3d9', '#ffc6e4', '#ffd6ec', '#ffe3f1', '#e9f7ee', '#d4f4e4', '#c2efda'] },
+    { name: T('BALADE EN SLOVENIE', 'SLOVENIAN STROLL'), accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
+    { name: T('HONG KONG', 'HONG KONG'), accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
+    { name: T('DOLCE TOSCANA', 'DOLCE TOSCANA'), accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
+    { name: T('CAP CANAVERAL', 'CAPE CANAVERAL'), accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
   ];
 
   // ---------- Écran ----------
@@ -2752,7 +2761,7 @@
     p.canDouble = true; p.hold = 0;
     puffs.push({ x: p.x, y: p.y, life: 1 });
     burst(p.x, p.y, 10, ['#ffffff', '#f3e6ff', '#d9c6f0'], 60, 0);
-    popup(p.x, p.y - 34, 'POUF !');
+    popup(p.x, p.y - 34, T('POUF !', 'POOF!'));
     streak = 0;
     Sound.boing();
   }
@@ -2858,7 +2867,7 @@
         Sound.star(streak);
         streak++; streakT = 1.2;
         burst(s.x, s.y, 8, ['#ffe45c', '#ffffff', '#ffb3d9'], 50, 0);
-        if (streak > 0 && streak % 5 === 0) popup(s.x, s.y - 10, ['SUPER !', 'GENIAL !', 'BRAVO !', 'WAOUH !'][(streak / 5 - 1) % 4]);
+        if (streak > 0 && streak % 5 === 0) popup(s.x, s.y - 10, (LANG === 'fr' ? ['SUPER !', 'GENIAL !', 'BRAVO !', 'WAOUH !'] : ['SUPER!', 'GREAT!', 'WELL DONE!', 'WOW!'])[(streak / 5 - 1) % 4]);
       }
     }
 
@@ -3124,7 +3133,7 @@
             b.freeze = 0.8;
             bonusBurst(it.x, it.y, 10, ['#2e8b3a', '#4fb85c', '#9be08a'], 60);
             b.caught = Math.max(0, b.caught - 3);
-            popups.push({ x: b.x, y: gy - 40, txt: 'BEURK -3', life: 1 });
+            popups.push({ x: b.x, y: gy - 40, txt: T('BEURK -3', 'YUCK -3'), life: 1 });
             Sound.yuck();
           } else {
             const g = it.kind === 'star' ? 3 : 1;
@@ -3179,7 +3188,7 @@
           if (dx > -18 && dx < 10 && (top < c.gapY - c.gapH / 2 || bottom > c.gapY + c.gapH / 2)) {
             b.hurt = 1.2; b.vy = (c.gapY > b.y - 22 ? 1 : -1) * 90;
             Sound.boing();
-            popups.push({ x: b.x, y: b.y - 50, txt: 'BONK !', life: 1 });
+            popups.push({ x: b.x, y: b.y - 50, txt: T('BONK !', 'BONK!'), life: 1 });
             break;
           }
         }
@@ -3321,15 +3330,15 @@
     const b = bp, x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
     ctx.drawImage(sprStar, x, y);
     text(String(starsCount), x + 11, y, 8, '#fff7d6');
-    if (b.phase === 'rain') text('BONBONS ' + b.caught + '/' + RAIN_GOAL, x, y + 13, 8, '#fff7d6');
-    else if (b.phase === 'balloon') text('LUNE DANS 0:' + String(Math.max(0, Math.ceil(BALLOON_TIME - b.t))).padStart(2, '0'), x, y + 13, 8, '#fff7d6');
-    if (b.phase === 'rain' && b.t < 4) text('GLISSE A GAUCHE OU A DROITE', Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
-    if (b.phase === 'balloon' && b.t < 3) text('APPUIE POUR MONTER', Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
+    if (b.phase === 'rain') text(T('BONBONS ', 'CANDIES ') + b.caught + '/' + RAIN_GOAL, x, y + 13, 8, '#fff7d6');
+    else if (b.phase === 'balloon') text(T('LUNE DANS 0:', 'MOON IN 0:') + String(Math.max(0, Math.ceil(BALLOON_TIME - b.t))).padStart(2, '0'), x, y + 13, 8, '#fff7d6');
+    if (b.phase === 'rain' && b.t < 4) text(T('GLISSE A GAUCHE OU A DROITE', 'SLIDE LEFT OR RIGHT'), Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
+    if (b.phase === 'balloon' && b.t < 3) text(T('APPUIE POUR MONTER', 'HOLD TO FLY UP'), Math.round(W / 2), Math.round(H * 0.5), 8, '#ffffff', 'center');
     if (worldCard > 0 && b.phase === 'rain') {
       ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
       const cy = Math.round(Math.max(safe.t + 52, H * 0.18));
       rainbowText('BONUS', Math.round(W / 2), cy, 16);
-      text('PLUIE DE BONBONS', Math.round(W / 2), cy + 22, 8, '#fff7d6', 'center');
+      text(T('PLUIE DE BONBONS', 'CANDY RAIN'), Math.round(W / 2), cy + 22, 8, '#fff7d6', 'center');
       ctx.globalAlpha = 1;
     }
   }
@@ -3619,11 +3628,11 @@
     rainbowText('GLACE', cx, y0, 16);
     rainbowText('LICORNE', cx, y0 + 21, 16);
     text('BARZOUTE GAMES', cx, y0 + 44, 8, '#ffffff', 'center');
-    if (Math.floor(time * 2) % 2 === 0) text('CHOISIS TON PERSO', cx, y0 + 58, 8, '#fff3b0', 'center');
+    if (Math.floor(time * 2) % 2 === 0) text(T('CHOISIS TON PERSO', 'PICK YOUR HERO'), cx, y0 + 58, 8, '#fff3b0', 'center');
     const hint = Math.round(H - safe.b - 14);
     // Les cartes : la glace, chaque doudou, puis « + » pour en créer un. Autant de cartes que l'écran
     // en contient ; s'il y en a plus, on les feuillette avec les flèches < et >.
-    const items = roster().concat([{ plus: true, name: 'NOUVEAU' }]), n = items.length;
+    const items = roster().concat([{ plus: true, name: T('NOUVEAU', 'NEW') }]), n = items.length;
     const top = y0 + 72, gap = 6, avail = hint - 26 - top;
     const rowsFit = Math.max(1, Math.floor((avail + gap) / (52 + gap)));
     let cols = clamp(Math.floor((W - 8 + gap) / (62 + gap)), 1, n);
@@ -3690,7 +3699,7 @@
     const bx = Math.round(unlocked ? cx - (bw + bbw + 8) / 2 : cx - bw / 2);
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(bx - 1, mby - 4, bw + 2, 16);
     ctx.fillStyle = zen ? '#3f8f78' : '#c83c6e'; ctx.fillRect(bx, mby - 3, bw, 14);
-    text(zen ? '< MODE ZEN >' : '< MODE DEFI >', bx + Math.round(bw / 2), mby, 8, '#ffffff', 'center');
+    text(zen ? T('< MODE ZEN >', '< ZEN MODE >') : T('< MODE DEFI >', '< HARD MODE >'), bx + Math.round(bw / 2), mby, 8, '#ffffff', 'center');
     modeBtn = { x: bx - 4, y: mby - 8, w: bw + 8, h: 24 };
     bonusBtn = null;
     if (unlocked) {
@@ -3701,8 +3710,8 @@
       text('BONUS', gx + bbw / 2, mby, 8, Math.floor(time * 3) % 2 ? '#fff3b0' : '#ffffff', 'center');
       bonusBtn = { x: gx - 2, y: mby - 8, w: bbw + 6, h: 24 };
     }
-    const tip = Math.floor(time / 2.5) % 2 === 0 ? 'TAP = SAUT  2E TAP = DOUBLE'
-      : (zen ? 'ZEN : UN NUAGE TE RATTRAPE' : 'DEFI : UNE CHUTE = GAME OVER');
+    const tip = Math.floor(time / 2.5) % 2 === 0 ? T('TAP = SAUT  2E TAP = DOUBLE', 'TAP = JUMP  TAP x2 = DOUBLE')
+      : (zen ? T('ZEN : UN NUAGE TE RATTRAPE', 'ZEN: A CLOUD CATCHES YOU') : T('DEFI : UNE CHUTE = GAME OVER', 'HARD: ONE FALL = GAME OVER'));
     text(tip, cx, hint, 8, '#ffffff', 'center');
     if (bests[gameMode] > 0) text('RECORD ' + bests[gameMode] + ' M', Math.round(6 + safe.l), Math.round(6 + safe.t), 8, '#d6fff0');
     ctx.drawImage(sprStar, Math.round(6 + safe.l), Math.round(18 + safe.t));
@@ -3727,10 +3736,10 @@
     ctx.fillStyle = '#fff4e6'; ctx.fillRect(px - 1, y - 1, pw + 2, ph + 2);
     ctx.fillStyle = '#5b3f86'; ctx.fillRect(px, y, pw, ph);
     y += 8;
-    rainbowText(bonusEnd ? 'SUR LA LUNE !' : launchEnd ? 'BON VOYAGE !' : 'GAME OVER', cx, y, 16);
+    rainbowText(bonusEnd ? T('SUR LA LUNE !', 'ON THE MOON!') : launchEnd ? T('BON VOYAGE !', 'BON VOYAGE!') : 'GAME OVER', cx, y, 16);
     y += 18;
-    if (bonusEnd) text('QUEL VOYAGE !', cx, y, 8, '#fff3b0', 'center');
-    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? 'NOUVEAU RECORD !' : launchEnd ? 'MISSION ACCOMPLIE' : 'BRAVO !', cx, y, 8, '#fff3b0', 'center');
+    if (bonusEnd) text(T('QUEL VOYAGE !', 'WHAT A TRIP!'), cx, y, 8, '#fff3b0', 'center');
+    else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? T('NOUVEAU RECORD !', 'NEW RECORD!') : launchEnd ? T('MISSION ACCOMPLIE', 'MISSION COMPLETE') : T('BRAVO !', 'WELL DONE!'), cx, y, 8, '#fff3b0', 'center');
     y += 14;
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
     ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
@@ -3739,9 +3748,9 @@
     y += heroH + 8;
     if (bonusEnd) {
       ctx.drawImage(sprStar, cx - 40, y);
-      text('+' + starsCount + ' ETOILES', cx - 28, y, 8, '#ffffff');
+      text('+' + starsCount + T(' ETOILES', ' STARS'), cx - 28, y, 8, '#ffffff');
       y += 12;
-      text('TRESOR ' + tresor, cx, y, 8, '#d6fff0', 'center');
+      text(T('TRESOR ', 'TREASURE ') + tresor, cx, y, 8, '#d6fff0', 'center');
     } else {
       const dist = Math.floor((player.x - distStart) / 16);
       text(dist + ' M', cx - 8, y, 8, '#ffffff', 'right');
@@ -3753,7 +3762,7 @@
     y += 18;
     const bw = Math.min(90, Math.floor((pw - 24) / 2)), bh = 20;
     goButtons = [
-      { x: cx - bw - 4, y, w: bw, h: bh, act: 'replay', label: 'REJOUER', col: '#ff5fa2' },
+      { x: cx - bw - 4, y, w: bw, h: bh, act: 'replay', label: T('REJOUER', 'REPLAY'), col: '#ff5fa2' },
       { x: cx + 4, y, w: bw, h: bh, act: 'menu', label: 'MENU', col: '#4db8ff' }
     ];
     ctx.globalAlpha = goT > 0.8 ? 1 : 0.5;
@@ -3823,13 +3832,13 @@
       ctx.drawImage(sprStar, x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
       text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
-      if (gameMode === 'defi') text('DEFI', x, y + 26, 8, '#ff9ecf');
+      if (gameMode === 'defi') text(T('DEFI', 'HARD'), x, y + 26, 8, '#ff9ecf');
       if (launch && launch.phase === 'count') rainbowText(String(Math.max(1, 3 - Math.floor(launch.t))), cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
-      if (launch && launch.phase === 'lift' && launch.t < 2) rainbowText('DECOLLAGE !', cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
+      if (launch && launch.phase === 'lift' && launch.t < 2) rainbowText(T('DECOLLAGE !', 'LIFT-OFF!'), cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
       if (worldCard > 0) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
-        rainbowText(bonus ? 'BONUS' : world === LAUNCH_WORLD ? 'FINALE' : 'MONDE ' + (route.indexOf(world) + 1) + '/' + ROUTE_LEN, cx, cy, 16);
+        rainbowText(bonus ? 'BONUS' : world === LAUNCH_WORLD ? 'FINALE' : T('MONDE ', 'WORLD ') + (route.indexOf(world) + 1) + '/' + ROUTE_LEN, cx, cy, 16);
         text(WORLDS[world].name, cx, cy + 22, 8, '#fff7d6', 'center');
         ctx.globalAlpha = 1;
       }
@@ -3842,15 +3851,15 @@
       ctx.globalAlpha = clamp(unlockCard / 0.5, 0, 1);
       const cy = Math.round(Math.max(safe.t + 40, H * 0.22));
       rainbowText('BONUS', cx, cy, 16);
-      text('DEBLOQUE !', cx, cy + 20, 8, '#fff3b0', 'center');
-      text('PAYS DES BONBONS', cx, cy + 32, 8, '#ffffff', 'center');
+      text(T('DEBLOQUE !', 'UNLOCKED!'), cx, cy + 20, 8, '#fff3b0', 'center');
+      text(T('PAYS DES BONBONS', 'CANDY LAND'), cx, cy + 32, 8, '#ffffff', 'center');
       ctx.globalAlpha = 1;
     }
     if (paused) {
       ctx.fillStyle = 'rgba(31, 21, 51, 0.55)';
       ctx.fillRect(0, 0, W, H);
       text('PAUSE', cx, Math.round(H / 2 - 14), 16, '#ffffff', 'center');
-      text('TOUCHE POUR REPRENDRE', cx, Math.round(H / 2 + 8), 8, '#fff3b0', 'center');
+      text(T('TOUCHE POUR REPRENDRE', 'TAP TO RESUME'), cx, Math.round(H / 2 + 8), 8, '#fff3b0', 'center');
     }
     drawFps();
   }
@@ -3890,12 +3899,12 @@
   const SOUND_OFF = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="4" width="2" height="4" fill="currentColor"/><rect x="3" y="3" width="1" height="6" fill="currentColor"/><rect x="4" y="2" width="1" height="8" fill="currentColor"/><rect x="5" y="1" width="1" height="10" fill="currentColor"/><rect x="7" y="4" width="1" height="1" fill="currentColor"/><rect x="8" y="5" width="1" height="2" fill="currentColor"/><rect x="9" y="4" width="1" height="1" fill="currentColor"/><rect x="7" y="7" width="1" height="1" fill="currentColor"/><rect x="9" y="7" width="1" height="1" fill="currentColor"/></svg>';
   function renderSoundBtn() {
     btnSound.innerHTML = Sound.muted ? SOUND_OFF : SOUND_ON;
-    btnSound.setAttribute('aria-label', Sound.muted ? 'Remettre le son' : 'Couper le son');
+    btnSound.setAttribute('aria-label', Sound.muted ? T('Remettre le son', 'Sound on') : T('Couper le son', 'Sound off'));
   }
   function setPaused(v) {
     if (mode !== 'play') return;
     paused = v;
-    btnPause.setAttribute('aria-label', v ? 'Reprendre' : 'Pause');
+    btnPause.setAttribute('aria-label', v ? T('Reprendre', 'Resume') : 'Pause');
     if (v) { Sound.stop(); holding = false; }
     else { Sound.resume(); Sound.start(); lastT = performance.now(); }
   }
@@ -4329,12 +4338,14 @@
   // crAuto, crLumAuto : réglages du fond et de la lumière calculés pour chaque photo, jusqu'à ce qu'on bouge le curseur.
   // crSeed : endroit touché sur la photo pour montrer le doudou ; crPhoto : où la photo est dessinée.
   let crImg = null, crRes = null, crAuto = true, crLumAuto = true, crSeed = null, crPhoto = null;
-  const CR_HELP = 'Le fond retiré apparaît en rose. Si le jeu se trompe, touche ton doudou sur la photo ou règle FOND. Trop sombre ? Monte LUMIÈRE.';
+  const DEFAULT_NAME = T('DOUDOU', 'TOY');
+  const CR_HELP = T('Le fond retiré apparaît en rose. Si le jeu se trompe, touche ton doudou sur la photo ou règle FOND. Trop sombre ? Monte LUMIÈRE.',
+    'The removed background shows in pink. If the game gets it wrong, tap your toy on the photo or adjust BACKGROUND. Too dark? Raise LIGHT.');
   function openCreator() {
     holding = false;
     crImg = null; crRes = null; crOk.disabled = true; crAuto = true; crLumAuto = true; crSeed = null;
-    crName.value = ('DOUDOU' + (doudous.length ? doudous.length + 1 : '')).slice(0, 7);
-    crMsg.textContent = 'Prends ton doudou en photo, ou choisis une photo.';
+    crName.value = (DEFAULT_NAME + (doudous.length ? doudous.length + 1 : '')).slice(0, 7);
+    crMsg.textContent = T('Prends ton doudou en photo, ou choisis une photo.', 'Take a photo of your toy, or pick a photo.');
     creator.hidden = false;
     drawCreator();
   }
@@ -4344,7 +4355,7 @@
     g.imageSmoothingEnabled = false;
     g.fillStyle = '#2a1f4a'; g.fillRect(0, 0, CW, CH);
     for (let y = 0; y < CH; y += 8) for (let x = CW / 2; x < CW; x += 8) if (((x + y) / 8) % 2) { g.fillStyle = '#33275a'; g.fillRect(x, y, 8, 8); }
-    if (!crRes) { g.fillStyle = '#d6fff0'; g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'center'; g.fillText('PAS ENCORE DE PHOTO', CW / 2, CH / 2); return; }
+    if (!crRes) { g.fillStyle = '#d6fff0'; g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'center'; g.fillText(T('PAS ENCORE DE PHOTO', 'NO PHOTO YET'), CW / 2, CH / 2); return; }
     const v = crRes.view, k = Math.min((CW / 2 - 8) / v.width, (CH - 8) / v.height);
     crPhoto = { x: Math.round(CW / 4 - v.width * k / 2), y: Math.round(CH / 2 - v.height * k / 2), w: v.width * k, h: v.height * k };
     g.imageSmoothingEnabled = true;
@@ -4367,14 +4378,14 @@
     if (crAuto) crTol.value = Math.round(crRes.tol);
     if (crLumAuto && crRes.light != null) crLum.value = crRes.light;
     crOk.disabled = !crRes.rows;
-    crMsg.textContent = crRes.rows ? CR_HELP : 'Doudou introuvable : touche-le sur la photo, règle FOND, ou reprends la photo sur un fond plus uni.';
+    crMsg.textContent = crRes.rows ? CR_HELP : T('Doudou introuvable : touche-le sur la photo, règle FOND, ou reprends la photo sur un fond plus uni.', 'Toy not found: tap it on the photo, adjust BACKGROUND, or take the photo again on a plainer background.');
     drawCreator();
   }
   function loadPhoto(file) {
     if (!file) return;
     const url = URL.createObjectURL(file), img = new Image();
     img.onload = () => { crImg = img; crAuto = true; crLumAuto = true; crSeed = null; rebuildCreator(); URL.revokeObjectURL(url); };
-    img.onerror = () => { crMsg.textContent = 'Impossible de lire cette photo.'; URL.revokeObjectURL(url); };
+    img.onerror = () => { crMsg.textContent = T('Impossible de lire cette photo.', 'This photo cannot be read.'); URL.revokeObjectURL(url); };
     img.src = url;
   }
   for (const id of ['crCam', 'crLib']) {
@@ -4396,7 +4407,7 @@
     rebuildCreator();
   });
   document.getElementById('crCancel').addEventListener('click', closeCreator);
-  const cleanName = v => (v.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || 'DOUDOU').slice(0, 7);
+  const cleanName = v => (v.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || DEFAULT_NAME).slice(0, 7);
   crOk.addEventListener('click', () => {
     if (!crRes || !crRes.rows) return;
     const d = { id: 'd' + Date.now().toString(36), name: cleanName(crName.value), rows: crRes.rows, blink: crRes.blink, face: crRes.face, pal: crRes.pal };
@@ -4413,7 +4424,7 @@
   const FREE_DOUDOUS = 1;
   const Shop = {
     test: true,
-    price: '2,99 €',
+    price: T('2,99 €', '€2.99'),
     owned: () => store.get('atelier', '0') === '1',
     buy: () => new Promise(res => setTimeout(() => { store.set('atelier', '1'); res(true); }, 600)),
     restore: () => new Promise(res => setTimeout(() => res(store.get('atelier', '0') === '1'), 400))
@@ -4431,11 +4442,11 @@
   function renderGallery() {
     const owned = Shop.owned();
     document.getElementById('gaInfo').textContent = owned
-      ? 'Atelier illimité : crée autant de doudous que tu veux !'
-      : (doudous.length ? 'Ton doudou est offert. Pour en créer d\'autres, il faut l\'Atelier illimité.' : 'Ton premier doudou est offert !');
+      ? T('Atelier illimité : crée autant de doudous que tu veux !', 'Unlimited Workshop: make as many toys as you like!')
+      : (doudous.length ? T('Ton doudou est offert. Pour en créer d\'autres, il faut l\'Atelier illimité.', 'Your first toy is free. To make more, you need the Unlimited Workshop.') : T('Ton premier doudou est offert !', 'Your first toy is free!'));
     document.getElementById('gaReset').hidden = !(Shop.test && owned);
     gaList.textContent = '';
-    if (!doudous.length) { const p0 = document.createElement('p'); p0.textContent = 'Pas encore de doudou en photo.'; gaList.append(p0); }
+    if (!doudous.length) { const p0 = document.createElement('p'); p0.textContent = T('Pas encore de doudou en photo.', 'No photo toys yet.'); gaList.append(p0); }
     for (const d of doudous) {
       const item = document.createElement('div');
       item.className = 'ga-item' + (d.id === hero().id ? ' sel' : '');
@@ -4445,19 +4456,19 @@
       const acts = document.createElement('div');
       acts.className = 'ga-acts';
       const btn = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (cls) b.className = cls; b.addEventListener('click', fn); acts.append(b); return b; };
-      btn(d.id === hero().id ? 'CHOISI' : 'CHOISIR', '', () => {
+      btn(d.id === hero().id ? T('CHOISI', 'PICKED') : T('CHOISIR', 'PICK'), '', () => {
         pick(d.id); closeGallery();
       });
-      btn('RENOMMER', 'alt', () => {
+      btn(T('RENOMMER', 'RENAME'), 'alt', () => {
         const input = document.createElement('input');
-        input.maxLength = 7; input.value = d.name; input.setAttribute('aria-label', 'Nouveau nom');
+        input.maxLength = 7; input.value = d.name; input.setAttribute('aria-label', T('Nouveau nom', 'New name'));
         name.textContent = ''; name.append(input); input.focus();
         acts.textContent = '';
         btn('OK', '', () => { d.name = cleanName(input.value); saveDoudous(); renderGallery(); });
       });
-      const del = btn('SUPPRIMER', 'del', () => {
+      const del = btn(T('SUPPRIMER', 'DELETE'), 'del', () => {
         // Deux touchers pour éviter les accidents.
-        if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = 'SUR ?'; return; }
+        if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = T('SUR ?', 'SURE?'); return; }
         doudous = doudous.filter(x => x !== d);
         if (heroId === d.id) pick('glace');
         saveDoudous();
@@ -4481,13 +4492,13 @@
   function openGate(next) {
     const a = 3 + ((Math.random() * 7) | 0), b = 3 + ((Math.random() * 7) | 0);
     gateAnswer = a * b; gateNext = next;
-    document.getElementById('gateQ').textContent = 'Combien font ' + a + ' × ' + b + ' ?';
+    document.getElementById('gateQ').textContent = T('Combien font ' + a + ' × ' + b + ' ?', 'What is ' + a + ' × ' + b + '?');
     gateA.value = ''; gateMsg.textContent = '';
     gate.hidden = false;
   }
   document.getElementById('gateOk').addEventListener('click', () => {
     if (parseInt(gateA.value, 10) === gateAnswer) { gate.hidden = true; if (gateNext) gateNext(); }
-    else { gateMsg.textContent = 'Ce n\'est pas la bonne réponse.'; gateA.value = ''; }
+    else { gateMsg.textContent = T('Ce n\'est pas la bonne réponse.', 'That is not the right answer.'); gateA.value = ''; }
   });
   document.getElementById('gateCancel').addEventListener('click', () => { gate.hidden = true; });
 
@@ -4495,7 +4506,7 @@
   const paywall = document.getElementById('paywall'), pwMsg = document.getElementById('pwMsg'), pwBuy = document.getElementById('pwBuy');
   function openPaywall() {
     document.getElementById('pwPrice').textContent = Shop.price;
-    pwMsg.textContent = Shop.test ? 'MODE TEST : aucun paiement réel.' : '';
+    pwMsg.textContent = Shop.test ? T('MODE TEST : aucun paiement réel.', 'TEST MODE: no real payment.') : '';
     pwMsg.className = Shop.test ? 'pw-test' : '';
     pwBuy.disabled = false;
     const g = document.getElementById('pwArt').getContext('2d');
@@ -4505,23 +4516,23 @@
   }
   function closePaywall() { paywall.hidden = true; }
   pwBuy.addEventListener('click', () => {
-    pwBuy.disabled = true; pwMsg.textContent = 'Un instant…';
+    pwBuy.disabled = true; pwMsg.textContent = T('Un instant…', 'One moment…');
     Shop.buy().then(ok => {
-      if (!ok) { pwBuy.disabled = false; pwMsg.textContent = 'Achat annulé.'; return; }
+      if (!ok) { pwBuy.disabled = false; pwMsg.textContent = T('Achat annulé.', 'Purchase cancelled.'); return; }
       Sound.unlock(); closePaywall();
       if (!gallery.hidden) renderGallery();
       openCreator();
-    }, () => { pwBuy.disabled = false; pwMsg.textContent = 'L\'achat n\'a pas pu se faire. Réessaie plus tard.'; });
+    }, () => { pwBuy.disabled = false; pwMsg.textContent = T('L\'achat n\'a pas pu se faire. Réessaie plus tard.', 'The purchase could not be completed. Please try again later.'); });
   });
   document.getElementById('pwLater').addEventListener('click', closePaywall);
   document.getElementById('pwRestore').addEventListener('click', () => doRestore(pwMsg));
   function doRestore(out) {
-    out.textContent = 'Recherche de tes achats…';
+    out.textContent = T('Recherche de tes achats…', 'Looking for your purchases…');
     Shop.restore().then(ok => {
-      out.textContent = ok ? 'Atelier illimité retrouvé !' : 'Aucun achat à restaurer.';
+      out.textContent = ok ? T('Atelier illimité retrouvé !', 'Unlimited Workshop restored!') : T('Aucun achat à restaurer.', 'No purchase to restore.');
       if (ok && !paywall.hidden) setTimeout(closePaywall, 900);
       if (!gallery.hidden) setTimeout(renderGallery, ok ? 900 : 1600);
-    }, () => { out.textContent = 'Impossible de vérifier les achats. Réessaie plus tard.'; });
+    }, () => { out.textContent = T('Impossible de vérifier les achats. Réessaie plus tard.', 'Purchases could not be checked. Please try again later.'); });
   }
 
   window.addEventListener('pointerdown', e => {

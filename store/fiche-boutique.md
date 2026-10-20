@@ -85,7 +85,7 @@ Everything happens on the device: the photo is never uploaded.
 
 TWO WAYS TO PLAY
 • ZEN: you can't lose — a cloud catches your character if it falls.
-• CHALLENGE: for older kids, one fall and it's game over!
+• HARD: for older kids, one fall and it's game over!
 
 FOR PARENTS
 • No ads, no tracking, no data collected.
@@ -95,6 +95,10 @@ FOR PARENTS
 
 **App Store keywords** (100 max):
 plushie,soft toy,kids,runner,unicorn,pixel,photo,rocket,dragon,ice cream,jump,stars,family
+
+---
+
+Langue du jeu : français si le téléphone est en français, anglais pour toutes les autres langues. Les deux fiches (FR et EN) correspondent donc à ce que le joueur voit.
 
 ---
 

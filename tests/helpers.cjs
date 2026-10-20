@@ -23,7 +23,8 @@ const URL = makeCopy();
 
 // Ouvre une page du jeu ; errs reçoit les erreurs JavaScript de la page.
 async function open(browser, ctxOpts = {}, init) {
-  const ctx = await browser.newContext(ctxOpts);
+  // Téléphone en français par défaut ; un test passe ctxOpts.locale = 'en-US' pour l'anglais.
+  const ctx = await browser.newContext({ locale: 'fr-FR', ...ctxOpts });
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', e => errs.push(String(e)));

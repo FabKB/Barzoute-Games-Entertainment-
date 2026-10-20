@@ -95,6 +95,10 @@ Le niveau bonus reste rejouable à volonté.
 
 Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
 
+### Langue
+
+Le jeu est en **français** si la première langue du téléphone (ou du navigateur) est le français, et en **anglais** pour toutes les autres langues. Les noms « Glace Licorne », « Barzoute Games » et « GLACE » restent les mêmes.
+
 ### L'app iOS et Android (branche `app`)
 
 Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la police et les icônes sont copiés dans les projets `android/` et `ios/`.
