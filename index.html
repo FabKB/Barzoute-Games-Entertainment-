@@ -2856,7 +2856,9 @@
     for (const s of gems) {
       if (s.taken) continue;
       const dx = s.x - p.x, dy = s.y - (p.y - 16);
-      if (dx * dx + dy * dy < 169) {
+      // Sur la piste de la fusée, chaque étoile est ramassée au passage, même si on arrive en sautant.
+      const runway = launch && s.x > launch.pl.x && s.x < launch.padX && dx < 6;
+      if (dx * dx + dy * dy < 169 || runway) {
         s.taken = true;
         if (mode === 'play') {
           const gain = bonus ? 2 : 1, before = tresor;
