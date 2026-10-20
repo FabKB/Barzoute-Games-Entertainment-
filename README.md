@@ -93,6 +93,20 @@ Le niveau bonus reste rejouable à volonté.
 
 Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
 
+### L'app iOS et Android (branche `app`)
+
+Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la police et les icônes sont copiés dans les projets `android/` et `ios/`.
+
+- **Identifiant de l'app** : `com.barzoute.glacelicorne` (dans `capacitor.config.json`). Il pourra encore changer jusqu'à la première publication dans les boutiques, plus après.
+- **Données** : dans l'app, les doudous, l'achat et les records sont aussi gardés dans le stockage de l'app (extension Preferences), plus sûr que celui de la page.
+- **Autorisations** : appareil photo (et album sur iOS), avec un texte qui explique que la photo reste dans le téléphone.
+
+Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync`.
+
+**Android** : à chaque envoi sur la branche `app`, GitHub Actions compile un APK de test. On le télécharge dans l'onglet **Actions** du dépôt, exécution « App Android », rubrique **Artifacts**. Il s'installe sur un téléphone Android en autorisant l'installation d'applications inconnues.
+
+**iOS** : la compilation demande un Mac ; elle se fera avec un service de compilation en ligne (étape suivante).
+
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
 
 Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touche le bouton **Partager** puis **Sur l'écran d'accueil**. L'icône de la glace licorne apparaît avec tes apps, et le jeu s'ouvre en plein écran.

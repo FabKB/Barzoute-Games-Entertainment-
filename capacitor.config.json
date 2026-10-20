@@ -1,0 +1,9 @@
+{
+  "appId": "com.barzoute.glacelicorne",
+  "appName": "Glace Licorne",
+  "webDir": "www",
+  "backgroundColor": "#1f1533",
+  "ios": {
+    "contentInset": "never"
+  }
+}
