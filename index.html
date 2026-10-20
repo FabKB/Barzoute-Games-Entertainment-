@@ -235,7 +235,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v32';
+  const VERSION = 'v33';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -2001,6 +2001,8 @@
   const btnSound = document.getElementById('btnSound');
   const btnHome = document.getElementById('btnHome');
   let W = 320, H = 180, SCALE = 1, PX = 1;
+  // Arrondi au pixel de l'écran (plus fin que le pixel du jeu) : la caméra glisse sans à-coups.
+  const snap = v => Math.round(v * PX) / PX;
   const safe = { l: 0, r: 0, t: 0, b: 0 };
   let skyCs = [], sunC = mk(1, 1), moonC = mk(1, 1), goldSunC = mk(1, 1);
   const camBase = () => -H * 0.66;
@@ -2595,7 +2597,8 @@
     const pl = { x: last.x + last.w + gap, w: 900, top, s, seed: 3 };
     platforms.push(pl);
     launch = { phase: 'run', t: 0, pl, padX: pl.x + 420, fx: [], lift: 0, dark: 0, inside: false, n: 4 };
-    for (let k = 0; k < 10; k++) gems.push({ x: pl.x + 60 + k * 26, y: top - 16 - Math.sin(k / 9 * Math.PI) * 26, ph: Math.random() * 6 });
+    // Sur la piste on ne saute plus : les étoiles sont à hauteur du personnage, il les ramasse en courant.
+    for (let k = 0; k < 10; k++) gems.push({ x: pl.x + 60 + k * 26, y: top - 16 + Math.sin(k * 1.3) * 3, ph: Math.random() * 6 });
   }
   function genNext() {
     const last = lastPlat(), lastTop = baseTopOf(last), r = Math.random();
@@ -3355,15 +3358,17 @@
   function drawHills() {
     const vOff = camY - camBase();
     const layer = (par, base, col, top, fn) => {
-      const off = Math.round(camX * par), ys = [];
+      const off = Math.floor(camX * par), frac = snap(camX * par - off), ys = [];
+      ctx.save(); ctx.translate(-frac, 0);
       ctx.fillStyle = col;
-      for (let x = 0; x < W; x++) {
+      for (let x = 0; x <= W; x++) {
         const y = Math.round(base - fn(x + off));
         ys.push(y);
         ctx.fillRect(x, y + 2, 1, H - y);
       }
       ctx.fillStyle = top;
-      for (let x = 0; x < W; x++) ctx.fillRect(x, ys[x], 1, 2);
+      for (let x = 0; x <= W; x++) ctx.fillRect(x, ys[x], 1, 2);
+      ctx.restore();
     };
     layer(0.12, H * 0.62 - vOff * 0.12, '#b896ea', '#e2d0fa', w => 16 + 18 * Math.abs(Math.sin(w / 34)) + 6 * Math.abs(Math.sin(w / 11 + 2)));
     layer(0.3, H * 0.8 - vOff * 0.3, '#86cbe0', '#dff6fb', w => 10 + 14 * Math.abs(Math.sin(w / 22 + 1)) + 4 * Math.sin(w / 7));
@@ -3381,7 +3386,7 @@
     }
   }
   function drawBgClouds() {
-    const vOff = camY - camBase(), off = Math.round(camX * 0.4), sp = 150;
+    const vOff = camY - camBase(), off = snap(camX * 0.4), sp = 150;
     const i0 = Math.floor((off - 120) / sp);
     for (let i = i0; i < i0 + Math.ceil(W / sp) + 3; i++) {
       const spr = clouds[hash(i) % 3];
@@ -3406,7 +3411,7 @@
     const p = player;
     if (launch && launch.phase !== 'run') return;
     let j = trail.length - 1;
-    for (let x = Math.round(p.x) - 6; x > camX - 4; x -= 2) {
+    for (let x = snap(p.x) - 6; x > camX - 4; x -= 2) {
       while (j > 0 && trail[j].x > x) j--;
       if (j < 0 || trail[j].x > x) break;
       const wob = ((Math.floor(x / 8) + Math.floor(time * 6)) & 1);
@@ -3420,16 +3425,16 @@
     if (mode === 'dying') {
       // Yeux fermés, puis la tête en bas pendant la chute.
       const spr = hero().framesB[0];
-      if (!p.deadJump) { ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height); return; }
+      if (!p.deadJump) { ctx.drawImage(spr, snap(p.x) - (spr.width >> 1), snap(p.y) - spr.height); return; }
       ctx.save();
-      ctx.translate(Math.round(p.x), Math.round(p.y) - spr.height);
+      ctx.translate(snap(p.x), snap(p.y) - spr.height);
       ctx.scale(1, -1);
       ctx.drawImage(spr, -(spr.width >> 1), -spr.height);
       ctx.restore();
       return;
     }
     const spr = idleSprite(hero(), (time % 3.2) < 0.12);
-    ctx.drawImage(spr, Math.round(p.x) - (spr.width >> 1), Math.round(p.y) - spr.height);
+    ctx.drawImage(spr, snap(p.x) - (spr.width >> 1), snap(p.y) - spr.height);
   }
 
   // Grand arc-en-ciel de fond, posé derrière les collines.
@@ -3456,7 +3461,7 @@
 
   // Bande de décor répétée à l'infini, avec parallaxe ; on remplit dessous avec « fill ».
   function drawStrip(c, par, base, fill) {
-    const tw = c.width, off = ((Math.round(camX * par) % tw) + tw) % tw, b = Math.round(base), y = b - c.height;
+    const tw = c.width, off = ((snap(camX * par) % tw) + tw) % tw, b = Math.round(base), y = b - c.height;
     for (let x = -off; x < W; x += tw) ctx.drawImage(c, x, y);
     if (b < H) { ctx.fillStyle = fill; ctx.fillRect(0, b, W, H - b); }
   }
@@ -3544,7 +3549,7 @@
   }
   // La tour Eiffel qui scintille au coucher du soleil.
   function drawEiffelSparkle(base) {
-    const tw = parisFar.width, off = mod(Math.round(camX * 0.1), tw), bottom = Math.round(base) - 1;
+    const tw = parisFar.width, off = mod(snap(camX * 0.1), tw), bottom = Math.round(base) - 1;
     for (let x0 = -off; x0 < W; x0 += tw) {
       const cx = x0 + 200;
       if (cx < -30 || cx > W + 30) continue;
@@ -3783,7 +3788,7 @@
     drawPlane();
 
     ctx.save();
-    ctx.translate(-Math.round(camX), -Math.round(camY));
+    ctx.translate(-snap(camX), -snap(camY));
     for (const q of puffs) {
       ctx.globalAlpha = clamp(q.life, 0, 1);
       ctx.drawImage(puff, Math.round(q.x) - 14, Math.round(q.y) - 6);
@@ -3798,7 +3803,7 @@
 
     // Le personnage reste visible par-dessus les nuages.
     ctx.save();
-    ctx.translate(-Math.round(camX), -Math.round(camY));
+    ctx.translate(-snap(camX), -snap(camY));
     drawTrail();
     drawPlayer();
     for (const q of particles) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), 1, 1); }
@@ -3851,7 +3856,7 @@
   }
 
   // ---------- Boucle ----------
-  let lastT = performance.now(), acc = 0;
+  let lastT = performance.now();
   const DT = 1 / 120;
   // Images par seconde, mesurées toutes les demi-secondes. Si le jeu reste sous 50 images/s
   // pendant 2 s, on dessine en résolution plus basse (les pixels restent nets).
@@ -3869,9 +3874,11 @@
     lastT = now;
     measureFps(dt);
     if (dt > 0.1) dt = 0.1;
-    if (!paused) {
-      acc += dt;
-      while (acc >= DT) { step(DT); acc -= DT; }
+    // Pas de calcul égaux qui couvrent toute l'image (au plus 1/120 s chacun) : le mouvement
+    // reste régulier sur un écran à 60, 90 ou 120 Hz.
+    if (!paused && dt > 0) {
+      const n = Math.ceil(dt / DT - 1e-6);
+      for (let i = 0; i < n; i++) step(dt / n);
     }
     draw();
     requestAnimationFrame(frame);
