@@ -28,6 +28,8 @@ jobs:
         run: npm ci
       - name: Préparer le jeu et le copier dans le projet Android
         run: npm run build && npx cap sync android
+      - name: Utiliser la clé de test fixe (mises à jour sans désinstaller)
+        run: mkdir -p ~/.android && cp android/test-signing/debug.keystore ~/.android/debug.keystore
       - name: Compiler l'APK de test
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
