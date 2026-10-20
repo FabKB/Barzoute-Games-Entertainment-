@@ -235,7 +235,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v35';
+  const VERSION = 'v36';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -4594,6 +4594,9 @@
   window.addEventListener('resize', relayout);
   window.addEventListener('orientationchange', relayout);
   try { new ResizeObserver(() => { if (stageEl.clientWidth !== lastVW || stageEl.clientHeight !== lastVH) resize(); }).observe(stageEl); } catch (e) { /* ancien navigateur */ }
+  // Marges de l'écran (encoche, Dynamic Island) : sur iPhone elles arrivent un peu après le lancement ;
+  // la boîte invisible #safe change alors de taille, et on recalcule.
+  try { new ResizeObserver(() => resize()).observe(probe); } catch (e) { /* ancien navigateur */ }
 
   resize();
   resetWorld();
