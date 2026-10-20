@@ -235,7 +235,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v31';
+  const VERSION = 'v32';
 
   // ---------- Utilitaires ----------
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -820,8 +820,8 @@
     const h = d.rows.length, accent = {};
     for (let y = 0; y < Math.round(h * 0.35); y++) accent[y] = '.' + d.rows[y].slice(0, -1);
     return charFrames({
-      id: d.id, custom: true, name: d.name, rows: d.rows, blink: d.rows, pal: Object.assign({ K: OUT }, d.pal),
-      cut: Math.round(h * 0.62), accent, trail: Math.round(h * 0.6), face: [d.rows[0].length / 2, h * 0.32]
+      id: d.id, custom: true, name: d.name, rows: d.rows, blink: d.blink || d.rows, pal: Object.assign({ K: OUT }, d.pal),
+      cut: Math.round(h * 0.62), accent, trail: Math.round(h * 0.6), face: d.face || [d.rows[0].length / 2, h * 0.32]
     });
   }
   // Les doudous pris en photo, gardés dans le téléphone.
@@ -4169,26 +4169,95 @@
       const top = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0];
       return top !== undefined && votes[top] >= 6 && !votes[L] ? +top : L;
     });
-    // 9. Lumière : reflet en haut, ombre en bas ; puis contour sombre et une marge pour l'animation.
-    const pal = {}, letters = 'abcdefghijklmnopqr';
+    // 9. Visage : deux yeux et une bouche, toujours. On cherche les yeux sur la photo (deux petites taches
+    // sombres côte à côte dans le haut du doudou) ; sinon on les place sur la tête.
+    const filled = (x, y) => x >= 0 && y >= 0 && x < tw && y < th && labels[y * tw + x] >= 0;
+    let eyes = null;
+    {
+      const Y = i => d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11, yTop = y0 + bh * 0.6;
+      let m = 0, c = 0;
+      for (let i = 0; i < n; i++) if (keep[i] && (i / w | 0) < yTop) { m += Y(i); c++; }
+      m /= Math.max(1, c);
+      const inside = i => { const x = i % w, y = (i / w) | 0; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h || !keep[yy * w + xx]) return false; } return true; };
+      const dark = new Uint8Array(n);
+      for (let i = 0; i < n; i++) if (keep[i] && (i / w | 0) < yTop && Y(i) < Math.min(m * 0.55, 90) && inside(i)) dark[i] = 1;
+      const blobs = [], seen = new Uint8Array(n);
+      for (let s0 = 0; s0 < n; s0++) {
+        if (!dark[s0] || seen[s0]) continue;
+        const st = [s0]; let cnt = 0, sx = 0, sy = 0;
+        seen[s0] = 1;
+        while (st.length) { const i = st.pop(); cnt++; sx += i % w; sy += (i / w) | 0; for (const j of near(i, i % w)) if (j >= 0 && j < n && dark[j] && !seen[j]) { seen[j] = 1; st.push(j); } }
+        if (cnt <= Math.max(2, kept * 0.02)) blobs.push({ x: sx / cnt, y: sy / cnt, n: cnt });
+      }
+      let bestScore = Infinity;
+      for (let i = 0; i < blobs.length; i++) for (let j = i + 1; j < blobs.length; j++) {
+        const A = blobs[i], B = blobs[j], dx = Math.abs(A.x - B.x), dy = Math.abs(A.y - B.y);
+        if (dy > bh * 0.08 || dx < bw * 0.1 || dx > bw * 0.55) continue;
+        const score = dy / bh + Math.abs(Math.log(A.n / B.n)) * 0.2 + (A.y + B.y) / 2 / h * 0.1;
+        if (score < bestScore) { bestScore = score; eyes = [A, B].sort((u, v) => u.x - v.x); }
+      }
+      if (eyes) {
+        const cell = e => [clamp(Math.floor((e.x - x0) * tw / bw), 0, tw - 1), clamp(Math.floor((e.y - y0) * th / bh), 0, th - 1)];
+        const [l, r] = eyes.map(cell), ey = Math.round((l[1] + r[1]) / 2);
+        eyes = { l: l[0], r: r[0], y: ey };
+        if (eyes.r - eyes.l < 2) { const mid = Math.round((eyes.l + eyes.r) / 2); eyes.l = mid - 1; eyes.r = mid + 1; }
+        if (!filled(eyes.l, ey) || !filled(eyes.r, ey) || !filled(eyes.l, ey + 1) || !filled(eyes.r, ey + 1)) eyes = null;
+      }
+    }
+    if (!eyes) {
+      let top = 0;
+      while (top < th && ![...Array(tw).keys()].some(x => filled(x, top))) top++;
+      const ey = Math.min(th - 4, top + Math.max(2, Math.round(th * 0.2)));
+      let l = 0, r = tw - 1;
+      while (l < tw && !filled(l, ey)) l++;
+      while (r > 0 && !filled(r, ey)) r--;
+      const mid = Math.round((l + r) / 2), off = Math.max(1, Math.round((r - l) * 0.18));
+      eyes = { l: mid - off, r: mid + off, y: ey };
+    }
+    const feat = {}, blinkFeat = {}, letters = 'abcdefghijklmnopqr';
+    const put = (x, y, ch, open = true) => { if (filled(x, y)) { feat[y * tw + x] = ch; if (!open) blinkFeat[y * tw + x] = ch; } };
+    // Couleur du pelage à côté d'un œil, pour le fermer quand il cligne (la photo peut avoir un œil sombre dessous).
+    const fur = (x, y) => { for (const [u, v] of [[x, y - 1], [x - 1, y], [x + 1, y], [x, y - 2]]) if (filled(u, v) && !keepDark[v * tw + u]) return letters[labels[v * tw + u] * 3]; return null; };
+    for (const ex of [eyes.l, eyes.r]) {
+      put(ex, eyes.y, 's'); put(ex, eyes.y + 1, 's', false);
+      const f = fur(ex, eyes.y); if (f && filled(ex, eyes.y)) blinkFeat[eyes.y * tw + ex] = f;
+    }
+    {
+      // Petit sourire sous les yeux, et sous le nez s'il y en a un (taches sombres au milieu).
+      const gap = eyes.r - eyes.l, c0 = eyes.l + Math.floor(gap / 2), c1 = eyes.l + Math.ceil(gap / 2);
+      let my = eyes.y + 3;
+      for (let y = eyes.y + 1; y <= eyes.y + 4 && y < th; y++) if (keepDark[y * tw + c0] || keepDark[y * tw + c1]) my = y + 1;
+      if (gap % 2 === 0) { const mx = eyes.l + gap / 2; put(mx - 1, my, 't', false); put(mx, my + 1, 't', false); put(mx + 1, my, 't', false); }
+      else { const mx = eyes.l + (gap - 1) / 2; put(mx - 1, my, 't', false); put(mx, my + 1, 't', false); put(mx + 1, my + 1, 't', false); put(mx + 2, my, 't', false); }
+    }
+    // 10. Lumière : reflet en haut, ombre en bas ; puis contour sombre et une marge pour l'animation.
+    const pal = { s: '#160f22', t: '#5a1e2e' };
     centers.forEach((m, i) => {
       pal[letters[i * 3]] = mixHex(m, m, 0);
       pal[letters[i * 3 + 1]] = mixHex(m, [255, 255, 255], 0.28);
       pal[letters[i * 3 + 2]] = mixHex(m, [20, 10, 40], 0.3);
     });
     const at = (x, y) => (x < 0 || y < 0 || x >= tw || y >= th) ? -1 : labels[y * tw + x];
-    const rows = [];
-    for (let y = -1; y <= th; y++) {
-      let row = '..';
-      for (let x = -1; x <= tw; x++) {
-        const L = at(x, y);
-        if (L < 0) { row += (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) ? 'K' : '.'; continue; }
-        row += letters[L * 3 + (at(x, y - 1) < 0 ? 1 : at(x, y + 1) < 0 ? 2 : 0)];
+    // Deux images : yeux ouverts, et yeux fermés pour le clignement.
+    const draw = f => {
+      const rows = [];
+      for (let y = -1; y <= th; y++) {
+        let row = '..';
+        for (let x = -1; x <= tw; x++) {
+          const L = at(x, y);
+          if (L < 0) { row += (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) ? 'K' : '.'; continue; }
+          row += f[y * tw + x] || letters[L * 3 + (at(x, y - 1) < 0 ? 1 : at(x, y + 1) < 0 ? 2 : 0)];
+        }
+        rows.push(row + '.');
       }
-      rows.push(row + '.');
-    }
-    while (rows.length && !/[^.]/.test(rows[0])) rows.shift();
-    return { view: work, rows, pal, tol: usedTol, light };
+      return rows;
+    };
+    const rows = draw(feat), blink = draw(blinkFeat);
+    let cut = 0;
+    while (rows.length && !/[^.]/.test(rows[0])) { rows.shift(); blink.shift(); cut++; }
+    // face : le milieu des yeux dans l'image, pour centrer la tête dans le hublot de la fusée.
+    const face = [(eyes.l + eyes.r) / 2 + 3.5, eyes.y + 2 - cut];
+    return { view: work, rows, blink, face, pal, tol: usedTol, light };
   }
 
   // L'atelier : prendre ou choisir une photo, régler le fond, donner un nom.
@@ -4265,7 +4334,7 @@
   const cleanName = v => (v.toUpperCase().replace(/[^A-Z0-9 !?-]/g, '').trim() || 'DOUDOU').slice(0, 7);
   crOk.addEventListener('click', () => {
     if (!crRes || !crRes.rows) return;
-    const d = { id: 'd' + Date.now().toString(36), name: cleanName(crName.value), rows: crRes.rows, pal: crRes.pal };
+    const d = { id: 'd' + Date.now().toString(36), name: cleanName(crName.value), rows: crRes.rows, blink: crRes.blink, face: crRes.face, pal: crRes.pal };
     doudous.push(d);
     saveDoudous();
     pick(d.id);

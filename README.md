@@ -23,6 +23,8 @@ Sur l'écran de choix, la case **+ NOUVEAU** (avec un appareil photo) permet de 
 3. L'aperçu montre la photo, avec le fond retiré en rose, et le personnage en pixel art à côté. Si un morceau du doudou disparaît (par exemple un doudou blanc sur un fond blanc), touche le doudou sur la photo (une croix montre l'endroit choisi) ; tu peux aussi régler le curseur **FOND**, qui se règle tout seul pour chaque photo : baisse-le si un morceau disparaît, monte-le s'il reste du fond. Le curseur **LUMIÈRE** éclaircit ou assombrit le personnage ; il se règle aussi tout seul et éclaircit les photos trop sombres.
 4. Donne-lui un nom (7 lettres maximum) et touche **VALIDER**.
 
+Le personnage a toujours des yeux et une bouche : le jeu cherche les yeux sur la photo (deux petites taches sombres côte à côte en haut du doudou) et, s'il n'en trouve pas, les place sur la tête. Un petit sourire est ajouté sous les yeux (ou sous le nez), et le doudou cligne des yeux.
+
 Astuce iPhone : une image déjà détourée (sans fond) est utilisée telle quelle.
 
 Tout se passe dans le téléphone : la photo n'est envoyée nulle part. Les doudous sont gardés dans la mémoire du navigateur ; s'ils disparaissent (données du site effacées), il suffit de les refaire.
