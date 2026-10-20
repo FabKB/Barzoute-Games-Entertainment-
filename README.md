@@ -108,6 +108,8 @@ Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync
 
 **Android** : à chaque envoi sur la branche `app`, GitHub Actions compile un APK de test et le publie dans la Release **« App Android (test) »** : sur la page du dépôt, rubrique **Releases** (à droite sur ordinateur, plus bas sur téléphone), fichier `glace-licorne-test.apk`. Il s'installe sur un téléphone Android en autorisant l'installation d'applications inconnues.
 
+Téléphone de test Android : **Samsung Galaxy A16 5G** (le jeu y tourne à environ 90 images par seconde, paysage et portrait).
+
 **iOS** : la compilation demande un Mac ; elle se fera avec un service de compilation en ligne (étape suivante).
 
 ### Ajouter l'icône sur l'écran d'accueil de l'iPhone
