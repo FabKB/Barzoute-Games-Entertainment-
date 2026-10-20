@@ -25,7 +25,18 @@ Sur l'écran de choix, la 5e case (**PHOTO**, avec un appareil photo) permet de 
 
 Astuce iPhone : une image déjà détourée (sans fond) est utilisée telle quelle.
 
-Tout se passe dans le téléphone : la photo n'est envoyée nulle part. Le personnage est gardé dans la mémoire du navigateur ; s'il disparaît (données du site effacées), il suffit de le refaire. Le petit appareil photo dans le coin de sa case permet de le remplacer.
+Tout se passe dans le téléphone : la photo n'est envoyée nulle part. Les doudous sont gardés dans la mémoire du navigateur ; s'ils disparaissent (données du site effacées), il suffit de les refaire.
+
+### Mes doudous et l'Atelier illimité
+
+La petite grille dans le coin de la 5e case ouvre **MES DOUDOUS** : on y choisit, renomme ou supprime ses doudous (supprimer demande deux touchers).
+
+- Le **premier doudou est offert**.
+- Pour en créer d'autres, il faut l'**Atelier illimité** : un achat unique, sans abonnement ni publicité.
+- Avant l'écran d'achat, un **contrôle parental** pose une multiplication écrite en lettres (« Combien font SEPT fois CINQ ? »).
+- **RESTAURER MES ACHATS** retrouve un achat déjà fait.
+
+Pour l'instant, l'achat est en **mode test** : aucun paiement réel, et un lien « ANNULER L'ACHAT (TEST) » dans la galerie permet de recommencer. Dans l'app iOS et Android, ce sera le système d'achat d'Apple et de Google.
 
 ### Les plateformes
 
@@ -90,4 +101,4 @@ Une fois le jeu en ligne (voir ci-dessous), ouvre son adresse dans Safari, touch
 
 Dans le dépôt GitHub : **Settings → Pages → Build and deployment → Deploy from a branch**, choisis la branche et le dossier `/ (root)`. Le jeu sera ensuite à l'adresse `https://<utilisateur>.github.io/<nom-du-depot>/`.
 
-Tout le jeu tient dans un seul fichier, `index.html` : graphismes dessinés en code, musique synthétisée, aucune image ni dépendance à installer.
+Tout le jeu tient dans un seul fichier, `index.html` : graphismes dessinés en code, musique synthétisée, aucune image ni dépendance à installer. Seule la police pixel « Press Start 2P » est fournie à part, dans `fonts/` (licence libre SIL OFL, voir `fonts/OFL.txt`).
