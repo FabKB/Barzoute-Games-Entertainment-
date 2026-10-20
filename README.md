@@ -106,6 +106,8 @@ Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la pol
 
 Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync`.
 
+**Tests** : `npm test` lance les tests du jeu dans un navigateur (achat et doudous, détourage photo sur les images de `tests/fixtures`, rotation, fluidité à 90 Hz, étoiles de la piste de la fusée). Sur GitHub, ils passent avant chaque compilation de l'APK : si un test échoue, pas de nouvel APK.
+
 **Android** : à chaque envoi sur la branche `app`, GitHub Actions compile un APK de test et le publie dans la Release **« App Android (test) »** : sur la page du dépôt, rubrique **Releases** (à droite sur ordinateur, plus bas sur téléphone), fichier `glace-licorne-test.apk`. Il s'installe sur un téléphone Android en autorisant l'installation d'applications inconnues. L'APK de test est toujours signé avec la même clé de test (`android/test-signing/`) : une nouvelle version s'installe par-dessus l'ancienne et garde les doudous.
 
 Téléphone de test Android : **Samsung Galaxy A16 5G** (le jeu y tourne à environ 90 images par seconde, paysage et portrait).
