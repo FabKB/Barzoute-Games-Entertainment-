@@ -1,6 +1,9 @@
-# Compile l'app iPhone sur un Mac de GitHub (sans signature, en attendant le compte Apple Developer),
-# la lance dans le simulateur d'iPhone en français puis en anglais, et publie les captures dans la
-# Release « App iPhone (simulateur) » du dépôt.
+# App iPhone sur un Mac de GitHub :
+# - « simulateur » : compile l'app, la lance dans le simulateur d'iPhone en français puis en anglais,
+#   et publie les captures dans la Release « App iPhone (simulateur) » ;
+# - « testflight » : signe l'app avec le compte Apple Developer et l'envoie sur TestFlight.
+#   Il faut les secrets APPSTORE_KEY_ID, APPSTORE_ISSUER_ID, APPSTORE_KEY_P8 et APPLE_TEAM_ID ;
+#   sans eux, cette partie est simplement sautée.
 name: App iPhone
 
 on:
@@ -65,3 +68,59 @@ jobs:
             Le jeu lancé dans le simulateur d'iPhone sur un Mac de GitHub (commit ${{ github.sha }}) : en français (iphone-fr.png) et en anglais (iphone-en.png).
             Ce n'est pas encore une app installable : il faudra le compte Apple Developer pour la signer et l'envoyer sur TestFlight.
           files: captures-ios/*.png
+
+  testflight:
+    runs-on: macos-latest
+    steps:
+      - name: Vérifier que les clés Apple sont là
+        id: cles
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER: ${{ secrets.APPSTORE_ISSUER_ID }}
+          P8: ${{ secrets.APPSTORE_KEY_P8 }}
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$KEY_ID" ] && [ -n "$ISSUER" ] && [ -n "$P8" ] && [ -n "$TEAM" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"
+          else echo "Secrets Apple absents : envoi TestFlight sauté."; fi
+      - uses: actions/checkout@v4
+        if: steps.cles.outputs.ok == '1'
+      - uses: actions/setup-node@v4
+        if: steps.cles.outputs.ok == '1'
+        with:
+          node-version: 22
+          cache: npm
+      - name: Préparer le jeu et le copier dans le projet iPhone
+        if: steps.cles.outputs.ok == '1'
+        run: npm ci && npm run build && npx cap sync ios
+      - name: Archiver, signer et envoyer sur TestFlight
+        if: steps.cles.outputs.ok == '1'
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER: ${{ secrets.APPSTORE_ISSUER_ID }}
+          P8: ${{ secrets.APPSTORE_KEY_P8 }}
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          KEYDIR="$HOME/.appstoreconnect/private_keys"; mkdir -p "$KEYDIR"
+          KEY="$KEYDIR/AuthKey_$KEY_ID.p8"
+          printf '%s\n' "$P8" > "$KEY"
+          AUTH=(-allowProvisioningUpdates -authenticationKeyPath "$KEY" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER")
+          # Numéro de build : il doit augmenter à chaque envoi.
+          BUILD=$((100 + ${{ github.run_number }}))
+          # Archive sans signature ; la signature de distribution se fait à l'export, par Apple (« cloud signing »).
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/App.xcarchive \
+            DEVELOPMENT_TEAM="$TEAM" CURRENT_PROJECT_VERSION="$BUILD" CODE_SIGNING_ALLOWED=NO archive | tail -n 30
+          cat > build/ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath build/App.xcarchive -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath build/export "${AUTH[@]}"
+          rm -f "$KEY"
+          echo "Build $BUILD envoyé à App Store Connect (TestFlight)."
