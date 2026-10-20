@@ -6,7 +6,7 @@ Une glace licorne en pixel art court de plateforme en plateforme en laissant der
 
 ### Jouer
 
-Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, le doudou cigogne, le doudou faune ou Douliam, le doudou en tricot.
+Ouvre `index.html` dans un navigateur (Chrome, Safari…), sur téléphone ou sur ordinateur, puis choisis ton personnage : la glace licorne, ou un doudou que tu as pris en photo. Quand il y a beaucoup de doudous, les flèches sur les côtés font défiler les pages.
 
 - **Toucher l'écran** (ou Espace / flèche haut) : sauter. Garde le doigt appuyé pour sauter plus haut.
 - **Toucher une 2e fois en l'air** : double saut.
@@ -16,11 +16,11 @@ Sur iPhone, active le son de l'appareil : le bouton silencieux peut couper la mu
 
 ### Créer son doudou en photo
 
-Sur l'écran de choix, la 5e case (**PHOTO**, avec un appareil photo) permet de transformer n'importe quel doudou en personnage jouable :
+Sur l'écran de choix, la case **+ NOUVEAU** (avec un appareil photo) permet de transformer n'importe quel doudou en personnage jouable :
 
 1. Pose le doudou sur un **fond uni** (drap, mur, table) bien différent de ses couleurs, et prends-le en entier.
 2. Touche **PRENDRE UNE PHOTO** (ou **CHOISIR UNE PHOTO** dans l'album).
-3. L'aperçu montre la photo, avec le fond retiré en rose, et le personnage en pixel art à côté. Si un morceau du doudou disparaît (par exemple un doudou blanc sur un fond blanc), baisse le curseur **FOND** ; s'il reste du fond, monte-le.
+3. L'aperçu montre la photo, avec le fond retiré en rose, et le personnage en pixel art à côté. Si un morceau du doudou disparaît (par exemple un doudou blanc sur un fond blanc), touche le doudou sur la photo (une croix montre l'endroit choisi) ; tu peux aussi régler le curseur **FOND**, qui se règle tout seul pour chaque photo : baisse-le si un morceau disparaît, monte-le s'il reste du fond.
 4. Donne-lui un nom (7 lettres maximum) et touche **VALIDER**.
 
 Astuce iPhone : une image déjà détourée (sans fond) est utilisée telle quelle.
@@ -29,9 +29,9 @@ Tout se passe dans le téléphone : la photo n'est envoyée nulle part. Les doud
 
 ### Mes doudous et l'Atelier illimité
 
-La petite grille dans le coin de la 5e case ouvre **MES DOUDOUS** : on y choisit, renomme ou supprime ses doudous (supprimer demande deux touchers).
+La petite grille dans le coin d'un doudou ouvre **MES DOUDOUS** : on y choisit, renomme ou supprime ses doudous (supprimer demande deux touchers).
 
-- Le **premier doudou est offert**.
+- Le **premier doudou est offert**. À partir du deuxième, la case **+ NOUVEAU** passe par le contrôle parental et l'écran d'achat.
 - Pour en créer d'autres, il faut l'**Atelier illimité** : un achat unique, sans abonnement ni publicité.
 - Avant l'écran d'achat, un **contrôle parental** pose une multiplication écrite en lettres (« Combien font SEPT fois CINQ ? »).
 - **RESTAURER MES ACHATS** retrouve un achat déjà fait.
@@ -99,6 +99,7 @@ Le même jeu est emballé en vraie app avec **Capacitor** : `index.html`, la pol
 
 - **Identifiant de l'app** : `com.barzoute.glacelicorne` (dans `capacitor.config.json`). Il pourra encore changer jusqu'à la première publication dans les boutiques, plus après.
 - **Données** : dans l'app, les doudous, l'achat et les records sont aussi gardés dans le stockage de l'app (extension Preferences), plus sûr que celui de la page.
+- **Compteur d'images** : en bas à droite, « 60 FPS x3 » donne le nombre d'images par seconde et la finesse de l'image. S'il reste sous 50 pendant 2 secondes, le jeu baisse la finesse pour redevenir fluide.
 - **Autorisations** : appareil photo (et album sur iOS), avec un texte qui explique que la photo reste dans le téléphone.
 
 Pour préparer les projets sur un ordinateur : `npm install`, puis `npm run sync`.
