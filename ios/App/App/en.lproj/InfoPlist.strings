@@ -1,0 +1,3 @@
+/* Messages shown by iOS when the game asks for the camera or the photo library (English). */
+"NSCameraUsageDescription" = "Glace Licorne uses the camera to take a photo of your toy and turn it into a game character. The photo stays on the device.";
+"NSPhotoLibraryUsageDescription" = "Glace Licorne opens your photos so you can pick a photo of a toy and turn it into a game character. The photo stays on the device.";

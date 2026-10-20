@@ -1,0 +1,3 @@
+/* Messages affichés par iOS quand le jeu demande l'appareil photo ou les photos (français). */
+"NSCameraUsageDescription" = "Glace Licorne utilise l'appareil photo pour prendre ton doudou en photo et en faire un personnage du jeu. La photo reste dans le téléphone.";
+"NSPhotoLibraryUsageDescription" = "Glace Licorne ouvre tes photos pour choisir celle d'un doudou et en faire un personnage du jeu. La photo reste dans le téléphone.";

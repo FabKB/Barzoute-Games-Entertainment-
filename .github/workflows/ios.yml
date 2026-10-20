@@ -1,0 +1,67 @@
+# Compile l'app iPhone sur un Mac de GitHub (sans signature, en attendant le compte Apple Developer),
+# la lance dans le simulateur d'iPhone en français puis en anglais, et publie les captures dans la
+# Release « App iPhone (simulateur) » du dépôt.
+name: App iPhone
+
+on:
+  push:
+    branches: [app]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  simulateur:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Installer les dépendances
+        run: npm ci
+      - name: Préparer le jeu et le copier dans le projet iPhone
+        run: npm run build && npx cap sync ios
+      - name: Compiler pour le simulateur d'iPhone
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build | tail -n 40
+          test -d build/dd/Build/Products/Debug-iphonesimulator/App.app
+      - name: Vérifier les messages d'autorisation en français et en anglais
+        run: |
+          APP=build/dd/Build/Products/Debug-iphonesimulator/App.app
+          for l in en fr; do plutil -p "$APP/$l.lproj/InfoPlist.strings"; done
+      - name: Lancer le jeu dans le simulateur (français puis anglais)
+        run: |
+          APP=build/dd/Build/Products/Debug-iphonesimulator/App.app
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p captures-ios
+          for loc in fr_FR en_US; do
+            l=${loc%_*}
+            xcrun simctl terminate "$UDID" com.barzoute.glacelicorne || true
+            xcrun simctl launch "$UDID" com.barzoute.glacelicorne -AppleLanguages "($l)" -AppleLocale "$loc"
+            sleep 20
+            xcrun simctl io "$UDID" screenshot "captures-ios/iphone-$l.png"
+          done
+          ls -la captures-ios
+      - uses: actions/upload-artifact@v4
+        with:
+          name: captures-iphone-simulateur
+          path: captures-ios
+      - name: Publier les captures dans la Release « App iPhone (simulateur) »
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-simulateur
+          target_commitish: ${{ github.sha }}
+          name: App iPhone (simulateur)
+          prerelease: true
+          body: |
+            Le jeu lancé dans le simulateur d'iPhone sur un Mac de GitHub (commit ${{ github.sha }}) : en français (iphone-fr.png) et en anglais (iphone-en.png).
+            Ce n'est pas encore une app installable : il faudra le compte Apple Developer pour la signer et l'envoyer sur TestFlight.
+          files: captures-ios/*.png
