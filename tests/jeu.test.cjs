@@ -87,7 +87,7 @@ test('avance régulièrement sur un écran à 90 Hz', async () => {
   await ctx.close();
 });
 
-test('ramasse toutes les étoiles de la piste de la fusée', { timeout: 15 * 60 * 1000 }, async () => {
+test('ramasse toutes les étoiles de la piste de la fusée et gagne les tampons du voyage', { timeout: 15 * 60 * 1000 }, async () => {
   const { ctx, page, errs } = await open(browser, { viewport: { width: 844, height: 390 } });
   await page.clock.install();
   await page.goto(URL); await page.clock.runFor(1500);
@@ -107,6 +107,11 @@ test('ramasse toutes les étoiles de la piste de la fusée', { timeout: 15 * 60 
     if (st.phase !== 'run') break;
   }
   assert.ok(reached, 'la fusée est atteinte');
+  // Décollage : le tampon de Cap Canaveral s'ajoute à ceux des 4 mondes traversés.
+  await page.clock.runFor(8000);
+  const stamps = await page.evaluate(() => JSON.parse(localStorage.getItem('glace-licorne:tampons') || '[]'));
+  assert.ok(stamps.includes(9), 'tampon de Cap Canaveral : ' + stamps);
+  assert.equal(stamps.length, 5, '4 mondes + Cap Canaveral : ' + stamps);
   assert.ok(total > 0, 'il y a des étoiles sur la piste');
   assert.equal(missed.size, 0, 'étoiles ratées sur la piste');
   assert.deepEqual(errs, []);

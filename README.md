@@ -95,6 +95,16 @@ Le niveau bonus reste rejouable à volonté.
 
 Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou touche 5 fois de suite le numéro de version en haut à droite de l'écran titre. Ce déblocage de test ne change pas le vrai trésor et s'arrête quand on recharge la page.
 
+### Mon carnet de voyage
+
+Sur l'écran titre, le bouton **carnet** (en haut à droite, à côté du son) ouvre le carnet de voyage : un tampon par lieu, à la manière des tampons qu'on trouve dans les gares et les musées au Japon. Chaque tampon a sa couleur d'encre, son cadre (rond, carré ou octogonal), son monument et son nom.
+
+- Les **8 mondes** : le tampon est gagné quand on traverse le monde jusqu'au bout (en ZEN comme en DÉFI).
+- **Cap Canaveral** : au décollage de la fusée.
+- **Pays des Bonbons** : en arrivant sur la Lune dans le niveau bonus.
+
+Un nouveau tampon tombe sur l'écran avec « NOUVEAU TAMPON ! ». Les tampons manquants apparaissent en pointillés avec un « ? ». Le carnet est gardé dans le téléphone.
+
 ### Langue
 
 Le jeu est en **français** si la première langue du téléphone (ou du navigateur) est le français, et en **anglais** pour toutes les autres langues. Les noms « Glace Licorne », « Barzoute Games » et « GLACE » restent les mêmes.
