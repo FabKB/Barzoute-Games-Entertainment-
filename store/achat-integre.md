@@ -43,12 +43,23 @@ c'est un risque de refus inutile pour un seul achat unique.
 - Le prix (2,99 € prévu) ; les boutiques convertissent dans les autres pays.
 - Des comptes de test : « testeurs de licence » dans Play Console, « Sandbox » dans App Store Connect.
 
-## Ce qui changera dans le jeu
+## Ce qui est fait dans le jeu (v37)
 
-- `Shop.buy()` / `Shop.restore()` / `Shop.owned()` appelleront le plugin dans l'app ; la version web garde le mode test.
-- Le prix affiché viendra de la boutique (devise du pays) au lieu de « 2,99 € » écrit en dur.
-- Le contrôle parental reste devant l'écran d'achat (déjà en place).
-- La politique de confidentialité reste vraie : aucune donnée envoyée par le jeu, le paiement est géré par Apple ou Google.
+- Le plugin `capacitor-plugin-cdv-purchase` (13.19.1) est installé ; sa bibliothèque est copiée dans l'app (`www/iap/`)
+  et chargée seulement quand le jeu tourne dans l'app. Sur le web, l'achat reste en mode test.
+- Produit enregistré : `atelier_illimite`, non consommable, sur Google Play ou l'App Store selon le téléphone.
+- Prix affiché : celui de la boutique, dans la devise du pays.
+- Achat : contrôle parental, puis paiement Apple/Google ; « annulé », « en attente » (Google) et erreurs ont chacun leur message.
+- Chaque achat est terminé (`finish`) après déblocage : sur Google Play, un achat non confirmé est remboursé après quelques jours.
+- « Restaurer mes achats » interroge la boutique.
+- Aucun serveur de vérification : rien n'est envoyé ailleurs qu'à Apple ou Google.
+- Testé avec une boutique simulée (`tests/achat-boutique.test.cjs`) ; le vrai test se fera avec les comptes de test des boutiques.
+
+## Reste à faire (dans les consoles, une fois les comptes ouverts)
+
+- Créer le produit `atelier_illimite` (non consommable, 2,99 € prévu) dans Play Console et dans App Store Connect.
+- Ajouter des testeurs de licence (Google) et un compte Sandbox (Apple), puis acheter « pour de faux » avec eux.
+- App Store : remplir le contrat des apps payantes, la banque et les formulaires fiscaux avant que l'achat fonctionne.
 
 ## Sources
 - Apple – App Store Review Guidelines : https://developer.apple.com/app-store/review/guidelines/

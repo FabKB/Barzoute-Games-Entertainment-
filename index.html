@@ -235,7 +235,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v36';
+  const VERSION = 'v37';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -4421,9 +4421,10 @@
   });
 
   // ---------- Achats : « Atelier illimité », un achat unique ----------
-  // Mode test : l'achat est simulé, sans paiement. Dans l'app, ces trois fonctions
-  // appelleront le système d'achat d'Apple et de Google.
-  const FREE_DOUDOUS = 1;
+  // L'Atelier illimité. Sur le web, l'achat est simulé (mode test). Dans l'app, startRealShop()
+  // remplace buy() et restore() par le système d'achat d'Apple ou de Google.
+  // buy() répond true (acheté), false (annulé) ou 'pending' (paiement en attente, Google Play).
+  const FREE_DOUDOUS = 1, PRODUCT = 'atelier_illimite';
   const Shop = {
     test: true,
     price: T('2,99 €', '€2.99'),
@@ -4431,6 +4432,36 @@
     buy: () => new Promise(res => setTimeout(() => { store.set('atelier', '1'); res(true); }, 600)),
     restore: () => new Promise(res => setTimeout(() => res(store.get('atelier', '0') === '1'), 400))
   };
+  const loadScript = src => new Promise((ok, ko) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = ko; document.head.append(el); });
+  // Plugin capacitor-plugin-cdv-purchase, sans serveur de vérification : rien n'est envoyé ailleurs
+  // qu'à Apple ou Google (un serveur recevrait des informations sur l'appareil, interdit pour les apps enfants).
+  async function startRealShop() {
+    try { if (cap.Plugins && !cap.Plugins.PurchasePlugin && cap.registerPlugin) cap.Plugins.PurchasePlugin = cap.registerPlugin('PurchasePlugin'); } catch (e) { /* déjà là */ }
+    if (!window.CdvPurchase) { await loadScript('iap/capacitor-plugin.js'); await loadScript('iap/store.js'); }
+    const P = window.CdvPurchase, iap = P.store;
+    const platform = cap.getPlatform() === 'ios' ? P.Platform.APPLE_APPSTORE : P.Platform.GOOGLE_PLAY;
+    let waiting = null;
+    const unlock = () => { store.set('atelier', '1'); if (waiting) { waiting(true); waiting = null; } };
+    iap.register([{ id: PRODUCT, type: P.ProductType.NON_CONSUMABLE, platform }]);
+    iap.when()
+      .productUpdated(p => { if (p.id !== PRODUCT) return; if (p.pricing) Shop.price = p.pricing.price; if (p.owned) unlock(); })
+      .approved(t => { if (t.products.some(p => p.id === PRODUCT)) unlock(); t.finish(); })
+      .pending(t => { if (waiting && t.products.some(p => p.id === PRODUCT)) { waiting('pending'); waiting = null; } });
+    Shop.test = false;
+    Shop.buy = () => new Promise((resolve, reject) => {
+      const product = iap.get(PRODUCT, platform), offer = product && product.getOffer();
+      if (!offer) { reject(new Error('Atelier illimité introuvable dans la boutique')); return; }
+      waiting = resolve;
+      offer.order().then(err => {
+        if (!err) return;
+        waiting = null;
+        if (err.code === P.ErrorCode.PAYMENT_CANCELLED) resolve(false); else reject(err);
+      }, err => { waiting = null; reject(err); });
+    });
+    Shop.restore = () => iap.restorePurchases().then(err => { if (err) throw err; return Shop.owned(); });
+    await iap.initialize([platform]);
+  }
+  if (cap && cap.isNativePlatform && cap.isNativePlatform()) startRealShop().catch(e => console.warn('Achats indisponibles', e));
   const canCreate = () => doudous.length < FREE_DOUDOUS || Shop.owned();
   function newDoudou() {
     if (canCreate()) openCreator();
@@ -4520,6 +4551,7 @@
   pwBuy.addEventListener('click', () => {
     pwBuy.disabled = true; pwMsg.textContent = T('Un instant…', 'One moment…');
     Shop.buy().then(ok => {
+      if (ok === 'pending') { pwBuy.disabled = false; pwMsg.textContent = T('Paiement en attente : l\'Atelier s\'ouvrira dès qu\'il sera validé.', 'Payment pending: the Workshop will unlock as soon as it is approved.'); return; }
       if (!ok) { pwBuy.disabled = false; pwMsg.textContent = T('Achat annulé.', 'Purchase cancelled.'); return; }
       Sound.unlock(); closePaywall();
       if (!gallery.hidden) renderGallery();

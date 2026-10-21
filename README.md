@@ -38,7 +38,7 @@ La petite grille dans le coin d'un doudou ouvre **MES DOUDOUS** : on y choisit, 
 - Avant l'écran d'achat, un **contrôle parental** pose une multiplication (« Combien font 8 × 7 ? »).
 - **RESTAURER MES ACHATS** retrouve un achat déjà fait.
 
-Pour l'instant, l'achat est en **mode test** : aucun paiement réel, et un lien « ANNULER L'ACHAT (TEST) » dans la galerie permet de recommencer. Dans l'app iOS et Android, ce sera le système d'achat d'Apple et de Google.
+Sur le web, l'achat est en **mode test** : aucun paiement réel, et un lien « ANNULER L'ACHAT (TEST) » dans la galerie permet de recommencer. Dans l'app iOS et Android, l'achat passe par Apple ou Google (plugin `capacitor-plugin-cdv-purchase`, produit `atelier_illimite`, sans serveur de vérification) ; voir `store/achat-integre.md`.
 
 ### Les plateformes
 
