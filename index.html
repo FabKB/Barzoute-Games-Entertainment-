@@ -248,7 +248,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v41';
+  const VERSION = 'v42';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -526,21 +526,21 @@
         bassPat: [0, null, null, 7, null, null],
         drums: { kick: [0, 6], hat: 3 }
       }),
-      song({ // Île des Pirates : gigue de pirates en ré mineur, façon console (composition originale)
-        bpm: 176, spb: 12, lead: LEAD, bass: BASS, stab: STAB, stabs: [3, 9],
+      song({ // Île des Pirates : chant de pirates joyeux en 6/8, accordéon et « oum-pa-pa » (composition originale)
+        bpm: 150, spb: 12, lead: ACCORDION, detune: 0.006, bass: BASS, stab: STAB, stabs: [2, 4, 8, 10],
         chords: {
-          Dm: { b: 50, a: [57, 62, 65, 69] }, C: { b: 48, a: [55, 60, 64, 67] }, Bb: { b: 46, a: [53, 58, 62, 65] },
-          A7: { b: 45, a: [57, 61, 64, 67] }, F: { b: 41, a: [53, 57, 60, 65] }, Gm: { b: 43, a: [55, 58, 62, 67] }
+          G: { b: 43, a: [55, 59, 62, 67] }, D7: { b: 50, a: [54, 57, 60, 62] }, C: { b: 48, a: [55, 60, 64, 67] },
+          Em: { b: 40, a: [52, 55, 59, 64] }, Am: { b: 45, a: [57, 60, 64, 69] }
         },
-        prog: ['Dm', 'Dm', 'C', 'C', 'Bb', 'Bb', 'A7', 'A7', 'Dm', 'Dm', 'F', 'C', 'Gm', 'Dm', 'A7', 'Dm'],
+        prog: ['G', 'G', 'D7', 'D7', 'D7', 'D7', 'G', 'G', 'C', 'C', 'G', 'Em', 'Am', 'D7', 'G', 'G'],
         mel: [
-          'A5 - D6 D6 - E6', 'F6 - E6 D6 - A5', 'G5 - C6 C6 - D6', 'E6 - D6 C6 - G5',
-          'F5 - A#5 A#5 - C6', 'D6 - C6 A#5 - F5', 'E5 - A5 C#6 - E6', 'A6 - - E6 - .',
-          'D6 - F6 A6 - F6', 'D7 - A6 F6 - D6', 'C6 - F6 A6 - C7', 'G6 - E6 C6 - E6',
-          'D6 - G6 A#6 - G6', 'F6 - D6 A5 - D6', 'C#6 E6 G6 E6 C#6 A5', 'D6 - - - . .'
+          'D5 - G5 G5 - A5', 'B5 - G5 D5 - .', 'C6 - A5 F#5 - A5', 'D6 - - C6 - A5',
+          'F#5 - A5 D6 - C6', 'A5 - F#5 D5 - .', 'G5 - B5 D6 - B5', 'G5 - - - . .',
+          'E6 - E6 E6 - D6', 'C6 - G5 E5 - G5', 'D6 - D6 D6 - B5', 'G5 - E5 B5 - .',
+          'C6 - A5 E6 - C6', 'D6 - C6 A5 - F#5', 'G5 A5 B5 D6 - B5', 'G6 - - - . .'
         ],
         bassPat: [0, null, null, 7, null, null],
-        drums: { kick: [0, 6], snare: [3, 9], hat: 3 }
+        drums: { kick: [0, 6], hat: 2 }
       })
     ];
     let cur = SONGS[0];
@@ -5263,21 +5263,22 @@
       // Deux mouettes.
       ink(() => { for (const [x, y] of [[18, 26], [27, 18]]) { g.moveTo(x - 4, y - 1); g.quadraticCurveTo(x - 2, y - 3, x, y); g.quadraticCurveTo(x + 2, y - 3, x + 4, y - 1); } }, 1.4, true);
     },
-    // Île des Pirates : un coffre au trésor ouvert plein de pièces, sous un palmier.
+    // Île des Pirates : une tête de mort rigolote qui sourit, avec son chapeau de pirate, sur deux os croisés.
     12: (g, ink, cut) => {
-      ink(() => { g.moveTo(17, 57); g.quadraticCurveTo(15, 40, 23, 24); }, 3, true);
-      ink(() => { for (const a of [-2.7, -2.1, -1.4, -0.7, -0.1]) { g.moveTo(23, 24); g.quadraticCurveTo(23 + Math.cos(a) * 9, 22 + Math.sin(a) * 9 - 3, 23 + Math.cos(a) * 15, 24 + Math.sin(a) * 11 + 4); } }, 2.4, true);
-      ink(() => { g.moveTo(35, 38); g.lineTo(38, 26); g.lineTo(62, 26); g.lineTo(64, 38); g.closePath(); });
-      cut(() => { g.rect(37, 28, 24, 2); g.rect(47, 26, 4, 12); }, 1, false);
-      ink(() => { for (const [x, y] of [[39, 38], [45, 36], [51, 37], [57, 36], [62, 38], [48, 33], [54, 33]]) { g.moveTo(x + 3.2, y); g.arc(x, y, 3.2, 0, Math.PI * 2); } });
-      cut(() => { for (const [x, y] of [[39, 38], [45, 36], [51, 37], [57, 36], [62, 38], [48, 33], [54, 33]]) { g.moveTo(x + 1.6, y); g.arc(x, y, 1.6, 0, Math.PI * 2); } }, 0.8, true);
-      cut(() => { g.rect(33, 40, 34, 2); });
-      ink(() => { g.rect(34, 41, 32, 15); });
-      cut(() => { g.rect(39, 42, 2, 13); g.rect(59, 42, 2, 13); g.rect(48, 45, 4, 5); });
-      ink(() => { g.rect(49.2, 46, 1.6, 2.5); });
-      ink(() => { g.rect(8, 57, 64, 2); });
-      const star = (x, y, r) => { g.moveTo(x - r, y); g.lineTo(x + r, y); g.moveTo(x, y - r); g.lineTo(x, y + r); };
-      ink(() => { star(40, 18, 3); star(58, 15, 3.5); star(68, 26, 2.5); }, 1.4, true);
+      const bone = (x1, y1, x2, y2) => { g.moveTo(x1, y1); g.lineTo(x2, y2); };
+      ink(() => { bone(18, 36, 62, 57); bone(62, 36, 18, 57); }, 4.5, true);
+      ink(() => { for (const [x, y] of [[15, 33], [19, 35], [15, 39], [65, 33], [61, 35], [65, 39], [15, 54], [19, 58], [15, 60], [65, 54], [61, 58], [65, 60]]) { g.moveTo(x + 2.6, y); g.arc(x, y, 2.6, 0, Math.PI * 2); } });
+      // Liseré de papier autour du crâne.
+      cut(() => { g.arc(40, 38, 15.5, 0, Math.PI * 2); g.rect(31, 44, 18, 13); });
+      ink(() => { g.arc(40, 38, 13.5, 0, Math.PI * 2); g.rect(33, 45, 14, 10); });
+      cut(() => { g.arc(34.5, 37, 4, 0, Math.PI * 2); g.moveTo(49.5, 37); g.arc(45.5, 37, 4, 0, Math.PI * 2); });
+      cut(() => { g.moveTo(40, 42); g.lineTo(38, 46); g.lineTo(42, 46); g.closePath(); });
+      cut(() => { g.arc(40, 46, 6, 0.25, Math.PI - 0.25); }, 1.4, true);
+      cut(() => { for (const x of [36.5, 40, 43.5]) g.rect(x - 0.6, 51, 1.2, 4); });
+      // Chapeau de pirate (tricorne) avec une petite étoile.
+      cut(() => { g.moveTo(17, 27); g.quadraticCurveTo(40, 20, 63, 27); g.lineTo(63, 29); g.quadraticCurveTo(40, 22, 17, 29); g.closePath(); g.moveTo(26, 25); g.quadraticCurveTo(30, 6, 40, 12); g.quadraticCurveTo(50, 6, 54, 25); g.closePath(); }, 3, true);
+      ink(() => { g.moveTo(19, 26); g.quadraticCurveTo(40, 19, 61, 26); g.quadraticCurveTo(40, 24, 19, 26); g.moveTo(27, 24); g.quadraticCurveTo(30, 8, 40, 13); g.quadraticCurveTo(50, 8, 53, 24); g.closePath(); });
+      cut(() => { for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 1.4 : 3.4; (i ? g.lineTo : g.moveTo).call(g, 40 + Math.cos(a) * r, 18 + Math.sin(a) * r); } g.closePath(); });
     },
     // Pays des Bonbons : une grande sucette en spirale avec son nœud, et des étoiles.
     5: (g, ink, cut) => {
