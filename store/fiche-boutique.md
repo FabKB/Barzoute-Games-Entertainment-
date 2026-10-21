@@ -31,7 +31,9 @@ Cours, saute et ramasse des étoiles à travers 4 mondes tirés au hasard parmi 
 • le Japon et le mont Fuji, New York, Londres, Paris,
 • la Slovénie et son dragon de Ljubljana,
 • Hong Kong et sa danse du dragon,
-• la Toscane avec le Palio, la tour de Pise et San Gimignano.
+• la Toscane avec le Palio, la tour de Pise et San Gimignano,
+• Amsterdam, ses canaux, ses moulins et ses tulipes,
+• Copenhague, le port de Nyhavn et la Petite Sirène.
 Au bout du voyage, direction Cap Canaveral : on monte dans la fusée et… 3, 2, 1, décollage !
 
 TON DOUDOU DEVIENT UN HÉROS
@@ -76,7 +78,9 @@ Run, jump and collect stars across 4 worlds picked at random from:
 • Japan and Mount Fuji, New York, London, Paris,
 • Slovenia and the Ljubljana dragon,
 • Hong Kong and its dragon dance,
-• Tuscany with the Palio, the Leaning Tower of Pisa and San Gimignano.
+• Tuscany with the Palio, the Leaning Tower of Pisa and San Gimignano,
+• Amsterdam, its canals, windmills and tulips,
+• Copenhagen, Nyhavn harbour and the Little Mermaid.
 At the end of the journey, it's off to Cape Canaveral: hop into the rocket and… 3, 2, 1, lift-off!
 
 YOUR PLUSHIE BECOMES THE HERO

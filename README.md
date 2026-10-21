@@ -55,7 +55,7 @@ Chaque mode garde son propre record.
 
 ### Les mondes
 
-Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à raison de 100 m par monde. Entre deux mondes, un rideau de nuages traverse l'écran, puis un avion passe avec une banderole au nom du nouveau monde, et la musique change.
+Chaque partie traverse **4 mondes tirés au hasard** parmi les 10 ci-dessous, à raison de 100 m par monde. Entre deux mondes, un rideau de nuages traverse l'écran, puis un avion passe avec une banderole au nom du nouveau monde, et la musique change.
 
 - **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
 - **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
@@ -65,6 +65,8 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à 
 - **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
 - **Hong Kong**, de nuit : Victoria Peak, la Bank of China Tower et l'IFC, une jonque aux voiles rouges et le Star Ferry sur le port, enseignes au néon, tramway « ding-ding » et taxi rouge ; plateformes en paniers vapeur à dim sum, enseignes lumineuses et échafaudages en bambou ; pop cantonaise à la flûte.
 - **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; les hautes tours de San Gimignano ; la tour penchée de Pise et son baptistère ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
+- **Amsterdam** : d'abord la ville, avec ses maisons étroites à pignons (à gradins, en cloche, pointus) le long du canal, la Westerkerk et sa couronne bleue et or, un pont en briques avec des vélos garés, des ormes et une péniche fleurie ; puis, à partir du milieu du monde, la campagne avec ses moulins à vent et ses champs de tulipes en bandes de couleurs ; plateformes en briques hollandaises, en gouda et en parterres de tulipes ; air d'orgue de Barbarie.
+- **Copenhague** : le port de Nyhavn et ses maisons colorées aux toits de tuiles, les mâts des voiliers, la flèche torsadée de l'église du Sauveur, des bateaux en bois amarrés et la Petite Sirène sur son rocher ; plateformes en façades de bois peint, en briques de construction et en viennoiserie danoise ; chant de marins à la flûte et à l'accordéon.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
@@ -76,6 +78,8 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 8 ci-dessous, à 
 - **Slovénie** : le dragon de Ljubljana traverse le ciel, fait un looping et crache deux petites flammes.
 - **Hong Kong** : une danse du dragon passe sur les toits (un long dragon rouge et or qui ondule au bout des perches de ses danseurs) pendant qu'un feu d'artifice éclate au-dessus du port.
 - **Toscane** : les chevaux du Palio de Sienne passent au galop, chaque jockey aux couleurs de son quartier.
+- **Amsterdam** : un moulin géant traverse le décor en faisant tourner ses ailes et souffle une pluie de pétales de tulipes sur tout l'écran.
+- **Copenhague** : un drakkar viking à la voile rayée rouge et blanc, avec ses boucliers ronds et sa proue en tête de dragon, traverse le port au rythme de ses rames ; on entend le cor et le tambour des rameurs.
 
 ### La fin : le décollage à Cap Canaveral
 
@@ -99,7 +103,7 @@ Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou
 
 Sur l'écran titre, le bouton **carnet** (en haut à droite, à côté du son) ouvre le carnet de voyage : un tampon par lieu, à la manière des tampons qu'on trouve dans les gares et les musées au Japon. Chaque tampon a sa couleur d'encre, son cadre (rond, carré ou octogonal), son monument et son nom.
 
-- Les **8 mondes** : le tampon est gagné quand on traverse le monde jusqu'au bout (en ZEN comme en DÉFI).
+- Les **10 mondes** : le tampon est gagné quand on traverse le monde jusqu'au bout (en ZEN comme en DÉFI).
 - **Cap Canaveral** : au décollage de la fusée.
 - **Pays des Bonbons** : en arrivant sur la Lune dans le niveau bonus.
 

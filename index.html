@@ -248,7 +248,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v39';
+  const VERSION = 'v40';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -493,6 +493,38 @@
         ],
         bassPat: [0, null, 0, 7, 0, null, 0, 7],
         drums: { kick: [0, 8], snare: [4, 12], hat: 2, open: [14] }
+      }),
+      song({ // Amsterdam : air d'orgue de Barbarie (« draaiorgel »), en la majeur (composition originale)
+        bpm: 126, lead: ORGAN, bass: BASS, arpWave: 'square', arpVol: 0.035, arpEvery: 2,
+        chords: {
+          A: { b: 45, a: [57, 61, 64, 69] }, E7: { b: 40, a: [52, 56, 59, 62] },
+          D: { b: 50, a: [54, 57, 62, 66] }, Fsm: { b: 42, a: [54, 57, 61, 66] }
+        },
+        prog: ['A', 'A', 'E7', 'E7', 'A', 'A', 'D', 'E7', 'Fsm', 'D', 'A', 'E7', 'D', 'E7', 'A', 'A'],
+        mel: [
+          'E6 - C#6 - A5 C#6 E6 -', 'A6 - G#6 - F#6 - E6 -', 'D6 - B5 - G#5 B5 D6 -', 'E6 F#6 E6 D6 B5 - . .',
+          'C#6 - E6 - A6 - C#7 -', 'B6 A6 G#6 A6 E6 - . .', 'F#6 - A6 - D7 - A6 -', 'G#6 - B6 - E6 - . .',
+          'A6 - F#6 - C#6 F#6 A6 -', 'F#6 - D6 - A5 D6 F#6 -', 'E6 - A6 - C#7 - A6 -', 'B6 - G#6 - E6 - D6 -',
+          'D6 F#6 A6 F#6 D6 F#6 A6 -', 'G#6 B6 D7 B6 G#6 - E6 -', 'A6 - E6 - C#6 - E6 -', 'A6 - - - . . . .'
+        ],
+        bassPat: [0, null, 7, null, 0, null, 7, null],
+        drums: { kick: [0, 8], snare: [4, 12], hat: 2 }
+      }),
+      song({ // Copenhague : chant de marins en 6/8, flûte et accordéon (composition originale)
+        bpm: 190, spb: 12, lead: FLUTE, bass: SOFTBASS, stab: STAB, stabs: [3, 9],
+        chords: {
+          D: { b: 50, a: [54, 57, 62, 66] }, G: { b: 43, a: [55, 59, 62, 67] },
+          A7: { b: 45, a: [57, 61, 64, 67] }, Bm: { b: 47, a: [54, 59, 62, 66] }
+        },
+        prog: ['D', 'D', 'G', 'D', 'A7', 'A7', 'D', 'D', 'Bm', 'Bm', 'G', 'D', 'G', 'A7', 'D', 'D'],
+        mel: [
+          'A5 - D6 F#6 - D6', 'A6 - F#6 D6 - .', 'B5 - D6 G6 - B6', 'A6 - F#6 D6 - F#6',
+          'E6 - A6 C#7 - A6', 'G6 - E6 C#6 - .', 'D6 - F#6 A6 - F#6', 'D6 - - - . .',
+          'F#6 - B6 D7 - B6', 'F#6 - D6 B5 - .', 'G6 - B6 D7 - B6', 'A6 - F#6 D6 - F#6',
+          'B6 - G6 D6 - G6', 'C#7 - A6 E6 - G6', 'F#6 E6 D6 F#6 A6 F#6', 'D6 - - - . .'
+        ],
+        bassPat: [0, null, null, 7, null, null],
+        drums: { kick: [0, 6], hat: 3 }
       })
     ];
     let cur = SONGS[0];
@@ -719,6 +751,14 @@
             fm(sfx, t + f - 0.6, 500, 0.55, Object.assign({}, BELL, { vol: 0.05, glide: 2.2 }));
             drum(t + f, 90, 40, 0.5, 0.35); nz(t + f, 0.6, 0.12, 'lowpass', 1200, 0, sfx);
           });
+        } else if (w === 10) {
+          // Le moulin : le vent qui souffle, et un petit carillon.
+          noiseSweep(t + 0.5, EVENT_DUR[10] - 1, 300, 1100, 0.09, 'bandpass');
+          ['A6', 'C#7', 'E7', 'A7', 'E7', 'C#7'].forEach((n, i) => fm(sfx, t + 1 + i * 0.35, mtof(n2m(n)), 0.4, BELL));
+        } else if (w === 11) {
+          // Le drakkar : cor viking, puis le tambour qui donne la cadence aux rameurs.
+          [0.3, 1.6].forEach(f => fm(sfx, t + f, mtof(n2m('D3')), 1.1, Object.assign({}, BRASS, { vol: 0.16 })));
+          for (let k = 0; k * 0.8 < EVENT_DUR[11] - 3; k++) drum(t + 3 + k * 0.8, 70, 45, 0.3, 0.4);
         } else if (w === 8) {
           // Le Palio : galop des chevaux et clameur de la foule.
           for (let k = 0; k * 0.14 < EVENT_DUR[8] - 1.5; k++) drum(t + 0.8 + k * 0.14 + (k % 2) * 0.03, 900, 650, 0.04, 0.12);
@@ -895,6 +935,7 @@
   // ---------- Plateformes : 3 styles par monde ----------
   // top : [reflet, couleur, ombre] des 5 premières lignes. drip : coulures sous le dessus.
   const DEPTH = 360;
+  // Styles de plateformes : 3 par monde (monde × 3 + variante), puis le trampoline.
   const STYLES = [
     // Monde des Glaces
     { // cornet gaufré, glaçage fraise
@@ -1192,6 +1233,59 @@
         return '#eef0f6';
       }
     },
+    // Amsterdam
+    { // maison de briques et ses fenêtres blanches
+      top: ['#e8a070', '#b5532a', '#7a3418'], deep: '#5a2414',
+      body(x, y) {
+        const cx = x % 14, cy = (y - 6) % 16;
+        if (y > 7 && cx >= 4 && cx <= 9 && cy >= 3 && cy <= 11) return (cx === 4 || cx === 9 || cy === 3 || cy === 11 || cx === 6 || cy === 7) ? '#f4efe4' : '#2f3b57';
+        const off = (y >> 2) % 2 ? 3 : 0;
+        return (y % 4 === 0 || (x + off) % 6 === 0) ? '#7a3418' : '#9a4426';
+      }
+    },
+    { // meule de gouda : croûte et petits trous
+      top: ['#ffe680', '#f2c230', '#c9952a'], deep: '#c9952a',
+      body(x, y) {
+        const k = hash(((x / 7) | 0) * 13 + (((y - 6) / 7) | 0) * 7);
+        const hx = (x % 7) - 3 - (k % 2), hy = ((y - 6) % 7) - 3;
+        if (k % 3 === 0 && hx * hx + hy * hy <= 3) return hx < 0 && hy < 0 ? '#c9952a' : '#e0ac30';
+        return '#f6d24a';
+      }
+    },
+    { // champ de tulipes en bandes de couleurs
+      top: ['#ff4d6d', '#2e8b57', '#1f6a40'], deep: '#4a2e1e',
+      topPat(x, y) {
+        const c = ['#ff4d6d', '#ffd84a', '#ff9f43', '#c86bff'][((x / 12) | 0) % 4];
+        if (y <= 2) return x % 3 === 1 || (y === 2 && x % 3 !== 2) ? c : '#5aa04a';
+        return y === 5 ? '#1f6a40' : (x % 3 === 1 ? '#2e8b57' : '#3fa060');
+      },
+      body(x, y) { return (y + (x >> 3)) % 5 === 0 ? '#3e2618' : '#4a2e1e'; }
+    },
+    // Copenhague
+    { // façades en bois peint de Nyhavn
+      top: ['#3b3a4a', '#2a2433', '#1a1622'], deep: '#2a2433',
+      body(x, y) {
+        const k = ((x / 22) | 0) % 5, col = ['#f2c230', '#e86a2a', '#3a6fb8', '#d94a4a', '#7fb8a0'][k];
+        const cx = x % 22, cy = (y - 6) % 14;
+        if (cx === 0) return '#2a2433';
+        if (y > 8 && cx >= 6 && cx <= 15 && cy >= 3 && cy <= 9) return (cx === 6 || cx === 15 || cy === 3 || cy === 9 || cx === 10 || cx === 11) ? '#ffffff' : '#2f3557';
+        // Planches horizontales : une ligne plus sombre toutes les 4 lignes.
+        return (y - 6) % 4 === 0 ? ['#d4a420', '#c4521e', '#2c5896', '#b83a3a', '#5f9a84'][k] : col;
+      }
+    },
+    { // briques de construction à plots
+      top: ['#ff6b6b', '#e3262e', '#a51c22'], deep: '#a51c22',
+      topPat(x, y) { const cx = x % 8; return y <= 2 && cx >= 2 && cx <= 5 ? (y === 1 || cx === 2 ? '#ff9a9a' : '#e3262e') : (y === 5 ? '#a51c22' : '#e3262e'); },
+      body(x, y) {
+        const row = ((y - 6) / 8) | 0, off = row % 2 ? 8 : 0;
+        if ((y - 6) % 8 === 7 || (x + off) % 16 === 15) return '#a51c22';
+        return ['#e3262e', '#2a6fdb', '#f2c230', '#2e9e4a'][hash((((x + off) / 16) | 0) * 7 + row * 13) % 4];
+      }
+    },
+    { // viennoiserie danoise feuilletée et son glaçage
+      top: ['#ffffff', '#f4ead8', '#d8c4a0'], drip: true, deep: '#a8642a',
+      body(x, y) { const b = (y - 6) % 6; return b === 0 ? '#c27a3a' : b === 1 ? '#f0c27a' : (hash(x * 7 + y) % 13 === 0 ? '#8a3a20' : '#e0a050'); }
+    },
     { // trampoline en guimauve
       top: ['#ffffff', '#ffe3ee', '#f2b8cf'], deep: '#f2b8cf',
       body(x, y) {
@@ -1200,6 +1294,7 @@
       }
     }
   ];
+  const TRAMP_S = STYLES.length - 1;
   const rgbCache = {};
   const rgb = h => rgbCache[h] || (rgbCache[h] = hexRgb(h));
 
@@ -2002,6 +2097,187 @@
     return null;
   });
 
+  // Amsterdam, en ville : maisons étroites à pignons le long du canal, et la Westerkerk.
+  const AMS_HOUSE = ['#7a3418', '#9a4426', '#3b2f2a', '#e9dcc0', '#4a5a6a', '#2f4a3a', '#5a2a1a'];
+  const amsCityFar = paintStrip(640, 96, (x, y) => {
+    const fb = 95 - y;
+    // La Westerkerk : tour carrée, couronne bleue et or, flèche.
+    if (x >= 296 && x <= 310) {
+      const dx = x - 303;
+      if (fb < 58) return x === 296 || x === 310 ? '#5a2a1a' : (fb % 12 >= 4 && fb % 12 <= 9 && Math.abs(dx) <= 2 ? '#2a2433' : '#8a3a22');
+      if (fb < 70 && Math.abs(dx) <= 5) return fb % 4 === 0 ? '#e0c27a' : '#3a5fa8';
+      if (fb < 74 && Math.abs(dx) <= 3) return '#e0c27a';
+      if (fb < 88 && Math.abs(dx) <= Math.max(0, (88 - fb) / 5)) return '#3a5fa8';
+      if (fb < 92 && dx === 0) return '#e0c27a';
+    }
+    const i = Math.floor(x / 17), lx = x % 17;
+    if (lx === 16) return null;
+    const k = hash(i * 37 + 5), h = 44 + k % 22, col = AMS_HOUSE[k % AMS_HOUSE.length], light = col === '#e9dcc0';
+    const frame = light ? '#7a3418' : '#f4efe4';
+    if (fb < 3) return '#6a5a4a';
+    // Pignons : à gradins, en cloche ou pointu.
+    let top = h;
+    const d = Math.abs(lx - 7.5), gable = (k >> 3) % 3;
+    if (gable === 0) top = h + (d < 2 ? 12 : d < 4 ? 9 : d < 6 ? 5 : 2);
+    else if (gable === 1) top = h + (d < 2.5 ? 13 : 13 * Math.sqrt(Math.max(0, 1 - ((d - 2.5) / 6) ** 2)));
+    else top = h + Math.max(0, 12 - d * 1.5);
+    if (fb >= top) return null;
+    if (fb >= top - 1) return frame;
+    // Poutre de levage sous le sommet du pignon.
+    if (fb >= h + 2 && fb <= h + 3 && lx >= 7 && lx <= 8) return '#2a2433';
+    // Fenêtres à cadres blancs, trois par étage.
+    const cy = (fb - 4) % 9;
+    if (fb >= 4 && fb < h - 2 && cy >= 2 && cy <= 7) for (const wx of [2, 7, 12]) if (lx >= wx && lx <= wx + 2) return (lx === wx || lx === wx + 2 || cy === 2 || cy === 7 || cy === 5) ? frame : '#2f3b57';
+    if (fb >= h - 1 && fb < h + 1) return frame;
+    return col;
+  });
+  // Au bord du canal : un pont en briques avec des vélos, des ormes, des réverbères et une péniche.
+  const amsCityMid = paintStrip(480, 56, (x, y) => {
+    const fb = 55 - y;
+    if (x >= 150 && x <= 330) {
+      const lx = x - 150, d = Math.abs(lx - 90);
+      const arch = fb < 18 * Math.sqrt(Math.max(0, 1 - (d / 40) ** 2)) && d < 40;
+      if (fb < 26 && !arch) {
+        if (fb >= 24) return '#3a2a2a';
+        return (fb % 4 === 0 || (lx + ((fb >> 2) % 2) * 3) % 6 === 0) ? '#7a3418' : '#a04a2a';
+      }
+      if (arch && fb >= 16) return '#5a2a1a';
+      // Vélos garés contre la rambarde.
+      if (fb >= 26 && fb < 36) {
+        const bx = lx % 22;
+        if (bx < 16 && hash(Math.floor(lx / 22) * 7) % 3 !== 0) {
+          for (const wx of [3, 12]) { const r = Math.hypot(bx - wx, fb - 30); if (r >= 2.5 && r <= 3.6) return '#2a2433'; }
+          if (fb === 31 && bx >= 3 && bx <= 12) return '#2a2433';
+          if (bx === 7 && fb >= 30 && fb <= 34) return '#2a2433';
+          if (fb === 34 && bx >= 5 && bx <= 9) return ['#d7263d', '#2a6fdb', '#2e9e4a'][hash(Math.floor(lx / 22)) % 3];
+        }
+        if (fb === 26 || fb === 35 || lx % 10 === 0) return '#2a2433';
+      }
+      return null;
+    }
+    // Péniche aménagée, avec des plantes sur le toit.
+    if (x >= 20 && x <= 100 && fb < 20) {
+      const lx = x - 20;
+      if (fb < 5) return fb === 4 ? '#2a2433' : '#2f4a3a';
+      if (fb < 14 && lx > 6 && lx < 74) return (lx % 12 >= 4 && lx % 12 <= 8 && fb >= 7 && fb <= 11) ? '#ffd97a' : '#e86a2a';
+      if (fb >= 14 && fb < 16 && lx > 4 && lx < 76) return '#3b2f2a';
+      if (fb >= 16 && lx > 10 && lx < 70 && hash(lx * 3) % 3 === 0) return hash(lx * 7 + fb) % 2 ? '#3fa060' : '#ff4d6d';
+      return null;
+    }
+    // Ormes et réverbères.
+    for (const tx of [130, 360, 440]) {
+      const dx = x - tx;
+      if (Math.abs(dx) <= 1 && fb < 24) return '#4a3020';
+      if ((dx / 12) ** 2 + ((fb - 34) / 13) ** 2 <= 1) return hash(x * 7 + y * 13) % 5 === 0 ? '#4f8a45' : '#3f7a3a';
+    }
+    if (x === 400 && fb < 30) return '#2a2433';
+    if (x >= 398 && x <= 402 && fb >= 30 && fb <= 33) return fb === 33 ? '#2a2433' : '#ffd97a';
+    return null;
+  });
+  // Amsterdam, à la campagne : moulins à vent et champs de tulipes.
+  function millPix(x, fb, cx, h, sails) {
+    const dx = x - cx, hub = h + 2, R = h * 0.62;
+    // Ailes en croix, avec leur treillis.
+    const ax = dx, ay = fb - hub;
+    for (const a of [Math.PI / 4 + sails, -Math.PI / 4 + sails]) {
+      const ux = Math.cos(a), uy = Math.sin(a), along = ax * ux + ay * uy, across = -ax * uy + ay * ux;
+      if (Math.abs(along) <= R && Math.abs(along) > 2) {
+        if (Math.abs(across) <= 0.8) return '#3b2f2a';
+        if (across > 0.8 && across <= 4) return (Math.round(Math.abs(along)) % 3 === 0 || across > 3.2) ? '#3b2f2a' : '#efe6d2';
+      }
+    }
+    if (Math.hypot(dx, fb - hub) <= 1.8) return '#2a2433';
+    const half = 4 + (h - fb) * 0.12;
+    if (fb < h && Math.abs(dx) <= half) {
+      if (fb >= h - 6) return Math.abs(dx) <= half - 1 ? '#3b2f2a' : '#2a2433';
+      if (fb < 7 && Math.abs(dx) <= 1.5) return '#2a2433';
+      if (fb >= 14 && fb <= 17 && Math.abs(dx) <= 1) return '#efe6d2';
+      return Math.abs(dx) > half - 1 ? '#3b2f2a' : '#6a4a3a';
+    }
+    if (fb >= h && fb < h + 5 && Math.abs(dx) <= 4 - (fb - h) * 0.7) return '#3b2f2a';
+    return null;
+  }
+  const amsCountryFar = paintStrip(640, 80, (x, y) => {
+    const fb = 79 - y;
+    for (const [cx, h, s] of [[70, 34, 0.1], [210, 26, 0.5], [330, 40, 0.25], [470, 30, 0.7], [580, 22, 0.35]]) { const c = millPix(x, fb, cx, h, s); if (c) return c; }
+    // Petite ferme au toit de chaume.
+    if (x >= 380 && x <= 410 && fb < 18) { const d = Math.abs(x - 395); if (fb < 8) return '#9a4426'; if (fb < 8 + (15 - d) * 0.66) return '#7a6a3a'; }
+    if (fb < 3) return '#5a9a4e';
+    return null;
+  });
+  const amsCountryMid = paintStrip(480, 50, (x, y) => {
+    const fb = 49 - y;
+    const c = millPix(x, fb, 300, 34, 0.15);
+    if (c) return c;
+    // Champs de tulipes : rangées de couleurs séparées par des bandes vertes.
+    if (fb < 20) {
+      if (fb >= 18) return '#4f8ad0';
+      const band = Math.floor((x + fb * 3) / 26) % 6;
+      if (band === 5) return '#3fa060';
+      const col = ['#ff4d6d', '#ffd84a', '#ff9f43', '#c86bff', '#ff8fc1'][band];
+      return (x + fb) % 3 === 0 ? '#2e8b57' : col;
+    }
+    return null;
+  });
+
+  // Copenhague : les maisons colorées du port de Nyhavn, les mâts des voiliers et l'église du Sauveur.
+  const CPH_HOUSE = ['#f2c230', '#e86a2a', '#3a6fb8', '#d94a4a', '#e0a050', '#9cc8a8', '#f0e6d0', '#c45a8a'];
+  const cphFar = paintStrip(640, 100, (x, y) => {
+    const fb = 99 - y;
+    // Flèche torsadée de l'église du Sauveur (Vor Frelsers Kirke).
+    if (x >= 470 && x <= 486) {
+      const dx = x - 478;
+      if (fb < 56) return Math.abs(dx) <= 7 ? (fb % 14 >= 5 && fb % 14 <= 10 && Math.abs(dx) <= 2 ? '#2a2433' : '#8a3a22') : null;
+      const w = Math.max(0, (96 - fb) / 6);
+      if (fb < 96 && Math.abs(dx) <= w) return (Math.round(dx + fb * 0.6) % 4 === 0) ? '#e0c27a' : '#2f3a33';
+      if (fb < 99 && dx === 0) return '#e0c27a';
+    }
+    // Mâts et gréements des voiliers, devant les maisons.
+    for (const mx of [40, 190, 345, 540]) {
+      const dx = x - mx, mh = 54 + hash(mx) % 10;
+      if (dx === 0 && fb < mh) return '#3b2f2a';
+      if (fb < mh && fb > 30 && (Math.abs(dx * 3.2 - (mh - fb)) < 0.8 || Math.abs(-dx * 3.2 - (mh - fb)) < 0.8) && Math.abs(dx) <= 8) return '#5a4a3a';
+      if (Math.abs(dx) <= 6 && fb === mh - 12) return '#3b2f2a';
+    }
+    const i = Math.floor(x / 21), lx = x % 21;
+    const k = hash(i * 29 + 3), h = 30 + k % 16, col = CPH_HOUSE[k % CPH_HOUSE.length];
+    if (fb < 3) return '#6a6a72';
+    if (lx === 20) return fb < h ? '#2a2433' : null;
+    const d = Math.abs(lx - 9.5);
+    if (fb >= h && fb < h + 10 - d * (k % 2 ? 1 : 0.6) && fb < h + 9) return fb === h ? '#2a2433' : ((x + fb) % 3 === 0 ? '#8a2a1a' : '#b5402a');
+    if (fb >= h) return null;
+    const cy = (fb - 5) % 9;
+    if (fb >= 5 && fb < h - 2 && cy >= 2 && cy <= 7) for (const wx of [2, 8, 14]) if (lx >= wx && lx <= wx + 3) return (lx === wx || lx === wx + 3 || cy === 2 || cy === 7) ? '#ffffff' : '#2f3557';
+    return col;
+  });
+  // Le quai : bateaux en bois amarrés, bittes d'amarrage, et la Petite Sirène sur son rocher.
+  const cphMid = paintStrip(480, 56, (x, y) => {
+    const fb = 55 - y;
+    // La Petite Sirène, assise sur son rocher.
+    if (x >= 360 && x <= 420) {
+      const dx = x - 390;
+      const BRONZE = '#4f8a7a', DARK = '#356a5a';
+      if (fb < 12 && (dx / 30) ** 2 + (fb / 12) ** 2 <= 1) return hash(x * 13 + fb * 7) % 4 === 0 ? '#6a6a72' : '#8a8a92';
+      if (fb >= 11 && fb < 15 && dx >= -10 && dx <= 8) return dx > 2 ? DARK : BRONZE;
+      if (fb >= 14 && fb < 26 && dx >= -4 && dx <= 1 + (fb < 18 ? 3 : 0)) return dx === -4 ? DARK : BRONZE;
+      if ((dx + 1) ** 2 + (fb - 28) ** 2 <= 7) return BRONZE;
+      if (fb >= 25 && fb < 30 && dx >= -4 && dx <= -2) return DARK;
+      return null;
+    }
+    // Bateaux en bois, coques colorées, avec un mât.
+    for (const [bx, w, c] of [[30, 56, '#2a6fdb'], [130, 44, '#d94a4a'], [210, 60, '#2e9e4a'], [440, 36, '#f2c230']]) {
+      const lx = x - bx;
+      if (lx < 0 || lx > w) continue;
+      const curve = Math.min(lx, w - lx);
+      if (fb < 9 && curve >= (9 - fb) * 0.9) return fb === 8 ? '#efe6d2' : (fb === 3 ? '#ffffff' : c);
+      if (lx === Math.round(w * 0.45) && fb < 40) return '#3b2f2a';
+      if (fb >= 9 && fb < 13 && lx > w * 0.6 && lx < w * 0.85) return fb === 12 ? '#3b2f2a' : '#efe6d2';
+    }
+    // Bittes d'amarrage sur le quai.
+    if (fb >= 14 && fb < 18 && x % 60 >= 20 && x % 60 <= 22) return '#2a2433';
+    return null;
+  });
+
   const WORLDS = [
     { name: T('MONDE DES GLACES', 'ICE CREAM WORLD'), accent: '#ff5fa2', sky: ['#6f5bd6', '#8a6be0', '#a97ae6', '#cf8ee6', '#f0a3d9', '#ffbfd0', '#ffd9c4', '#ffeec2'] },
     { name: T('VOYAGE AU JAPON', 'TRIP TO JAPAN'), accent: '#e4572e', sky: ['#4a3f86', '#6a4f9c', '#9a62a6', '#cf7aa6', '#f096a4', '#ffb3a0', '#ffd0a6', '#ffe6c0'] },
@@ -2012,7 +2288,9 @@
     { name: T('BALADE EN SLOVENIE', 'SLOVENIAN STROLL'), accent: '#2e8b57', sky: ['#3f7fc8', '#5a95d4', '#78abdf', '#98c1e8', '#b6d5ef', '#d0e6f2', '#e4f1f0', '#f2f7e6'] },
     { name: T('HONG KONG', 'HONG KONG'), accent: '#ff4fa8', sky: ['#120f2e', '#1b1745', '#27205c', '#3a2770', '#55307a', '#7a3a80', '#a04a82', '#c45a7e'] },
     { name: T('DOLCE TOSCANA', 'DOLCE TOSCANA'), accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
-    { name: T('CAP CANAVERAL', 'CAPE CANAVERAL'), accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] }
+    { name: T('CAP CANAVERAL', 'CAPE CANAVERAL'), accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] },
+    { name: T('AMSTERDAM', 'AMSTERDAM'), accent: '#ff7a1a', sky: ['#4a78c8', '#5f8ad2', '#7a9ed9', '#98b4e0', '#b8cae6', '#d6dceb', '#eee6e6', '#fbefe0'] },
+    { name: T('COPENHAGUE', 'COPENHAGEN'), accent: '#c8102e', sky: ['#3b5ea8', '#5674b6', '#7a8fc4', '#a0a9d0', '#c4c2d8', '#e2d4dc', '#f6e2d8', '#ffeed6'] }
   ];
 
   // ---------- Écran ----------
@@ -2334,7 +2612,46 @@
     return null;
   }, '#2a1a12')));
 
-  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5, 8.5, 8];
+  // Amsterdam : le grand moulin du spectacle (ses ailes tournent, dessinées à part).
+  const bigMillC = paintStrip(30, 46, (x, y) => {
+    const fb = 45 - y, dx = x - 14.5, half = 6 + (40 - fb) * 0.16;
+    if (fb < 40 && Math.abs(dx) <= half) {
+      if (fb >= 34) return Math.abs(dx) <= half - 1.5 ? '#3b2f2a' : '#2a2433';
+      if (fb >= 18 && fb <= 19) return '#2a2433';
+      if (fb < 9 && Math.abs(dx) <= 2) return fb === 8 ? '#2a2433' : '#5a3a2a';
+      if (fb >= 24 && fb <= 28 && Math.abs(dx) <= 1.5) return fb === 26 ? '#2a2433' : '#efe6d2';
+      return Math.abs(dx) > half - 1.2 ? '#3b2f2a' : (fb % 5 === 0 ? '#5a3a2a' : '#6a4a3a');
+    }
+    if (fb >= 40 && fb < 46 && Math.abs(dx) <= 6 - (fb - 40)) return '#3b2f2a';
+    if (fb >= 17 && fb <= 19 && Math.abs(dx) <= half + 4) return '#2a2433';
+    return null;
+  });
+  const TULIPS = ['#ff4d6d', '#ffd84a', '#ff9f43', '#c86bff', '#ff8fc1', '#ffffff'];
+  // Copenhague : le drakkar viking, voile rayée, boucliers ronds et tête de dragon à la proue.
+  const drakkarC = paintStrip(70, 48, (x, y) => {
+    const fb = 47 - y;
+    // Proue en tête de dragon (à droite) et poupe en volute (à gauche).
+    if (x >= 60 && x <= 66 && fb >= 8 && fb < 26) { const dx = x - 60; if (dx <= 1 + (fb - 8) * 0.25 && fb < 22) return '#7a4a2a'; if (fb >= 20 && fb < 26 && dx >= 1 && dx <= 6) return fb === 23 && dx === 4 ? '#ffd84a' : '#7a4a2a'; }
+    if (x >= 2 && x <= 8 && fb >= 8 && fb < 22) { const r = Math.hypot(x - 5, fb - 18); if (r >= 2 && r <= 3.6 || (x >= 6 && fb < 18)) return '#7a4a2a'; }
+    // Coque en planches.
+    if (x >= 6 && x <= 62 && fb >= 2 && fb < 12) {
+      // Le fond de la coque remonte vers les deux bouts.
+      const curve = Math.min(x - 6, 62 - x);
+      if (fb >= 2 + Math.max(0, 6 - curve * 0.5)) return fb % 3 === 0 ? '#5a3a20' : '#8a5a34';
+    }
+    // Boucliers sur le flanc.
+    for (let k = 0; k < 7; k++) {
+      const cx = 13 + k * 7, r = Math.hypot(x - cx, fb - 11);
+      if (r <= 2.8) return r <= 0.9 ? '#e0c27a' : ['#d7263d', '#ffd84a', '#2a6fdb'][k % 3];
+    }
+    // Mât et voile rayée rouge et blanc, gonflée par le vent.
+    if (x === 34 && fb >= 12 && fb < 46) return '#5a3a20';
+    const billow = Math.sin(((fb - 18) / 26) * Math.PI) * 3;
+    if (fb >= 18 && fb < 44 && x >= 20 - billow * 0.3 && x <= 48 + billow) return Math.floor((x - 20) / 4) % 2 ? '#ffffff' : '#d7263d';
+    if (fb === 44 && x >= 18 && x <= 50) return '#5a3a20';
+    return null;
+  });
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5, 8.5, 8, 0, 8, 9];
   let ev = null, evSeg = -1, evFx = [], shake = 0;
   let reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
@@ -2351,6 +2668,8 @@
     evFx = [];
     Sound.event(w);
   }
+  // Le grand moulin d'Amsterdam traverse le décor de droite à gauche ; millPos donne le moyeu de ses ailes.
+  const millPos = (t, dur) => { const K = evK(), s = K + 1; return [W + 60 * K - (t / dur) * (W + 160 * K), Math.round(groundY()) - 28 * s]; };
   const palioStreet = () => Math.round(H * 0.82 - (camY - camBase()) * 0.3) + 2 * evK();
   // Les chevaux du Palio dépassent le personnage, chacun à sa vitesse.
   const paliox = (t, dur, i) => -60 * evK() + (t / dur) * (W + 300 * evK()) * (0.9 + (i % 3) * 0.08) - i * 34 * evK() + Math.sin(t * 2 + i * 1.7) * 6 * evK();
@@ -2383,6 +2702,13 @@
           }
         }
       }
+    } else if (ev.w === 10 && ev.t > 1 && ev.t < dur - 1.2) {
+      // Le moulin souffle des pétales de tulipes sur tout l'écran.
+      const K = evK(), [mx, my] = millPos(ev.t, dur);
+      const petal = (x, y, vx, vy) => evFx.push({ x, y, vx, vy, life: rand(2.5, 4), max: 4, s: K, col: TULIPS[(Math.random() * TULIPS.length) | 0], g: 10 * K });
+      for (let i = 0; i < 3; i++) petal(mx + rand(-30, 30) * K, my + rand(-30, 30) * K, -rand(50, 130) * K, rand(-30, 20) * K);
+      // … et une pluie de pétales qui tombe sur tout l'écran.
+      for (let i = 0; i < 2; i++) petal(rand(0, W + 40), safe.t - 4, -rand(10, 40) * K, rand(15, 40) * K);
     } else if (ev.w === 8 && ev.t > 0.6 && ev.t < dur - 0.5 && Math.random() < 0.5) {
       // Poussière soulevée par les sabots.
       const K = evK(), x = paliox(ev.t, dur, (Math.random() * 6) | 0) + 8 * K;
@@ -2503,6 +2829,36 @@
       }
       const hd = dragonHeadFrames[Math.floor(t * 3) % 2];
       ctx.drawImage(hd, x0 - 4 * s, wave(-1.5) - 15 * s, hd.width * s, hd.height * s);
+    } else if (ev.w === 10) {
+      // Le grand moulin : la tour, puis quatre ailes à treillis qui tournent.
+      const s = K + 1, [hx, hy] = millPos(t, dur);
+      ctx.drawImage(bigMillC, Math.round(hx - 15 * s), Math.round(hy - 6 * s), bigMillC.width * s, bigMillC.height * s);
+      ctx.save();
+      ctx.translate(Math.round(hx), Math.round(hy));
+      ctx.rotate(-t * 1.6);
+      for (let k = 0; k < 4; k++) {
+        ctx.rotate(Math.PI / 2);
+        ctx.fillStyle = '#3b2f2a'; ctx.fillRect(-s / 2, 2 * s, s, 30 * s);
+        ctx.fillStyle = '#efe6d2'; ctx.fillRect(s / 2, 6 * s, 5 * s, 25 * s);
+        ctx.fillStyle = '#3b2f2a';
+        for (let j = 6; j <= 30; j += 4) ctx.fillRect(s / 2, j * s, 5 * s, Math.max(1, s / 2));
+        ctx.fillRect(5.5 * s, 6 * s, Math.max(1, s / 2), 25 * s);
+      }
+      ctx.restore();
+      ctx.fillStyle = '#2a2433'; ctx.fillRect(Math.round(hx - s), Math.round(hy - s), 2 * s, 2 * s);
+    } else if (ev.w === 11) {
+      // Le drakkar viking traverse le port, ses rames battent l'eau en cadence.
+      const s = K + 1, water = Math.round(H * 0.62 - (camY - camBase()) * 0.12) + 10 * K;
+      const x = Math.round(-80 * s + u * (W + 160 * s)), y = water - drakkarC.height * s + 4 * s + Math.round(Math.sin(t * 2.4) * K);
+      const row = Math.sin(t * 5);
+      ctx.fillStyle = '#5a3a20';
+      for (let k = 0; k < 7; k++) {
+        const ox = x + (12 + k * 7) * s, oy = y + 40 * s;
+        for (let j = 0; j < 9; j++) ctx.fillRect(Math.round(ox + (j * (0.6 + row * 0.5)) * s), Math.round(oy + j * s), s, s);
+      }
+      ctx.drawImage(drakkarC, x, y, drakkarC.width * s, drakkarC.height * s);
+      ctx.fillStyle = '#cfe4f2';
+      for (let k = 0; k < 6; k++) ctx.fillRect(x - (6 + k * 7) * s, water + (k % 2) * s, 4 * s, s);
     } else if (ev.w === 8) {
       // Le Palio : six chevaux au galop.
       const s = K + 1, street = palioStreet();
@@ -2546,9 +2902,9 @@
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
-  // Une partie = 4 mondes tirés au hasard parmi 8, puis le départ en fusée à Cap Canaveral (9).
+  // Une partie = 4 mondes tirés au hasard parmi 10, puis le départ en fusée à Cap Canaveral (9).
   // Le 5 est le Pays des Bonbons (niveau bonus).
-  const MAIN_WORLDS = [0, 1, 2, 3, 4, 6, 7, 8], ROUTE_LEN = 4, LAUNCH_WORLD = 9;
+  const MAIN_WORLDS = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11], ROUTE_LEN = 4, LAUNCH_WORLD = 9;
   const BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
   let route = [0], launch = null, launchEnd = false;
   function pickRoute() {
@@ -2635,7 +2991,7 @@
       const top = clamp(Math.round(lastTop + rand(-10, 30)), -60, 60);
       const gap = gapFor(top - lastTop);
       const pl = addPlatform({ x: last.x + last.w + gap, w: Math.round(rand(40, 64)), top, depth: 14, tramp: true });
-      pl.s = 30;
+      pl.s = TRAMP_S;
       addGems(last, pl, gap);
       for (let k = 0; k < 4; k++) gems.push({ x: pl.x + pl.w / 2 + k * 14, y: top - 60 - k * 6, ph: Math.random() * 6 });
       return;
@@ -3544,6 +3900,32 @@
       drawStrip(tuscFar, 0.1, far, '#4f7a8a');
       drawWater(far, '#4f7a8a', '#fff4c0');
       drawStrip(tuscMid, 0.3, H * 0.82 - vOff * 0.3, '#c08a5a');
+    } else if (world === 10) {
+      // Amsterdam : la ville et ses canaux, puis la campagne à partir du milieu du monde.
+      drawDisc(goldSunC, W * 0.76, H * 0.2);
+      drawBgClouds();
+      const d = Math.max(0, Math.floor((player.x - distStart) / 16)) % WORLD_EVERY, k = clamp((d - 45) / 10, 0, 1);
+      const far = H * 0.64 - vOff * 0.12;
+      if (k < 1) {
+        ctx.globalAlpha = 1 - k;
+        drawStrip(amsCityFar, 0.1, far, '#3d5f7a');
+        drawWater(far, '#3d5f7a', '#bcd6ea');
+        drawStrip(amsCityMid, 0.3, H * 0.84 - vOff * 0.3, '#3d5f7a');
+      }
+      if (k > 0) {
+        ctx.globalAlpha = k;
+        drawStrip(amsCountryFar, 0.1, H * 0.7 - vOff * 0.12, '#5a9a4e');
+        drawStrip(amsCountryMid, 0.3, H * 0.86 - vOff * 0.3, '#3fa060');
+      }
+      ctx.globalAlpha = 1;
+    } else if (world === 11) {
+      // Copenhague : Nyhavn, ses maisons colorées et ses voiliers.
+      drawDisc(goldSunC, W * 0.2, H * 0.2);
+      drawBgClouds();
+      const far = H * 0.62 - vOff * 0.12;
+      drawStrip(cphFar, 0.1, far, '#2f5a7a');
+      drawWater(far, '#2f5a7a', '#cfe4f2');
+      drawStrip(cphMid, 0.3, H * 0.86 - vOff * 0.3, '#2f5a7a');
     } else if (world === 9) {
       drawBgClouds();
       drawStrip(capeFar, 0.1, H * 0.72 - vOff * 0.12, '#4f7a4a');
@@ -4490,8 +4872,8 @@
   }
 
   // ---------- Carnet de voyage : un tampon par monde traversé, comme les tampons des gares japonaises ----------
-  // Ordre des pages : les 8 mondes, Cap Canaveral (au décollage), puis le Pays des Bonbons (sur la Lune).
-  const STAMP_ORDER = [0, 1, 2, 3, 4, 6, 7, 8, 9, 5];
+  // Ordre des pages : les 10 mondes, Cap Canaveral (au décollage), puis le Pays des Bonbons (sur la Lune).
+  const STAMP_ORDER = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11, 9, 5];
   const STAMP_INFO = {
     0: { fr: 'GLACES', en: 'ICE CREAM', ink: '#d93d78', frame: 'circle' },
     1: { fr: 'JAPON', en: 'JAPAN', ink: '#c8102e', frame: 'rect' },
@@ -4502,6 +4884,8 @@
     7: { fr: 'HONG KONG', en: 'HONG KONG', ink: '#b3127a', frame: 'circle' },
     8: { fr: 'TOSCANE', en: 'TUSCANY', ink: '#b5532a', frame: 'rect' },
     9: { fr: 'CANAVERAL', en: 'CANAVERAL', ink: '#0e7490', frame: 'octa' },
+    10: { fr: 'AMSTERDAM', en: 'AMSTERDAM', ink: '#9c2a1a', frame: 'octa' },
+    11: { fr: 'COPENHAGUE', en: 'COPENHAGEN', ink: '#0f5f8f', frame: 'circle' },
     5: { fr: 'BONBONS', en: 'CANDY LAND', ink: '#e46a1a', frame: 'circle' }
   };
   // Monuments des tampons, dessinés en formes simples sur 80 × 80 (encre = noir, « gomme » = blanc du papier).
@@ -4593,6 +4977,30 @@
       ink(() => { g.rect(36, 48, 6, 4); });
       ink(() => { for (const [x, r] of [[20, 6], [29, 7], [40, 8], [51, 7], [60, 6]]) { g.moveTo(x + r, 58); g.arc(x, 58, r, 0, Math.PI * 2); } });
       cut(() => { g.arc(29, 57, 3, 0, Math.PI * 2); g.moveTo(53, 57); g.arc(51, 57, 2.5, 0, Math.PI * 2); });
+    },
+    // Amsterdam : trois maisons à pignons au bord du canal, et un pont en arche.
+    10: (g, ink, cut) => {
+      ink(() => { g.rect(14, 26, 16, 26); g.moveTo(14, 26); g.quadraticCurveTo(14, 16, 22, 14); g.quadraticCurveTo(30, 16, 30, 26); g.rect(21, 11, 2, 4); });
+      ink(() => { g.rect(31, 20, 18, 32); g.rect(33, 16, 14, 4); g.rect(35, 12, 10, 4); g.rect(37, 8, 6, 4); g.rect(39.5, 5, 1, 3); });
+      ink(() => { g.rect(50, 28, 16, 24); g.moveTo(50, 28); g.lineTo(58, 17); g.lineTo(66, 28); });
+      cut(() => { for (const [x0, y0, y1] of [[16, 28, 50], [33, 22, 50], [52, 30, 50]]) for (let y = y0; y < y1 - 4; y += 7) for (let x = x0; x < x0 + 12; x += 5) g.rect(x, y, 3, 4); g.rect(38.5, 13, 3, 2); });
+      ink(() => { g.rect(8, 52, 64, 3); });
+      cut(() => { g.arc(40, 60, 9, Math.PI, 0); });
+      ink(() => { g.arc(40, 60, 11, Math.PI, 0); }, 1.6, true);
+      ink(() => { for (const x of [12, 22, 54, 64]) { g.moveTo(x, 60); g.lineTo(x + 5, 60); } }, 1.4, true);
+    },
+    // Copenhague : la Petite Sirène assise sur son rocher, et les vagues.
+    11: (g, ink, cut) => {
+      ink(() => { g.ellipse(40, 56, 24, 8, 0, Math.PI, 0); g.rect(16, 55, 48, 3); });
+      cut(() => { g.moveTo(24, 53); g.lineTo(30, 51); g.moveTo(46, 50); g.lineTo(54, 53); }, 1.2, true);
+      ink(() => { g.moveTo(28, 50); g.quadraticCurveTo(41, 55, 52, 47); g.lineTo(58, 42); g.lineTo(57, 48); g.lineTo(62, 50); g.lineTo(53, 51); g.quadraticCurveTo(41, 58, 28, 54); g.closePath(); });
+      ink(() => { g.moveTo(30, 50); g.lineTo(33, 32); g.quadraticCurveTo(37, 28, 42, 31); g.lineTo(44, 49); g.closePath(); });
+      ink(() => { g.arc(37, 24, 5, 0, Math.PI * 2); });
+      ink(() => { g.moveTo(33, 21); g.quadraticCurveTo(29, 28, 32, 36); }, 2.4, true);
+      ink(() => { g.moveTo(42, 33); g.lineTo(47, 42); }, 2.6, true);
+      cut(() => { g.moveTo(36, 36); g.quadraticCurveTo(38, 40, 36, 46); }, 1, true);
+      ink(() => { g.arc(60, 18, 6, 0, Math.PI * 2); });
+      ink(() => { for (const y of [62, 66]) for (let x = 12 + (y === 66 ? 5 : 0); x < 68; x += 10) { g.moveTo(x, y); g.lineTo(x + 6, y); } }, 1.5, true);
     },
     // Pays des Bonbons : une grande sucette en spirale avec son nœud, et des étoiles.
     5: (g, ink, cut) => {

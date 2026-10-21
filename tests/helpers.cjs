@@ -9,7 +9,7 @@ const FIX = path.join(__dirname, 'fixtures');
 const COPY = path.join(ROOT, '.test-index.html');
 const HOOK_AT = "  window.addEventListener('pointerdown', e => {";
 const HOOKS = "  window.__t = { openGallery, newDoudou, openCreator, photoToRows, makeSprite, OUT, earnStamp, openCarnet, stampArt };\n" +
-  "  window.__g = { get launch() { return launch; }, get gems() { return gems; }, get player() { return player; }, get camX() { return camX; }, get PX() { return PX; } };\n";
+  "  window.__g = { get launch() { return launch; }, get gems() { return gems; }, get player() { return player; }, get camX() { return camX; }, get PX() { return PX; }, setWorld(w) { genWorld = w; switchWorld(w); }, startEvent(w) { startEvent(w); }, set distStart(v) { distStart = v; }, set route(r) { route = r; }, get dist() { return Math.floor((player.x - distStart) / 16); } };\n";
 
 function makeCopy() {
   const src = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
