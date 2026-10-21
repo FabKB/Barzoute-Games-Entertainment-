@@ -55,7 +55,7 @@ Chaque mode garde son propre record.
 
 ### Les mondes
 
-Chaque partie traverse **4 mondes tirés au hasard** parmi les 10 ci-dessous, à raison de 100 m par monde. Entre deux mondes, un rideau de nuages traverse l'écran, puis un avion passe avec une banderole au nom du nouveau monde, et la musique change.
+Chaque partie traverse **4 mondes tirés au hasard** parmi les 11 ci-dessous, à raison de 100 m par monde. Entre deux mondes, un rideau de nuages traverse l'écran, puis un avion passe avec une banderole au nom du nouveau monde, et la musique change.
 
 - **Monde des Glaces** : plateformes en sucreries, arc-en-ciel, pop sucrée.
 - **Voyage au Japon** : mont Fuji, pagode de Chureito, château de Himeji, forêt de bambous avec de petits torii, pétales de cerisier ; musique pentatonique avec koto et taiko.
@@ -67,6 +67,7 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 10 ci-dessous, à
 - **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; les hautes tours de San Gimignano ; la tour penchée de Pise et son baptistère ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
 - **Amsterdam** : d'abord la ville, avec ses maisons étroites à pignons (à gradins, en cloche, pointus) le long du canal, la Westerkerk et sa couronne bleue et or, un pont en briques avec des vélos garés, des ormes et une péniche fleurie ; puis, à partir du milieu du monde, la campagne avec ses moulins à vent et ses champs de tulipes en bandes de couleurs ; plateformes en briques hollandaises, en gouda et en parterres de tulipes ; air d'orgue de Barbarie.
 - **Copenhague** : le port de Nyhavn et ses maisons colorées aux toits de tuiles, les mâts des voiliers, la flèche torsadée de l'église du Sauveur, des bateaux en bois amarrés et la Petite Sirène sur son rocher ; plateformes en façades de bois peint, en briques de construction et en viennoiserie danoise ; chant de marins à la flûte et à l'accordéon.
+- **Île des Pirates** (monde imaginaire) : d'abord le port des pirates, avec ses maisons en bois sur pilotis, ses lanternes et ses enseignes, des navires aux drapeaux à tête de mort rigolote, un ponton avec tonneaux, caisses, cordages et un perroquet ; puis, à partir du milieu du monde, l'île au trésor : eau turquoise, colline et palmiers, un rocher en forme de crâne qui sourit, un galion au loin, et sur la plage un coffre au trésor ouvert, la croix rouge, une pelle et un crabe ; plateformes en planches de pont, en sable à coquillages et en coffres au trésor ; dans ce monde, les étoiles deviennent des **pièces d'or** (elles comptent pareil) ; gigue de pirates façon console.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
@@ -80,6 +81,7 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 10 ci-dessous, à
 - **Toscane** : les chevaux du Palio de Sienne passent au galop, chaque jockey aux couleurs de son quartier.
 - **Amsterdam** : un moulin géant traverse le décor en faisant tourner ses ailes et souffle une pluie de pétales de tulipes sur tout l'écran.
 - **Copenhague** : un drakkar viking à la voile rayée rouge et blanc, avec ses boucliers ronds et sa proue en tête de dragon, traverse le port au rythme de ses rames ; on entend le cor et le tambour des rameurs.
+- **Île des Pirates** : un gentil kraken rose sort de l'eau, agite ses tentacules, roule de grands yeux, cligne et fait des bulles, puis replonge.
 
 ### La fin : le décollage à Cap Canaveral
 
@@ -103,7 +105,7 @@ Pour l'essayer sans attendre : ajoute `#bonus` à la fin de l'adresse du jeu, ou
 
 Sur l'écran titre, le bouton **carnet** (en haut à droite, à côté du son) ouvre le carnet de voyage : un tampon par lieu, à la manière des tampons qu'on trouve dans les gares et les musées au Japon. Chaque tampon a sa couleur d'encre, son cadre (rond, carré ou octogonal), son monument et son nom.
 
-- Les **10 mondes** : le tampon est gagné quand on traverse le monde jusqu'au bout (en ZEN comme en DÉFI).
+- Les **11 mondes** : le tampon est gagné quand on traverse le monde jusqu'au bout (en ZEN comme en DÉFI).
 - **Cap Canaveral** : au décollage de la fusée.
 - **Pays des Bonbons** : en arrivant sur la Lune dans le niveau bonus.
 

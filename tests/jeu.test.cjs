@@ -62,17 +62,17 @@ test("relit le stockage de l'app au lancement et y envoie les sauvegardes", asyn
   await ctx.close();
 });
 
-test('Amsterdam et Copenhague : décors, spectacles et tampons sans erreur', { timeout: 10 * 60 * 1000 }, async () => {
+test('Amsterdam, Copenhague et les Pirates : décors, spectacles et tampons sans erreur', { timeout: 10 * 60 * 1000 }, async () => {
   const { ctx, page, errs } = await open(browser, { viewport: { width: 844, height: 390 } });
   await page.clock.install();
   await page.goto(URL); await page.clock.runFor(1200);
   await page.keyboard.press('Space');
-  await page.evaluate(() => { __g.route = [10, 11, 0, 1]; });
-  for (let i = 0; i < 900 && (await page.evaluate(() => __g.dist)) < 205; i++) {
+  await page.evaluate(() => { __g.route = [10, 11, 12, 0]; });
+  for (let i = 0; i < 1400 && (await page.evaluate(() => __g.dist)) < 305; i++) {
     await page.keyboard.down('Space'); await page.clock.runFor(150); await page.keyboard.up('Space'); await page.clock.runFor(250);
   }
   const stamps = await page.evaluate(() => JSON.parse(localStorage.getItem('glace-licorne:tampons') || '[]'));
-  assert.deepEqual(stamps, [10, 11], 'tampons d\'Amsterdam puis de Copenhague : ' + stamps);
+  assert.deepEqual(stamps, [10, 11, 12], 'tampons d\'Amsterdam, de Copenhague puis des Pirates : ' + stamps);
   assert.deepEqual(errs, []);
   await ctx.close();
 });

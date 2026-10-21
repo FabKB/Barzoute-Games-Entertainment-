@@ -248,7 +248,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v40';
+  const VERSION = 'v41';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -525,6 +525,22 @@
         ],
         bassPat: [0, null, null, 7, null, null],
         drums: { kick: [0, 6], hat: 3 }
+      }),
+      song({ // Île des Pirates : gigue de pirates en ré mineur, façon console (composition originale)
+        bpm: 176, spb: 12, lead: LEAD, bass: BASS, stab: STAB, stabs: [3, 9],
+        chords: {
+          Dm: { b: 50, a: [57, 62, 65, 69] }, C: { b: 48, a: [55, 60, 64, 67] }, Bb: { b: 46, a: [53, 58, 62, 65] },
+          A7: { b: 45, a: [57, 61, 64, 67] }, F: { b: 41, a: [53, 57, 60, 65] }, Gm: { b: 43, a: [55, 58, 62, 67] }
+        },
+        prog: ['Dm', 'Dm', 'C', 'C', 'Bb', 'Bb', 'A7', 'A7', 'Dm', 'Dm', 'F', 'C', 'Gm', 'Dm', 'A7', 'Dm'],
+        mel: [
+          'A5 - D6 D6 - E6', 'F6 - E6 D6 - A5', 'G5 - C6 C6 - D6', 'E6 - D6 C6 - G5',
+          'F5 - A#5 A#5 - C6', 'D6 - C6 A#5 - F5', 'E5 - A5 C#6 - E6', 'A6 - - E6 - .',
+          'D6 - F6 A6 - F6', 'D7 - A6 F6 - D6', 'C6 - F6 A6 - C7', 'G6 - E6 C6 - E6',
+          'D6 - G6 A#6 - G6', 'F6 - D6 A5 - D6', 'C#6 E6 G6 E6 C#6 A5', 'D6 - - - . .'
+        ],
+        bassPat: [0, null, null, 7, null, null],
+        drums: { kick: [0, 6], snare: [3, 9], hat: 3 }
       })
     ];
     let cur = SONGS[0];
@@ -759,6 +775,11 @@
           // Le drakkar : cor viking, puis le tambour qui donne la cadence aux rameurs.
           [0.3, 1.6].forEach(f => fm(sfx, t + f, mtof(n2m('D3')), 1.1, Object.assign({}, BRASS, { vol: 0.16 })));
           for (let k = 0; k * 0.8 < EVENT_DUR[11] - 3; k++) drum(t + 3 + k * 0.8, 70, 45, 0.3, 0.4);
+        } else if (w === 12) {
+          // Le kraken : un grand « plouf », des bulles qui font « blop », puis le plongeon.
+          noiseSweep(t + 0.2, 1, 1800, 300, 0.12, 'lowpass');
+          for (let k = 0; k < 12; k++) fm(sfx, t + 1.2 + k * 0.42, mtof(64 + ((k * 5) % 12)), 0.1, Object.assign({}, BELL, { vol: 0.08, glide: 1.6 }));
+          noiseSweep(t + EVENT_DUR[12] - 1.2, 1, 300, 1800, 0.1, 'lowpass');
         } else if (w === 8) {
           // Le Palio : galop des chevaux et clameur de la foule.
           for (let k = 0; k * 0.14 < EVENT_DUR[8] - 1.5; k++) drum(t + 0.8 + k * 0.14 + (k % 2) * 0.03, 900, 650, 0.04, 0.12);
@@ -908,6 +929,10 @@
   if (!heroId) heroId = store.get('perso', '0') === '4' && store.get('doudou-sel', '') ? store.get('doudou-sel', '') : 'glace';
   const hero = () => roster().find(c => c.id === heroId) || CHARS[0];
   const sprStar = makeSprite(STAR);
+  // Sur l'Île des Pirates, les étoiles deviennent des pièces d'or (elles comptent pareil).
+  const sprCoin = makeSprite(['..OOO..', '.OYYYO.', 'OYWYYyO', 'OYYOYyO', 'OYYYYyO', '.OyyyO.', '..OOO..']);
+  const PIRATE_WORLD = 12;
+  const gemSpr = () => (world === PIRATE_WORLD ? sprCoin : sprStar);
 
   function makeCloud(w, h, seed, cols) {
     const [cTop, cBottom, cEdge] = cols || ['#ffffff', '#f3e6ff', '#d9c6f0'];
@@ -1285,6 +1310,38 @@
     { // viennoiserie danoise feuilletée et son glaçage
       top: ['#ffffff', '#f4ead8', '#d8c4a0'], drip: true, deep: '#a8642a',
       body(x, y) { const b = (y - 6) % 6; return b === 0 ? '#c27a3a' : b === 1 ? '#f0c27a' : (hash(x * 7 + y) % 13 === 0 ? '#8a3a20' : '#e0a050'); }
+    },
+    // Île des Pirates
+    { // planches du pont d'un bateau, avec leurs clous
+      top: ['#c08a5a', '#8a5a34', '#5a3a20'], deep: '#3e2614',
+      body(x, y) {
+        const row = ((y - 6) / 5) | 0, seam = (x + row * 9) % 24;
+        if ((y - 6) % 5 === 0) return '#5a3a20';
+        if (seam === 0) return '#5a3a20';
+        if ((seam === 2 || seam === 22) && (y - 6) % 5 === 2) return '#c9c2b4';
+        return row % 2 ? '#9a6a3e' : '#8a5a34';
+      }
+    },
+    { // sable doré, coquillages et étoiles de mer
+      top: ['#ffffff', '#cdeef0', '#f2dca0'], deep: '#c9a860',
+      topPat(x, y) { return y <= 2 ? (Math.sin(x * 0.7) > -0.2 ? '#ffffff' : '#cdeef0') : (y === 5 ? '#d9b870' : '#f2dca0'); },
+      body(x, y) {
+        const k = hash(x * 31 + y * 17), cell = hash(((x / 11) | 0) * 7 + (((y - 6) / 9) | 0) * 13);
+        const cx = x % 11 - 5, cy = (y - 6) % 9 - 4;
+        if (cell % 9 === 0 && cx * cx + cy * cy <= 3) return cy < 0 ? '#ff9ab0' : '#f27a94';
+        if (cell % 9 === 1 && (Math.abs(cx) + Math.abs(cy) <= 1 || (Math.abs(cx) === Math.abs(cy) && Math.abs(cx) <= 2))) return '#ff8a3d';
+        return k % 11 === 0 ? '#d9b870' : (k % 13 === 0 ? '#fff0c0' : '#e8cf8f');
+      }
+    },
+    { // coffre au trésor : bois sombre, ferrures dorées, pièces sur le couvercle
+      top: ['#fff2a0', '#ffd84a', '#c9952a'], deep: '#3e2614',
+      topPat(x, y) { const cx = x % 5; return y <= 2 ? ((cx === 1 || cx === 2) && y >= 1 ? '#fff2a0' : '#e9a42a') : (y === 5 ? '#c9952a' : '#ffd84a'); },
+      body(x, y) {
+        const cx = x % 22;
+        if (cx >= 9 && cx <= 11) return cx === 10 ? '#ffe45c' : '#c9952a';
+        if (cx >= 18 && cx <= 20 && (y - 6) % 14 >= 4 && (y - 6) % 14 <= 8) return (cx === 19 && (y - 6) % 14 === 6) ? '#2a1a12' : '#e9a42a';
+        return (y - 6) % 7 === 0 ? '#4a2a16' : '#6a3e20';
+      }
     },
     { // trampoline en guimauve
       top: ['#ffffff', '#ffe3ee', '#f2b8cf'], deep: '#f2b8cf',
@@ -2097,6 +2154,133 @@
     return null;
   });
 
+  // Île des Pirates, le port : maisons en bois sur pilotis, lanternes, enseignes, et des navires
+  // dont les drapeaux portent une tête de mort rigolote.
+  function jollyFlag(x, fb, fx, fy) {
+    const lx = x - fx, ly = fy - fb;
+    if (lx < 0 || lx > 8 || ly < 0 || ly > 5) return null;
+    if ((lx === 3 || lx === 5) && ly === 2) return '#2a2433';
+    if (lx >= 2 && lx <= 6 && ly >= 1 && ly <= 3) return '#ffffff';
+    if (ly === 4 && (lx === 3 || lx === 5)) return '#ffffff';
+    return '#2a2433';
+  }
+  const pirPortFar = paintStrip(640, 100, (x, y) => {
+    const fb = 99 - y;
+    // Navires amarrés : coque, mâts, voiles roulées et drapeau.
+    for (const sx of [80, 330, 560]) {
+      const lx = x - sx;
+      if (lx >= -30 && lx <= 30) {
+        if (fb < 12 && Math.abs(lx) <= 30 - (12 - fb) * 0.9) return fb === 11 ? '#e9a42a' : (fb % 4 === 0 ? '#3e2614' : '#5a3a20');
+        for (const mx of [-12, 8]) {
+          if (lx === mx && fb < 66 + (mx > 0 ? 6 : 0)) return '#3e2614';
+          if (Math.abs(lx - mx) <= 9 && (fb === 40 || fb === 56) ) return '#5a3a20';
+          if (Math.abs(lx - mx) <= 8 && (fb === 41 || fb === 57)) return '#efe6d2';
+        }
+        const f = jollyFlag(x, fb, sx + 8, 76);
+        if (f) return f;
+      }
+    }
+    // Maisons sur pilotis.
+    const i = Math.floor(x / 26), lx = x % 26, k = hash(i * 41 + 7), h = 34 + k % 18;
+    if (lx >= 2 && lx <= 23) {
+      if (fb < 14) return (lx === 4 || lx === 12 || lx === 21) ? '#3e2614' : null;
+      if (fb === 14 || fb === 15) return '#5a3a20';
+      const roof = fb - h, d = Math.abs(lx - 12.5);
+      if (roof >= 0 && roof < 9 - d * 0.7) return (roof + lx) % 3 === 0 ? '#6a4a2a' : ['#8a3a22', '#4a5a3a', '#6a4a7a'][k % 3];
+      if (fb < h) {
+        if ((fb - 18) % 10 >= 2 && (fb - 18) % 10 <= 6 && (lx % 8 >= 3 && lx % 8 <= 5)) return hash(i * 5 + fb) % 3 ? '#ffd97a' : '#ffb347';
+        if (k % 4 === 0 && fb >= h - 8 && fb <= h - 4 && lx >= 7 && lx <= 18) return fb === h - 6 && lx >= 9 && lx <= 16 ? '#e9a42a' : '#3e2614';
+        return lx % 4 === 0 ? '#6a3e20' : ['#9a6a3e', '#8a5a34', '#a8784a'][k % 3];
+      }
+    }
+    return null;
+  });
+  // Le ponton : planches, tonneaux, caisses, cordages, une lanterne et un perroquet.
+  const pirPortMid = paintStrip(480, 56, (x, y) => {
+    const fb = 55 - y;
+    // Perroquet sur le poteau.
+    if (x >= 296 && x <= 302 && fb >= 26 && fb < 36) {
+      const lx = x - 296, ly = fb - 26;
+      if (ly >= 7 && lx >= 2 && lx <= 5) return lx === 4 && ly === 8 ? '#2a2433' : (lx === 5 && ly === 7 ? '#ffd84a' : '#d7263d');
+      if (ly >= 2 && ly < 7 && lx >= 1 && lx <= 4) return lx === 1 ? '#2a6fdb' : (ly < 4 ? '#2e9e4a' : '#d7263d');
+      if (ly < 2 && lx >= 0 && lx <= 2) return '#2a6fdb';
+    }
+    if (fb < 10) return x % 30 >= 14 && x % 30 <= 16 ? '#3e2614' : null;
+    if (fb < 13) return x % 9 === 0 ? '#5a3a20' : (fb === 12 ? '#a8784a' : '#8a5a34');
+    // Tonneaux.
+    for (const bx of [40, 52, 200, 420]) {
+      const dx = x - bx;
+      if (Math.abs(dx) <= 5 && fb < 26) { if (fb === 16 || fb === 22) return '#3b3a4a'; return Math.abs(dx) === 5 ? '#5a3a20' : (dx % 3 === 0 ? '#7a4a2a' : '#9a6a3e'); }
+    }
+    // Caisses.
+    for (const cx of [120, 360]) {
+      const dx = x - cx;
+      if (dx >= 0 && dx <= 14 && fb < 27) return (dx === 0 || dx === 14 || fb === 13 || fb === 26 || dx === fb - 13 || dx === 27 - fb) ? '#6a4a2a' : '#c08a5a';
+    }
+    // Poteaux, cordage et lanterne.
+    if ((x === 300 || x === 250) && fb < 26) return '#3e2614';
+    if (x >= 250 && x <= 300 && Math.abs(fb - (24 - Math.sin(((x - 250) / 50) * Math.PI) * 5)) < 0.8) return '#c9b48a';
+    if (x === 250 && fb >= 26 && fb < 30) return '#3e2614';
+    if (x >= 247 && x <= 253 && fb >= 30 && fb < 36) return (x === 247 || x === 253 || fb === 30 || fb === 35) ? '#2a2433' : '#ffd97a';
+    return null;
+  });
+  // Île des Pirates, l'île au trésor : l'île au rocher en forme de crâne rigolo, et un galion au loin.
+  const pirIslandFar = paintStrip(640, 90, (x, y) => {
+    const fb = 89 - y;
+    // Galion aux voiles blanches.
+    if (x >= 470 && x <= 540) {
+      const lx = x - 505;
+      if (fb < 10 && Math.abs(lx) <= 32 - (10 - fb) * 1.2) return fb === 9 ? '#e9a42a' : '#5a3a20';
+      if (fb >= 10 && fb < 14 && lx >= 18 && lx <= 32) return '#5a3a20';
+      for (const mx of [-14, 0, 14]) {
+        if (lx === mx && fb < 50) return '#3e2614';
+        const sw = 9 - Math.abs(mx) * 0.15;
+        for (const [y0, y1] of [[16, 28], [30, 42]]) if (fb >= y0 && fb < y1 && Math.abs(lx - mx) <= sw - (fb - y0) * 0.2) return (fb === y0 || fb === y1 - 1) ? '#c9c2b4' : '#ffffff';
+      }
+      const f = jollyFlag(x, fb, 505, 56);
+      if (f) return f;
+    }
+    // L'île : sable, colline verte et palmiers, et le rocher-crâne qui sourit.
+    const ix = x - 260;
+    if (ix >= -120 && ix <= 140) {
+      const hill = 26 * Math.exp(-(((ix + 30) / 70) ** 2));
+      const skull = ((ix - 60) / 26) ** 2 + ((fb - 22) / 24) ** 2 <= 1;
+      if (skull) {
+        const ex = ix - 60;
+        if (((ex + 9) ** 2 + (fb - 28) ** 2 <= 20) || ((ex - 9) ** 2 + (fb - 28) ** 2 <= 20)) return '#2a2433';
+        if (Math.abs(ex) <= 2 && fb >= 18 && fb <= 22) return '#2a2433';
+        if (fb >= 10 && fb <= 13 && Math.abs(ex) <= 12 && Math.abs(fb - (11.5 - Math.cos(ex / 12 * 1.4) * 1.5)) < 1) return '#2a2433';
+        return (ex + fb) % 9 === 0 ? '#9a9aa8' : '#b8b8c4';
+      }
+      if (fb < 4) return '#f2dca0';
+      if (fb < 4 + hill) return (ix + fb * 3) % 11 === 0 ? '#2f7a4a' : '#3f8a4a';
+      for (const cx of [-90, -50, 0]) { const c = palmPix(x, fb - 4 - 26 * Math.exp(-(((cx + 30) / 70) ** 2)), 260 + cx, 18); if (c) return c; }
+    }
+    return null;
+  });
+  // La plage : palmiers, coffre au trésor ouvert, la croix rouge sur le sable, une pelle et un crabe.
+  const pirIslandMid = paintStrip(480, 56, (x, y) => {
+    const fb = 55 - y;
+    for (const [cx, h] of [[30, 36], [130, 30], [420, 38]]) { const c = palmPix(x, fb - 8, cx, h); if (c) return c; }
+    // Coffre au trésor ouvert, plein de pièces.
+    if (x >= 200 && x <= 222 && fb >= 8 && fb < 30) {
+      const lx = x - 200;
+      if (fb < 20) { if (lx === 10 || lx === 11) return '#e9a42a'; return fb % 5 === 0 ? '#4a2a16' : '#6a3e20'; }
+      if (fb < 23) return (lx + fb) % 3 === 0 ? '#fff2a0' : '#ffd84a';
+      if (lx <= 3 && fb < 30) return '#6a3e20';
+      return null;
+    }
+    // La croix rouge « ici le trésor ».
+    if (fb >= 3 && fb <= 7 && (Math.abs((x - 330) - (fb - 5) * 1.5) < 1.2 || Math.abs((x - 330) + (fb - 5) * 1.5) < 1.2)) return '#d7263d';
+    // Pelle plantée.
+    if (x === 352 && fb >= 6 && fb < 22) return '#7a4a2a';
+    if (x >= 350 && x <= 354 && fb >= 2 && fb < 7) return '#9a9aa8';
+    // Crabe.
+    if (x >= 270 && x <= 278 && fb >= 2 && fb < 7) { const lx = x - 274; if (fb === 6 && Math.abs(lx) === 3) return '#2a2433'; if (fb >= 3 && fb <= 5 && Math.abs(lx) <= 3) return '#e8392b'; if (fb === 2 && (lx + 10) % 2 === 0) return '#b3241a'; }
+    if (fb < 8) return hash(x * 7 + fb * 13) % 7 === 0 ? '#d9b870' : '#f2dca0';
+    return null;
+  });
+
   // Amsterdam, en ville : maisons étroites à pignons le long du canal, et la Westerkerk.
   const AMS_HOUSE = ['#7a3418', '#9a4426', '#3b2f2a', '#e9dcc0', '#4a5a6a', '#2f4a3a', '#5a2a1a'];
   const amsCityFar = paintStrip(640, 96, (x, y) => {
@@ -2290,7 +2474,8 @@
     { name: T('DOLCE TOSCANA', 'DOLCE TOSCANA'), accent: '#c4603a', sky: ['#3f86c8', '#5a9ad2', '#7bb0dc', '#a0c4e0', '#c8d6d8', '#e6dcc0', '#f4dca8', '#fae8c0'] },
     { name: T('CAP CANAVERAL', 'CAPE CANAVERAL'), accent: '#2f6db5', sky: ['#3f8fd8', '#5aa0e0', '#78b4e8', '#98c8ee', '#b8daf2', '#d4e8f4', '#e8f2f0', '#f4f6e6'] },
     { name: T('AMSTERDAM', 'AMSTERDAM'), accent: '#ff7a1a', sky: ['#4a78c8', '#5f8ad2', '#7a9ed9', '#98b4e0', '#b8cae6', '#d6dceb', '#eee6e6', '#fbefe0'] },
-    { name: T('COPENHAGUE', 'COPENHAGEN'), accent: '#c8102e', sky: ['#3b5ea8', '#5674b6', '#7a8fc4', '#a0a9d0', '#c4c2d8', '#e2d4dc', '#f6e2d8', '#ffeed6'] }
+    { name: T('COPENHAGUE', 'COPENHAGEN'), accent: '#c8102e', sky: ['#3b5ea8', '#5674b6', '#7a8fc4', '#a0a9d0', '#c4c2d8', '#e2d4dc', '#f6e2d8', '#ffeed6'] },
+    { name: T('ILE DES PIRATES', 'PIRATE ISLAND'), accent: '#e2851c', sky: ['#2f6fb0', '#4a86c0', '#6a9ccc', '#8fb2d4', '#b7c6d6', '#dcd6cc', '#f2dcc0', '#ffe4b0'] }
   ];
 
   // ---------- Écran ----------
@@ -2651,7 +2836,20 @@
     if (fb === 44 && x >= 18 && x <= 50) return '#5a3a20';
     return null;
   });
-  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5, 8.5, 8, 0, 8, 9];
+  // Île des Pirates : la tête du kraken farceur (les yeux et les tentacules sont dessinés en jeu).
+  const KRAKEN = '#c86bb0', KRAKEN_D = '#9a4a8a', KRAKEN_L = '#e89ad0';
+  const krakenHeadC = paintStrip(40, 34, (x, y) => {
+    const dx = x - 19.5, dy = y - 17, r = (dx / 19) ** 2 + (dy / 17) ** 2;
+    if (r > 1) return null;
+    if (r > 0.86) return '#5a2a5a';
+    // Grands yeux blancs (les pupilles bougent en jeu) et sourire.
+    for (const ex of [-7, 7]) if ((dx - ex) ** 2 + (dy - 2) ** 2 <= 22) return (dx - ex) ** 2 + (dy - 2) ** 2 > 16 ? '#5a2a5a' : '#ffffff';
+    if (dy >= 8 && dy <= 12 && Math.abs(dx) <= 6 && Math.abs(dy - (12 - (dx * dx) / 12)) < 0.9) return '#5a2a5a';
+    if (hash(x * 13 + y * 7) % 23 === 0 || ((dx + 10) ** 2 + (dy + 9) ** 2 <= 4) || ((dx - 11) ** 2 + (dy + 7) ** 2 <= 3)) return KRAKEN_L;
+    return dy > 8 ? KRAKEN_D : KRAKEN;
+  });
+  const krakenWater = () => Math.round(H * 0.62 - (camY - camBase()) * 0.12) + 10 * evK();
+  const EVENT_DUR = [6.5, 6.8, 9, 9, 6.5, 0, 7.5, 8.5, 8, 0, 8, 9, 8];
   let ev = null, evSeg = -1, evFx = [], shake = 0;
   let reduceMotion = false;
   try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
@@ -2709,6 +2907,10 @@
       for (let i = 0; i < 3; i++) petal(mx + rand(-30, 30) * K, my + rand(-30, 30) * K, -rand(50, 130) * K, rand(-30, 20) * K);
       // … et une pluie de pétales qui tombe sur tout l'écran.
       for (let i = 0; i < 2; i++) petal(rand(0, W + 40), safe.t - 4, -rand(10, 40) * K, rand(15, 40) * K);
+    } else if (ev.w === PIRATE_WORLD && ev.t > 0.8 && ev.t < dur - 1 && Math.random() < 0.35) {
+      // Les bulles du kraken.
+      const K = evK();
+      evFx.push({ x: W * 0.72 + rand(-30, 30) * K, y: krakenWater(), vx: rand(-8, 8) * K, vy: -rand(20, 45) * K, life: rand(1, 2), max: 2, s: K, col: Math.random() < 0.5 ? '#ffffff' : '#bfefff', g: -6 * K });
     } else if (ev.w === 8 && ev.t > 0.6 && ev.t < dur - 0.5 && Math.random() < 0.5) {
       // Poussière soulevée par les sabots.
       const K = evK(), x = paliox(ev.t, dur, (Math.random() * 6) | 0) + 8 * K;
@@ -2859,6 +3061,36 @@
       ctx.drawImage(drakkarC, x, y, drakkarC.width * s, drakkarC.height * s);
       ctx.fillStyle = '#cfe4f2';
       for (let k = 0; k < 6; k++) ctx.fillRect(x - (6 + k * 7) * s, water + (k % 2) * s, 4 * s, s);
+    } else if (ev.w === PIRATE_WORLD) {
+      // Le kraken farceur sort de l'eau, agite ses tentacules, roule des yeux, cligne, puis replonge.
+      const s = K + 1, water = krakenWater(), cx = Math.round(W * 0.72);
+      const rise = t < 1.2 ? ease(t / 1.2) : (t > dur - 1.2 ? ease((dur - t) / 1.2) : 1);
+      const top = water - Math.round(42 * s * rise) + Math.round(Math.sin(t * 2) * K);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, W, water); ctx.clip();
+      // Six tentacules qui ondulent, faits de petits ronds de plus en plus fins.
+      for (let k = 0; k < 6; k++) {
+        const side = k < 3 ? -1 : 1, j = k % 3, base = cx + side * (8 + j * 9) * s;
+        for (let n = 0; n < 30; n++) {
+          const u = n / 29, ang = side * (0.5 + j * 0.35) + Math.sin(t * 3 + k + u * 4) * 0.6 * u;
+          const px = base + Math.sin(ang) * u * 38 * s, py = water - u * 34 * s * rise + Math.cos(t * 2.5 + k) * u * 4 * K;
+          const r = Math.max(1, Math.round((3.2 - u * 2.2) * s));
+          ctx.fillStyle = n % 5 === 0 ? KRAKEN_L : KRAKEN;
+          ctx.fillRect(Math.round(px - r), Math.round(py - r), r * 2, r * 2);
+        }
+      }
+      ctx.drawImage(krakenHeadC, cx - 20 * s, top, krakenHeadC.width * s, krakenHeadC.height * s);
+      // Les pupilles regardent à droite, à gauche, en haut ; un clin d'œil de temps en temps.
+      const blink = (t % 2.3) < 0.15, look = Math.round(Math.sin(t * 1.7) * 2), up = Math.round(Math.cos(t * 1.3)) ;
+      for (const ex of [-7, 7]) {
+        const ox = cx + (ex - 0.5 + look) * s, oy = top + (17 + 2 + up) * s;
+        ctx.fillStyle = blink ? KRAKEN_D : '#2a2433';
+        if (blink) ctx.fillRect(Math.round(cx + (ex - 4) * s), Math.round(top + 19 * s), 8 * s, s);
+        else { ctx.fillRect(Math.round(ox - s), Math.round(oy - s), 3 * s, 3 * s); ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(ox - s), Math.round(oy - s), s, s); }
+      }
+      ctx.restore();
+      ctx.fillStyle = '#ffffff';
+      for (let k = -3; k <= 3; k++) ctx.fillRect(cx + k * 9 * s - 2 * s, water - K, 4 * s, K);
     } else if (ev.w === 8) {
       // Le Palio : six chevaux au galop.
       const s = K + 1, street = palioStreet();
@@ -2902,9 +3134,9 @@
   const WORLD_EVERY = 100, TRANS_DUR = 2.4, PLANE_DUR = 6;
   let world = 0, genWorld = 0, trans = null, plane = null, worldCard = 0, petals = [];
   // Trésor : toutes les étoiles ramassées, partie après partie. À 1000, le niveau bonus se débloque.
-  // Une partie = 4 mondes tirés au hasard parmi 10, puis le départ en fusée à Cap Canaveral (9).
+  // Une partie = 4 mondes tirés au hasard parmi 11, puis le départ en fusée à Cap Canaveral (9).
   // Le 5 est le Pays des Bonbons (niveau bonus).
-  const MAIN_WORLDS = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11], ROUTE_LEN = 4, LAUNCH_WORLD = 9;
+  const MAIN_WORLDS = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11, 12], ROUTE_LEN = 4, LAUNCH_WORLD = 9;
   const BONUS_WORLD = 5, BONUS_COST = 1000, BONUS_TIME = 60;
   let route = [0], launch = null, launchEnd = false;
   function pickRoute() {
@@ -3926,6 +4158,26 @@
       drawStrip(cphFar, 0.1, far, '#2f5a7a');
       drawWater(far, '#2f5a7a', '#cfe4f2');
       drawStrip(cphMid, 0.3, H * 0.86 - vOff * 0.3, '#2f5a7a');
+    } else if (world === PIRATE_WORLD) {
+      // Île des Pirates : le port sur pilotis, puis l'île au trésor à partir du milieu du monde.
+      drawDisc(goldSunC, W * 0.7, H * 0.22);
+      drawBgClouds();
+      const d = Math.max(0, Math.floor((player.x - distStart) / 16)) % WORLD_EVERY, k = clamp((d - 45) / 10, 0, 1);
+      if (k < 1) {
+        ctx.globalAlpha = 1 - k;
+        const far = H * 0.64 - vOff * 0.12;
+        drawStrip(pirPortFar, 0.1, far, '#1f6f8a');
+        drawWater(far, '#1f6f8a', '#bfefff');
+        drawStrip(pirPortMid, 0.3, H * 0.86 - vOff * 0.3, '#1f6f8a');
+      }
+      if (k > 0) {
+        ctx.globalAlpha = k;
+        const far = H * 0.6 - vOff * 0.12;
+        drawStrip(pirIslandFar, 0.1, far, '#2fb5b0');
+        drawWater(far, '#2fb5b0', '#c8fff4');
+        drawStrip(pirIslandMid, 0.3, H * 0.86 - vOff * 0.3, '#f2dca0');
+      }
+      ctx.globalAlpha = 1;
     } else if (world === 9) {
       drawBgClouds();
       drawStrip(capeFar, 0.1, H * 0.72 - vOff * 0.12, '#4f7a4a');
@@ -4206,7 +4458,7 @@
     ctx.globalAlpha = 1;
     drawPlatforms();
     drawLaunchPad();
-    for (const s of gems) ctx.drawImage(sprStar, Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
+    for (const s of gems) ctx.drawImage(gemSpr(), Math.round(s.x) - 3, Math.round(s.y - 3 + Math.sin(time * 4 + s.ph) * 1.5));
     ctx.restore();
     drawPetals();
     drawCurtain();
@@ -4230,7 +4482,7 @@
       drawBonusHud();
     } else if (mode === 'play' || mode === 'dying') {
       const x = Math.round(6 + safe.l), y = Math.round(6 + safe.t);
-      ctx.drawImage(sprStar, x, y);
+      ctx.drawImage(gemSpr(), x, y);
       text(String(starsCount), x + 11, y, 8, '#fff7d6');
       text(Math.floor((player.x - distStart) / 16) + ' M', x, y + 13, 8, '#fff7d6');
       if (gameMode === 'defi') text(T('DEFI', 'HARD'), x, y + 26, 8, '#ff9ecf');
@@ -4872,8 +5124,8 @@
   }
 
   // ---------- Carnet de voyage : un tampon par monde traversé, comme les tampons des gares japonaises ----------
-  // Ordre des pages : les 10 mondes, Cap Canaveral (au décollage), puis le Pays des Bonbons (sur la Lune).
-  const STAMP_ORDER = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11, 9, 5];
+  // Ordre des pages : les 11 mondes, Cap Canaveral (au décollage), puis le Pays des Bonbons (sur la Lune).
+  const STAMP_ORDER = [0, 1, 2, 3, 4, 6, 7, 8, 10, 11, 12, 9, 5];
   const STAMP_INFO = {
     0: { fr: 'GLACES', en: 'ICE CREAM', ink: '#d93d78', frame: 'circle' },
     1: { fr: 'JAPON', en: 'JAPAN', ink: '#c8102e', frame: 'rect' },
@@ -4886,6 +5138,7 @@
     9: { fr: 'CANAVERAL', en: 'CANAVERAL', ink: '#0e7490', frame: 'octa' },
     10: { fr: 'AMSTERDAM', en: 'AMSTERDAM', ink: '#9c2a1a', frame: 'octa' },
     11: { fr: 'COPENHAGUE', en: 'COPENHAGEN', ink: '#0f5f8f', frame: 'circle' },
+    12: { fr: 'PIRATES', en: 'PIRATES', ink: '#3a2a4a', frame: 'rect' },
     5: { fr: 'BONBONS', en: 'CANDY LAND', ink: '#e46a1a', frame: 'circle' }
   };
   // Monuments des tampons, dessinés en formes simples sur 80 × 80 (encre = noir, « gomme » = blanc du papier).
@@ -5009,6 +5262,22 @@
       cut(() => { g.moveTo(33, 49); g.quadraticCurveTo(41, 52, 48, 49); }, 0.9, true);
       // Deux mouettes.
       ink(() => { for (const [x, y] of [[18, 26], [27, 18]]) { g.moveTo(x - 4, y - 1); g.quadraticCurveTo(x - 2, y - 3, x, y); g.quadraticCurveTo(x + 2, y - 3, x + 4, y - 1); } }, 1.4, true);
+    },
+    // Île des Pirates : un coffre au trésor ouvert plein de pièces, sous un palmier.
+    12: (g, ink, cut) => {
+      ink(() => { g.moveTo(17, 57); g.quadraticCurveTo(15, 40, 23, 24); }, 3, true);
+      ink(() => { for (const a of [-2.7, -2.1, -1.4, -0.7, -0.1]) { g.moveTo(23, 24); g.quadraticCurveTo(23 + Math.cos(a) * 9, 22 + Math.sin(a) * 9 - 3, 23 + Math.cos(a) * 15, 24 + Math.sin(a) * 11 + 4); } }, 2.4, true);
+      ink(() => { g.moveTo(35, 38); g.lineTo(38, 26); g.lineTo(62, 26); g.lineTo(64, 38); g.closePath(); });
+      cut(() => { g.rect(37, 28, 24, 2); g.rect(47, 26, 4, 12); }, 1, false);
+      ink(() => { for (const [x, y] of [[39, 38], [45, 36], [51, 37], [57, 36], [62, 38], [48, 33], [54, 33]]) { g.moveTo(x + 3.2, y); g.arc(x, y, 3.2, 0, Math.PI * 2); } });
+      cut(() => { for (const [x, y] of [[39, 38], [45, 36], [51, 37], [57, 36], [62, 38], [48, 33], [54, 33]]) { g.moveTo(x + 1.6, y); g.arc(x, y, 1.6, 0, Math.PI * 2); } }, 0.8, true);
+      cut(() => { g.rect(33, 40, 34, 2); });
+      ink(() => { g.rect(34, 41, 32, 15); });
+      cut(() => { g.rect(39, 42, 2, 13); g.rect(59, 42, 2, 13); g.rect(48, 45, 4, 5); });
+      ink(() => { g.rect(49.2, 46, 1.6, 2.5); });
+      ink(() => { g.rect(8, 57, 64, 2); });
+      const star = (x, y, r) => { g.moveTo(x - r, y); g.lineTo(x + r, y); g.moveTo(x, y - r); g.lineTo(x, y + r); };
+      ink(() => { star(40, 18, 3); star(58, 15, 3.5); star(68, 26, 2.5); }, 1.4, true);
     },
     // Pays des Bonbons : une grande sucette en spirale avec son nœud, et des étoiles.
     5: (g, ink, cut) => {

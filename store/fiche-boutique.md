@@ -33,7 +33,8 @@ Cours, saute et ramasse des étoiles à travers 4 mondes tirés au hasard parmi 
 • Hong Kong et sa danse du dragon,
 • la Toscane avec le Palio, la tour de Pise et San Gimignano,
 • Amsterdam, ses canaux, ses moulins et ses tulipes,
-• Copenhague, le port de Nyhavn et la Petite Sirène.
+• Copenhague, le port de Nyhavn et la Petite Sirène,
+• et l'Île des Pirates, son port sur pilotis, son trésor et son gentil kraken.
 Au bout du voyage, direction Cap Canaveral : on monte dans la fusée et… 3, 2, 1, décollage !
 
 TON DOUDOU DEVIENT UN HÉROS
@@ -80,7 +81,8 @@ Run, jump and collect stars across 4 worlds picked at random from:
 • Hong Kong and its dragon dance,
 • Tuscany with the Palio, the Leaning Tower of Pisa and San Gimignano,
 • Amsterdam, its canals, windmills and tulips,
-• Copenhagen, Nyhavn harbour and the Little Mermaid.
+• Copenhagen, Nyhavn harbour and the Little Mermaid,
+• and Pirate Island, with its harbour on stilts, its treasure and its friendly kraken.
 At the end of the journey, it's off to Cape Canaveral: hop into the rocket and… 3, 2, 1, lift-off!
 
 YOUR PLUSHIE BECOMES THE HERO

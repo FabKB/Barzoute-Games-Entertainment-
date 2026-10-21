@@ -21,7 +21,7 @@ test('un tampon gagné est gardé une seule fois, même après rechargement', as
   await ctx.close();
 });
 
-for (const [locale, title, count] of [['fr-FR', 'MON CARNET DE VOYAGE', '3 tampons sur 12'], ['en-US', 'MY TRAVEL BOOK', '3 of 12 stamps']]) {
+for (const [locale, title, count] of [['fr-FR', 'MON CARNET DE VOYAGE', '3 tampons sur 13'], ['en-US', 'MY TRAVEL BOOK', '3 of 13 stamps']]) {
   test(`le bouton carnet ouvre le carnet (${locale})`, async () => {
     for (const dev of ['iPhone 13', 'iPhone 13 landscape']) {
       const { ctx, page, errs } = await open(browser, { ...devices[dev], locale }, () => localStorage.setItem('glace-licorne:tampons', '[1,6,5]'));
