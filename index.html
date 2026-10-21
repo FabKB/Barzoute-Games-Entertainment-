@@ -248,7 +248,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v38';
+  const VERSION = 'v39';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -4493,46 +4493,115 @@
   // Ordre des pages : les 8 mondes, Cap Canaveral (au décollage), puis le Pays des Bonbons (sur la Lune).
   const STAMP_ORDER = [0, 1, 2, 3, 4, 6, 7, 8, 9, 5];
   const STAMP_INFO = {
-    0: { fr: 'GLACES', en: 'ICE CREAM', ink: '#d93d78', frame: 'circle', art: [
-      '........#.........', '.......###........', '.....#######......', '....#########.....', '...###########....',
-      '...##.#####.##....', '...###########....', '....#########.....', '....#.#.#.#.#.....', '.....#.#.#.#......',
-      '.....#######......', '......#.#.#.......', '......#####.......', '.......#.#........', '.......###........', '........#.........'] },
-    1: { fr: 'JAPON', en: 'JAPAN', ink: '#c8102e', frame: 'rect', art: [
-      '.............###..', '............#####.', '............#####.', '.............###..', '..................',
-      '......######......', '.....#.#..#.#.....', '....#........#....', '...###.####.###...', '..##############..',
-      '.################.', '##################', '..................', '..##.##....##.##..'] },
-    2: { fr: 'NEW YORK', en: 'NEW YORK', ink: '#1f3a8a', frame: 'octa', art: [
-      '........#.........', '........#.........', '.......###........', '......#####.......', '......#.#.#.......',
-      '......#####.......', '.....#######......', '.....#.#.#.#......', '.....#######......', '....#########.....',
-      '....#.#.#.#.#.....', '....#########.....', '....#.#.#.#.#.....', '...###########....', '...#.#.#.#.#.#....', '..#############...'] },
-    3: { fr: 'LONDRES', en: 'LONDON', ink: '#6a2c91', frame: 'circle', art: [
-      '........#.........', '.......###........', '......#####.......', '......#####.......', '.....#######......',
-      '.....#..#..#......', '.....#.###.#......', '.....#..#..#......', '.....#######......', '......#####.......',
-      '......#.#.#.......', '......#####.......', '......#.#.#.......', '......#####.......', '.....#######......', '....#########.....'] },
-    4: { fr: 'PARIS', en: 'PARIS', ink: '#2a5db0', frame: 'rect', art: [
-      '........##........', '........##........', '.......####.......', '.......#..#.......', '......######......',
-      '......#....#......', '......##..##......', '.....##....##.....', '.....########.....', '....##......##....',
-      '....#..####..#....', '...##.##..##.##...', '...#..#....#..#...', '..##.##....##.##..', '.##..#......#..##.', '.#...#......#...#.'] },
-    6: { fr: 'SLOVENIE', en: 'SLOVENIA', ink: '#2e7d4f', frame: 'octa', art: [
-      '.........#........', '........###.......', '........###.......', '........#.#.......', '........###.......',
-      '....#...###.......', '...###.#####......', '..#####.#.#.##....', '..#####.#####.#...', '..##############..',
-      '.################.', '##################', '..................', '.######...#######.', '..................', '...#####..######..'] },
-    7: { fr: 'HONG KONG', en: 'HONG KONG', ink: '#b3127a', frame: 'circle', art: [
-      '.......#..........', '......##....#.....', '.....###...##.....', '....####..###.....', '...#####.####.....',
-      '..######.#####....', '..######.#####....', '.#######.######...', '...#.#.#.#.#.#....', '.#################',
-      '..###############.', '...#############..', '..................', '.####....#####....'] },
-    8: { fr: 'TOSCANE', en: 'TUSCANY', ink: '#b5532a', frame: 'rect', art: [
-      '..........###.....', '..........#.#.....', '.........#####....', '.........#.#.#....', '........#####.....',
-      '........#.#.#.....', '.......#####......', '.......#.#.#......', '......#####.......', '......#.#.#.......',
-      '.....#####........', '.....#.#.#........', '....#####.........', '....#.#.#.........', '...#######........', '..#########.......'] },
-    9: { fr: 'CANAVERAL', en: 'CANAVERAL', ink: '#0e7490', frame: 'octa', art: [
-      '........##........', '.......####.......', '.......####.......', '......######......', '......#....#......',
-      '......#.##.#......', '......#.##.#......', '......#....#......', '......######......', '......######......',
-      '.....########.....', '....##.####.##....', '...###.####.###...', '...##..#..#..##...', '.......#..#.......', '......#....#......'] },
-    5: { fr: 'BONBONS', en: 'CANDY LAND', ink: '#e46a1a', frame: 'circle', art: [
-      '.....######.......', '...##......##.....', '..#..######..#....', '.#..#......#..#...', '.#.#..####..#.#...',
-      '.#.#.#....#.#.#...', '.#.#.#.##.#.#.#...', '.#.#..#..#..#.#...', '.#..#..##..#..#...', '..#..#....#..#....',
-      '...##.####.##.....', '.....######.......', '........#.........', '........#.........', '........#.........', '........#.........'] }
+    0: { fr: 'GLACES', en: 'ICE CREAM', ink: '#d93d78', frame: 'circle' },
+    1: { fr: 'JAPON', en: 'JAPAN', ink: '#c8102e', frame: 'rect' },
+    2: { fr: 'NEW YORK', en: 'NEW YORK', ink: '#1f3a8a', frame: 'octa' },
+    3: { fr: 'LONDRES', en: 'LONDON', ink: '#6a2c91', frame: 'circle' },
+    4: { fr: 'PARIS', en: 'PARIS', ink: '#2a5db0', frame: 'rect' },
+    6: { fr: 'SLOVENIE', en: 'SLOVENIA', ink: '#2e7d4f', frame: 'octa' },
+    7: { fr: 'HONG KONG', en: 'HONG KONG', ink: '#b3127a', frame: 'circle' },
+    8: { fr: 'TOSCANE', en: 'TUSCANY', ink: '#b5532a', frame: 'rect' },
+    9: { fr: 'CANAVERAL', en: 'CANAVERAL', ink: '#0e7490', frame: 'octa' },
+    5: { fr: 'BONBONS', en: 'CANDY LAND', ink: '#e46a1a', frame: 'circle' }
+  };
+  // Monuments des tampons, dessinés en formes simples sur 80 × 80 (encre = noir, « gomme » = blanc du papier).
+  const STAMP_SZ = 80;
+  const STAMP_ART = {
+    // Glace licorne : cornet gaufré, boule avec visage, oreilles et corne torsadée.
+    0: (g, ink, cut) => {
+      ink(() => { g.moveTo(28, 38); g.lineTo(52, 38); g.lineTo(40, 63); });
+      cut(() => { for (let k = 0; k < 4; k++) { g.moveTo(30 + k * 6, 39); g.lineTo(37 + k * 6, 54 - k * 2); g.moveTo(50 - k * 6, 39); g.lineTo(43 - k * 6, 54 - k * 2); } }, 1.4, true);
+      ink(() => { g.arc(40, 28, 13, 0, Math.PI * 2); });
+      cut(() => { g.moveTo(26, 37); g.quadraticCurveTo(40, 43, 54, 37); }, 1.6, true);
+      ink(() => { g.moveTo(29, 21); g.lineTo(31, 13); g.lineTo(35, 17); g.moveTo(45, 17); g.lineTo(49, 13); g.lineTo(51, 21); });
+      ink(() => { g.moveTo(36.5, 16); g.lineTo(40, 2); g.lineTo(43.5, 16); });
+      cut(() => { g.moveTo(37.5, 12); g.lineTo(42.5, 10); g.moveTo(38.5, 7); g.lineTo(41.5, 6); }, 1.3, true);
+      cut(() => { g.arc(35, 28, 2.3, 0, Math.PI * 2); g.moveTo(47.3, 28); g.arc(45, 28, 2.3, 0, Math.PI * 2); });
+      cut(() => { g.arc(40, 31, 3.6, 0.25, Math.PI - 0.25); }, 1.6, true);
+    },
+    // Japon : mont Fuji au sommet enneigé, soleil levant, nuages et vagues.
+    1: (g, ink, cut) => {
+      ink(() => { g.arc(56, 18, 8, 0, Math.PI * 2); });
+      ink(() => { g.moveTo(6, 54); g.lineTo(31, 20); g.lineTo(49, 20); g.lineTo(74, 54); });
+      cut(() => { g.moveTo(31, 20); g.lineTo(49, 20); g.lineTo(55, 28); g.lineTo(50, 26); g.lineTo(45, 31); g.lineTo(40, 26); g.lineTo(35, 31); g.lineTo(30, 26); g.lineTo(25, 28); });
+      ink(() => { g.moveTo(22, 32); g.lineTo(31, 20); g.lineTo(49, 20); g.lineTo(58, 32); }, 1.8, true);
+      cut(() => { g.moveTo(8, 44); g.lineTo(26, 44); g.moveTo(52, 40); g.lineTo(68, 40); }, 2, true);
+      ink(() => { for (const y of [58, 62]) for (let x = 9 + (y === 62 ? 5 : 0); x < 70; x += 10) { g.moveTo(x, y); g.lineTo(x + 6, y); } }, 1.6, true);
+    },
+    // New York : l'Empire State Building et ses étages en gradins, entre deux immeubles.
+    2: (g, ink, cut) => {
+      ink(() => { g.rect(39, 3, 2, 10); g.rect(37.5, 11, 5, 5); g.rect(35, 16, 10, 8); g.rect(32, 24, 16, 10); g.rect(29, 34, 22, 12); g.rect(26, 46, 28, 16); });
+      cut(() => { for (let x = 37; x < 45; x += 3) g.rect(x, 18, 1, 5); for (let x = 34; x < 48; x += 3) g.rect(x, 26, 1, 7); for (let x = 31; x < 51; x += 3) g.rect(x, 36, 1, 9); for (let x = 28; x < 54; x += 3) g.rect(x, 48, 1, 12); });
+      ink(() => { g.rect(10, 38, 12, 24); g.rect(58, 44, 13, 18); g.rect(13, 34, 6, 4); });
+      cut(() => { for (let y = 41; y < 60; y += 4) for (let x = 12; x < 21; x += 3) g.rect(x, y, 1.5, 2); for (let y = 47; y < 60; y += 4) for (let x = 60; x < 70; x += 3) g.rect(x, y, 1.5, 2); });
+      ink(() => { g.rect(6, 62, 68, 2); });
+    },
+    // Londres : Big Ben avec son horloge, et le Parlement.
+    3: (g, ink, cut) => {
+      ink(() => { g.moveTo(38.5, 13); g.lineTo(40, 2); g.lineTo(41.5, 13); });
+      ink(() => { g.moveTo(33, 20); g.lineTo(36, 12); g.lineTo(44, 12); g.lineTo(47, 20); });
+      ink(() => { g.rect(32, 20, 16, 15); g.rect(34, 35, 12, 28); });
+      cut(() => { g.arc(40, 27.5, 5.5, 0, Math.PI * 2); });
+      ink(() => { g.moveTo(40, 27.5); g.lineTo(40, 23.5); g.moveTo(40, 27.5); g.lineTo(43, 28.5); }, 1.3, true);
+      cut(() => { for (let y = 38; y < 60; y += 6) { g.rect(36.5, y, 1.5, 4); g.rect(42, y, 1.5, 4); } });
+      ink(() => { g.rect(48, 44, 24, 19); g.rect(8, 48, 26, 15); for (let x = 50; x < 72; x += 5) g.rect(x, 40, 2, 4); for (let x = 10; x < 34; x += 5) g.rect(x, 44, 2, 4); });
+      cut(() => { for (let x = 51; x < 70; x += 4) g.rect(x, 48, 1.5, 4); for (let x = 11; x < 32; x += 4) g.rect(x, 52, 1.5, 4); });
+    },
+    // Paris : la tour Eiffel, ses arches et ses plateformes.
+    4: (g, ink, cut) => {
+      ink(() => { g.moveTo(17, 63); g.quadraticCurveTo(31, 46, 35, 30); g.lineTo(38, 9); g.lineTo(42, 9); g.lineTo(45, 30); g.quadraticCurveTo(49, 46, 63, 63); g.lineTo(54, 63); g.quadraticCurveTo(40, 44, 26, 63); });
+      ink(() => { g.rect(39.2, 2, 1.6, 8); g.rect(30, 44, 20, 3); g.rect(33.5, 29, 13, 3); g.rect(37, 15, 6, 2); });
+      cut(() => { g.moveTo(37, 22); g.lineTo(43, 28); g.moveTo(43, 22); g.lineTo(37, 28); g.moveTo(36, 34); g.lineTo(44, 42); g.moveTo(44, 34); g.lineTo(36, 42); g.moveTo(39.2, 10); g.lineTo(40.8, 14); }, 1, true);
+      ink(() => { g.rect(8, 63, 64, 2); });
+    },
+    // Slovénie : l'île de Bled, son église au clocher pointu, les Alpes et le lac.
+    6: (g, ink, cut) => {
+      ink(() => { g.moveTo(4, 40); g.lineTo(18, 20); g.lineTo(26, 30); g.lineTo(38, 12); g.lineTo(52, 30); g.lineTo(62, 18); g.lineTo(76, 40); }, 1.6, true);
+      ink(() => { g.moveTo(14, 26); g.lineTo(18, 20); g.lineTo(22, 26); g.moveTo(34, 18); g.lineTo(38, 12); g.lineTo(42, 18); }, 1.2, true);
+      ink(() => { g.ellipse(40, 50, 22, 6, 0, 0, Math.PI * 2); });
+      ink(() => { for (const x of [22, 27, 56, 61]) { g.moveTo(x - 3.5, 47); g.lineTo(x, 37); g.lineTo(x + 3.5, 47); g.closePath(); } });
+      ink(() => { g.rect(38, 33, 14, 13); g.moveTo(37, 33); g.lineTo(45, 26); g.lineTo(53, 33); g.rect(31, 22, 7, 24); g.moveTo(30, 22); g.lineTo(34.5, 9); g.lineTo(39, 22); });
+      cut(() => { g.rect(33.5, 26, 2, 4); g.rect(41, 37, 2, 4); g.rect(46, 37, 2, 4); });
+      ink(() => { for (const y of [59, 63]) for (let x = 10; x < 70; x += 9) { g.moveTo(x, y); g.lineTo(x + 5, y); } }, 1.4, true);
+    },
+    // Hong Kong : une jonque aux grandes voiles rayées, devant les gratte-ciel.
+    7: (g, ink, cut) => {
+      ink(() => { g.moveTo(62, 50); g.lineTo(62, 22); g.lineTo(67, 9); g.lineTo(71, 22); g.lineTo(71, 50); g.rect(9, 32, 6, 18); });
+      cut(() => { g.moveTo(63, 28); g.lineTo(70, 36); g.moveTo(70, 28); g.lineTo(63, 36); g.moveTo(63, 38); g.lineTo(70, 46); g.moveTo(70, 38); g.lineTo(63, 46); }, 1, true);
+      ink(() => { g.moveTo(12, 49); g.lineTo(17, 53); g.lineTo(62, 53); g.lineTo(68, 47); g.lineTo(61, 60); g.lineTo(21, 60); g.closePath(); });
+      ink(() => { g.moveTo(21, 51); g.lineTo(24, 20); g.quadraticCurveTo(31, 22, 36, 30); g.quadraticCurveTo(37, 42, 36, 51); g.closePath(); });
+      ink(() => { g.moveTo(39, 51); g.lineTo(42, 9); g.quadraticCurveTo(52, 11, 58, 22); g.quadraticCurveTo(59, 38, 57, 51); g.closePath(); });
+      cut(() => { for (let y = 26; y < 50; y += 6) { g.moveTo(22, y); g.lineTo(37, y + 2); } for (let y = 16; y < 50; y += 6) { g.moveTo(40, y); g.lineTo(59, y + 2); } }, 1.3, true);
+      ink(() => { for (let x = 8; x < 72; x += 9) { g.moveTo(x, 64); g.lineTo(x + 5, 64); } }, 1.6, true);
+    },
+    // Toscane : la tour penchée de Pise et ses arcades, entre deux cyprès.
+    8: (g, ink, cut) => {
+      g.save(); g.translate(40, 63); g.rotate(0.13); g.translate(-40, -63);
+      ink(() => { g.rect(31, 17, 18, 46); g.rect(30, 16, 20, 2); g.rect(34, 7, 12, 10); g.rect(33, 6, 14, 2); });
+      cut(() => { for (let y = 20; y < 60; y += 7) { g.rect(30, y + 5, 20, 1); for (let x = 33; x < 48; x += 4) { g.moveTo(x + 1, y + 4); g.arc(x + 1, y + 2, 1, Math.PI, 0); g.lineTo(x + 2, y + 4); } } for (let x = 36; x < 45; x += 4) g.rect(x, 10, 2, 5); });
+      g.restore();
+      ink(() => { g.ellipse(14, 46, 4, 15, 0, 0, Math.PI * 2); g.moveTo(70, 50); g.ellipse(66, 50, 3.5, 12, 0, 0, Math.PI * 2); g.rect(13.2, 60, 1.6, 4); g.rect(65.2, 61, 1.6, 3); });
+      ink(() => { g.rect(6, 63, 68, 2); });
+    },
+    // Cap Canaveral : la fusée sur son pas de tir, la tour de lancement et la fumée.
+    9: (g, ink, cut) => {
+      ink(() => { g.rect(54, 8, 2, 48); g.rect(62, 8, 2, 48); g.rect(54, 6, 10, 2); }, 1);
+      ink(() => { for (let y = 8; y < 54; y += 8) { g.moveTo(55, y); g.lineTo(63, y + 8); g.moveTo(63, y); g.lineTo(55, y + 8); g.moveTo(55, y); g.lineTo(63, y); } g.moveTo(54, 20); g.lineTo(46, 20); }, 1.1, true);
+      ink(() => { g.moveTo(33, 18); g.quadraticCurveTo(39, 0, 45, 18); g.rect(33, 18, 12, 30); });
+      ink(() => { g.moveTo(33, 38); g.lineTo(26, 50); g.lineTo(33, 48); g.moveTo(45, 38); g.lineTo(52, 50); g.lineTo(45, 48); });
+      cut(() => { g.arc(39, 25, 3, 0, Math.PI * 2); g.rect(33, 33, 12, 1.5); });
+      ink(() => { g.rect(36, 48, 6, 4); });
+      ink(() => { for (const [x, r] of [[20, 6], [29, 7], [40, 8], [51, 7], [60, 6]]) { g.moveTo(x + r, 58); g.arc(x, 58, r, 0, Math.PI * 2); } });
+      cut(() => { g.arc(29, 57, 3, 0, Math.PI * 2); g.moveTo(53, 57); g.arc(51, 57, 2.5, 0, Math.PI * 2); });
+    },
+    // Pays des Bonbons : une grande sucette en spirale avec son nœud, et des étoiles.
+    5: (g, ink, cut) => {
+      ink(() => { g.arc(40, 26, 18, 0, Math.PI * 2); });
+      cut(() => { for (let a = 0; a < Math.PI * 6; a += 0.1) { const r = 2 + a * 0.8; (a === 0 ? g.moveTo : g.lineTo).call(g, 40 + Math.cos(a) * r, 26 + Math.sin(a) * r); } }, 2.4, true);
+      ink(() => { g.rect(38.5, 43, 3, 21); g.moveTo(40, 49); g.lineTo(30, 44); g.lineTo(31, 55); g.closePath(); g.moveTo(40, 49); g.lineTo(50, 44); g.lineTo(49, 55); g.closePath(); });
+      const star = (x, y, r) => { for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; (i ? g.lineTo : g.moveTo).call(g, x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); };
+      ink(() => { star(16, 46, 6); star(64, 46, 6); star(15, 24, 3.5); star(65, 22, 3.5); });
+    }
   };
   // Petite police de 3 × 5 pixels pour les noms écrits dans les tampons.
   const FONT35 = {
@@ -4549,37 +4618,43 @@
     }
   }
   const stampLabel = w => LANG === 'fr' ? STAMP_INFO[w].fr : STAMP_INFO[w].en;
-  // Un tampon : cadre, monument et nom, d'une seule couleur d'encre, avec des manques comme un vrai tampon.
+  // Un tampon : monument, cadre et bandeau du nom, d'une seule couleur d'encre, avec des manques comme un vrai tampon.
   const stampCache = {};
   function stampArt(w) {
     if (stampCache[w]) return stampCache[w];
-    const S = 60, c = mk(S, S), g = c.getContext('2d'), info = STAMP_INFO[w];
-    g.fillStyle = info.ink;
-    const px = (x, y) => g.fillRect(x, y, 1, 1);
-    if (info.frame === 'circle') {
-      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-        const d = Math.hypot(x - 29.5, y - 29.5);
-        if ((d >= 27 && d < 29.5) || (d >= 24.5 && d < 25.5)) px(x, y);
-      }
-    } else if (info.frame === 'octa') {
-      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
-        const dx = Math.abs(x - 29.5), dy = Math.abs(y - 29.5), m = Math.max(dx, dy, (dx + dy) * 0.72);
-        if ((m >= 27 && m < 29.5) || (m >= 24.5 && m < 25.5)) px(x, y);
-      }
-    } else {
-      g.fillRect(3, 1, S - 6, 2); g.fillRect(3, S - 3, S - 6, 2); g.fillRect(1, 3, 2, S - 6); g.fillRect(S - 3, 3, 2, S - 6);
-      px(2, 2); px(S - 3, 2); px(2, S - 3); px(S - 3, S - 3);
-      g.fillRect(5, 5, S - 10, 1); g.fillRect(5, S - 6, S - 10, 1); g.fillRect(5, 5, 1, S - 10); g.fillRect(S - 6, 5, 1, S - 10);
+    const S = STAMP_SZ, c = mk(S, S), g = c.getContext('2d'), info = STAMP_INFO[w];
+    // ink() pose de l'encre, cut() en retire (le papier réapparaît) ; tracé plein, ou trait si stroke.
+    const run = (op, fn, lw, stroke, rule) => {
+      g.globalCompositeOperation = op; g.fillStyle = g.strokeStyle = '#000';
+      g.lineWidth = lw || 1.5; g.lineCap = 'round'; g.lineJoin = 'round';
+      g.beginPath(); fn(); if (stroke) g.stroke(); else g.fill(rule || 'nonzero');
+      g.globalCompositeOperation = 'source-over';
+    };
+    const ink = (fn, lw, stroke) => run('source-over', fn, lw, stroke), cut = (fn, lw, stroke) => run('destination-out', fn, lw, stroke);
+    STAMP_ART[w](g, ink, cut);
+    // Cadre : le monument reste à l'intérieur, puis double bordure.
+    const shape = (r) => {
+      if (info.frame === 'circle') g.arc(40, 40, r, 0, Math.PI * 2);
+      else if (info.frame === 'rect') g.rect(40 - r, 40 - r, r * 2, r * 2);
+      else { const k = r * 0.42; g.moveTo(40 - k, 40 - r); g.lineTo(40 + k, 40 - r); g.lineTo(40 + r, 40 - k); g.lineTo(40 + r, 40 + k); g.lineTo(40 + k, 40 + r); g.lineTo(40 - k, 40 + r); g.lineTo(40 - r, 40 + k); g.lineTo(40 - r, 40 - k); g.closePath(); }
+    };
+    const outer = info.frame === 'rect' ? 37 : 38.5;
+    run('destination-out', () => { g.rect(0, 0, S, S); shape(outer - 4.2); }, 0, false, 'evenodd');
+    run('source-over', () => { shape(outer); shape(outer - 3); }, 0, false, 'evenodd');
+    ink(() => shape(outer - 5), 1, true);
+    // Bandeau du nom, en travers du bas du cadre, lettres en blanc.
+    const label = stampLabel(w), lw = label.length * 4 - 1, bw = lw + 10, bx = Math.round(40 - bw / 2);
+    ink(() => g.rect(bx, 62, bw, 11));
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000';
+    pixelText(g, label, bx + 5, 65);
+    g.globalCompositeOperation = 'source-over';
+    // Encre franche (pixels nets), couleur du tampon, et quelques manques.
+    const img = g.getImageData(0, 0, S, S), d = img.data;
+    const r = parseInt(info.ink.slice(1, 3), 16), gg = parseInt(info.ink.slice(3, 5), 16), b = parseInt(info.ink.slice(5, 7), 16);
+    for (let i = 0; i < S * S; i++) {
+      const y = (i / S) | 0, on = d[i * 4 + 3] > 110 && hash(i * 31 + w * 977) % 100 >= (y >= 62 && y <= 73 ? 1 : 4);
+      d[i * 4] = r; d[i * 4 + 1] = gg; d[i * 4 + 2] = b; d[i * 4 + 3] = on ? 255 : 0;
     }
-    // Monument en pixels doubles, au centre du tampon.
-    const art = info.art, ax = Math.round(30 - art[0].length), ay = Math.round(25 - art.length);
-    art.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] === '#') g.fillRect(ax + x * 2, ay + y * 2, 2, 2); });
-    const label = stampLabel(w);
-    pixelText(g, label, Math.round(30 - (label.length * 4 - 1) / 2), 44);
-    // Encre irrégulière : quelques pixels manquent.
-    const img = g.getImageData(0, 0, S, S);
-    // (moins de manques sur le nom, pour qu'il reste lisible)
-    for (let i = 0; i < S * S; i++) if (hash(i * 31 + w * 977) % 100 < (((i / S) | 0) >= 43 ? 3 : 12)) img.data[i * 4 + 3] = 0;
     g.putImageData(img, 0, 0);
     return (stampCache[w] = c);
   }
@@ -4599,7 +4674,7 @@
     const s = stampToast, D = 2.6;
     s.t += dt;
     if (s.t > D) { stampToast = null; return; }
-    const k = s.t < 0.18 ? 2.6 - (s.t / 0.18) * 1.1 : 1.5, img = stampArt(s.w), size = Math.round(60 * k);
+    const base = Math.min(STAMP_SZ, H * 0.42), k = s.t < 0.18 ? 2 - (s.t / 0.18) : 1, img = stampArt(s.w), size = Math.round(base * k);
     const y = Math.round(Math.max(safe.t + 26, H * 0.16));
     ctx.globalAlpha = s.t > D - 0.4 ? (D - s.t) / 0.4 : 1;
     ctx.save();
@@ -4607,7 +4682,7 @@
     ctx.rotate(-0.12);
     ctx.drawImage(img, -size / 2, -size / 2, size, size);
     ctx.restore();
-    if (s.t > 0.18) text(T('NOUVEAU TAMPON !', 'NEW STAMP!'), cx, y + 96, 8, '#fff3b0', 'center');
+    if (s.t > 0.18) text(T('NOUVEAU TAMPON !', 'NEW STAMP!'), cx, Math.round(y + base + 8), 8, '#fff3b0', 'center');
     ctx.globalAlpha = 1;
   }
 
@@ -4615,7 +4690,7 @@
   const carnet = document.getElementById('carnet'), caPage = document.getElementById('caPage');
   function openCarnet() {
     holding = false;
-    const wide = window.innerWidth > window.innerHeight, cols = wide ? 5 : 2, rows = Math.ceil(STAMP_ORDER.length / cols), cell = 72;
+    const wide = window.innerWidth > window.innerHeight, cols = wide ? 5 : 2, rows = Math.ceil(STAMP_ORDER.length / cols), cell = STAMP_SZ + 10, h = STAMP_SZ / 2;
     caPage.width = cols * cell + 16; caPage.height = rows * cell + 12;
     const g = caPage.getContext('2d'), Wp = caPage.width, Hp = caPage.height;
     g.imageSmoothingEnabled = false;
@@ -4626,16 +4701,16 @@
       const x = 8 + (i % cols) * cell + 6, y = 6 + ((i / cols) | 0) * cell + 6;
       if (stamps.includes(w)) {
         g.save();
-        g.translate(x + 30, y + 30);
+        g.translate(x + h, y + h);
         g.rotate(((hash(w * 7 + 3) % 15) - 7) * Math.PI / 180);
         g.globalAlpha = 0.9;
-        g.drawImage(stampArt(w), -30, -30);
+        g.drawImage(stampArt(w), -h, -h);
         g.restore();
       } else {
         g.fillStyle = '#c9b996';
-        for (let a = 0; a < 48; a++) { const t = a / 48 * Math.PI * 2; if (a % 2 === 0) g.fillRect(Math.round(x + 30 + Math.cos(t) * 27), Math.round(y + 30 + Math.sin(t) * 27), 2, 2); }
+        for (let a = 0; a < 48; a++) { const t = a / 48 * Math.PI * 2; if (a % 2 === 0) g.fillRect(Math.round(x + h + Math.cos(t) * (h - 4)), Math.round(y + h + Math.sin(t) * (h - 4)), 2, 2); }
         // Point d'interrogation dessiné à la main (la petite police n'en a pas).
-        for (const [qx, qy] of [[1, 0], [2, 0], [3, 1], [3, 2], [2, 3], [2, 4], [2, 6]]) g.fillRect(x + 22 + qx * 4, y + 18 + qy * 4, 4, 4);
+        for (const [qx, qy] of [[1, 0], [2, 0], [3, 1], [3, 2], [2, 3], [2, 4], [2, 6]]) g.fillRect(x + h - 10 + qx * 4, y + h - 14 + qy * 4, 4, 4);
       }
     });
     document.getElementById('caCount').textContent = T(stamps.length + ' tampon' + (stamps.length > 1 ? 's' : '') + ' sur ' + STAMP_ORDER.length, stamps.length + ' of ' + STAMP_ORDER.length + ' stamps');
