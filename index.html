@@ -4989,18 +4989,26 @@
       ink(() => { g.arc(40, 60, 11, Math.PI, 0); }, 1.6, true);
       ink(() => { for (const x of [12, 22, 54, 64]) { g.moveTo(x, 60); g.lineTo(x + 5, 60); } }, 1.4, true);
     },
-    // Copenhague : la Petite Sirène assise sur son rocher, et les vagues.
+    // Copenhague : la Petite Sirène assise sur son rocher, tête penchée, et deux mouettes.
     11: (g, ink, cut) => {
-      ink(() => { g.ellipse(40, 56, 24, 8, 0, Math.PI, 0); g.rect(16, 55, 48, 3); });
-      cut(() => { g.moveTo(24, 53); g.lineTo(30, 51); g.moveTo(46, 50); g.lineTo(54, 53); }, 1.2, true);
-      ink(() => { g.moveTo(28, 50); g.quadraticCurveTo(41, 55, 52, 47); g.lineTo(58, 42); g.lineTo(57, 48); g.lineTo(62, 50); g.lineTo(53, 51); g.quadraticCurveTo(41, 58, 28, 54); g.closePath(); });
-      ink(() => { g.moveTo(30, 50); g.lineTo(33, 32); g.quadraticCurveTo(37, 28, 42, 31); g.lineTo(44, 49); g.closePath(); });
-      ink(() => { g.arc(37, 24, 5, 0, Math.PI * 2); });
-      ink(() => { g.moveTo(33, 21); g.quadraticCurveTo(29, 28, 32, 36); }, 2.4, true);
-      ink(() => { g.moveTo(42, 33); g.lineTo(47, 42); }, 2.6, true);
-      cut(() => { g.moveTo(36, 36); g.quadraticCurveTo(38, 40, 36, 46); }, 1, true);
-      ink(() => { g.arc(60, 18, 6, 0, Math.PI * 2); });
-      ink(() => { for (const y of [62, 66]) for (let x = 12 + (y === 66 ? 5 : 0); x < 68; x += 10) { g.moveTo(x, y); g.lineTo(x + 6, y); } }, 1.5, true);
+      const tail = () => { g.moveTo(51, 45); g.quadraticCurveTo(40, 51, 30, 46); g.lineTo(23, 40); g.lineTo(25, 47); g.lineTo(19, 51); g.lineTo(31, 50); g.quadraticCurveTo(42, 56, 53, 49); g.closePath(); };
+      const body = () => { g.moveTo(40, 46); g.lineTo(41, 34); g.quadraticCurveTo(44, 27, 49, 30); g.lineTo(53, 40); g.lineTo(52, 46); g.closePath(); };
+      // Le rocher.
+      ink(() => { g.moveTo(16, 62); g.lineTo(24, 52); g.lineTo(36, 49); g.lineTo(52, 48); g.lineTo(64, 50); g.lineTo(72, 62); g.closePath(); });
+      cut(() => { g.moveTo(28, 56); g.lineTo(35, 54); g.moveTo(58, 54); g.lineTo(65, 58); g.moveTo(44, 58); g.lineTo(50, 59); }, 1.1, true);
+      // Un liseré de papier détache la sirène du rocher.
+      cut(() => { tail(); body(); }, 2.4, true);
+      ink(tail);
+      ink(body);
+      // Tête penchée et chignon, cou.
+      ink(() => { g.arc(44, 21, 5.5, 0, Math.PI * 2); g.moveTo(51.8, 17.5); g.arc(49, 17.5, 2.8, 0, Math.PI * 2); g.rect(44, 25, 3, 5); });
+      // Un bras appuyé sur le rocher, l'autre sur les genoux.
+      ink(() => { g.moveTo(49, 31); g.lineTo(55, 40); g.lineTo(56, 48); }, 3, true);
+      cut(() => { g.moveTo(43, 34); g.quadraticCurveTo(46, 39, 45, 44); }, 1, true);
+      // Écailles sur la queue.
+      cut(() => { g.moveTo(33, 49); g.quadraticCurveTo(41, 52, 48, 49); }, 0.9, true);
+      // Deux mouettes.
+      ink(() => { for (const [x, y] of [[18, 26], [27, 18]]) { g.moveTo(x - 4, y - 1); g.quadraticCurveTo(x - 2, y - 3, x, y); g.quadraticCurveTo(x + 2, y - 3, x + 4, y - 1); } }, 1.4, true);
     },
     // Pays des Bonbons : une grande sucette en spirale avec son nœud, et des étoiles.
     5: (g, ink, cut) => {
