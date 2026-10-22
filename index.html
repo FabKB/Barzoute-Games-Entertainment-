@@ -244,6 +244,19 @@
   </div>
 </div>
 <script>
+// Si le jeu plante au démarrage, on affiche l'erreur au lieu d'un écran vide (utile pour corriger).
+(() => {
+  const show = msg => {
+    if (window.__gameStarted) return;
+    let el = document.getElementById('bootError');
+    if (!el) { el = document.createElement('pre'); el.id = 'bootError'; el.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99;margin:0;padding:8px;background:#fff3b0;color:#3b2550;font:12px/1.4 monospace;white-space:pre-wrap;word-break:break-word;border:2px solid #3b2550'; document.body.append(el); }
+    el.textContent += (el.textContent ? '\n' : '') + 'Erreur : ' + msg;
+  };
+  window.addEventListener('error', e => show((e.message || e) + (e.lineno ? ' (ligne ' + e.lineno + ':' + e.colno + ')' : '')));
+  window.addEventListener('unhandledrejection', e => { const r = e.reason || {}; show((r.message || r) + (r.stack ? '\n' + String(r.stack).split('\n').slice(0, 3).join('\n') : '')); });
+})();
+</script>
+<script>
 (async () => {
   'use strict';
 
@@ -5571,6 +5584,7 @@
   resize();
   resetWorld();
   renderSoundBtn();
+  window.__gameStarted = true;
   requestAnimationFrame(frame);
 })();
 </script>
