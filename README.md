@@ -65,9 +65,9 @@ Chaque partie traverse **4 mondes tirés au hasard** parmi les 11 ci-dessous, à
 - **Balade en Slovénie** : les Alpes juliennes et le Triglav enneigé, le lac de Bled couleur émeraude avec son île, son église et ses barques « pletna », le château de Bled sur sa falaise, une prairie avec des kozolec (séchoirs à foin) ; plateformes en kremšnita (le gâteau à la crème de Bled), en ruches peintes et en bois de kozolec ; polka alpine à l'accordéon.
 - **Hong Kong**, de nuit : Victoria Peak, la Bank of China Tower et l'IFC, une jonque aux voiles rouges et le Star Ferry sur le port, enseignes au néon, tramway « ding-ding » et taxi rouge ; plateformes en paniers vapeur à dim sum, enseignes lumineuses et échafaudages en bambou ; pop cantonaise à la flûte.
 - **Dolce Toscana** : collines, cyprès et vignes ; à Florence, le Duomo, le campanile de Giotto, le Palazzo Vecchio et le Ponte Vecchio sur l'Arno ; à Sienne, la Torre del Mangia, le Palazzo Pubblico et la cathédrale rayée ; les hautes tours de San Gimignano ; la tour penchée de Pise et son baptistère ; plateformes en marbre rayé noir et blanc, toits de tuiles et panforte ; saltarello à la mandoline.
-- **Amsterdam** : d'abord la ville, avec ses maisons étroites à pignons (à gradins, en cloche, pointus) le long du canal, la Westerkerk et sa couronne bleue et or, un pont en briques avec des vélos garés, des ormes et une péniche fleurie ; puis, à partir du milieu du monde, la campagne avec ses moulins à vent et ses champs de tulipes en bandes de couleurs ; plateformes en briques hollandaises, en gouda et en parterres de tulipes ; air d'orgue de Barbarie.
+- **Amsterdam** : la campagne hollandaise, avec ses moulins à vent et ses champs de tulipes en bandes de couleurs ; plateformes en briques hollandaises, en gouda et en parterres de tulipes ; air d'orgue de Barbarie.
 - **Copenhague** : le port de Nyhavn et ses maisons colorées aux toits de tuiles, les mâts des voiliers, la flèche torsadée de l'église du Sauveur, des bateaux en bois amarrés et la Petite Sirène sur son rocher ; plateformes en façades de bois peint, en briques de construction et en viennoiserie danoise ; chant de marins à la flûte et à l'accordéon.
-- **Île des Pirates** (monde imaginaire) : d'abord le port des pirates, avec ses maisons en bois sur pilotis, ses lanternes et ses enseignes, des navires aux drapeaux à tête de mort rigolote, un ponton avec tonneaux, caisses, cordages et un perroquet ; puis, à partir du milieu du monde, l'île au trésor : eau turquoise, colline et palmiers, un rocher en forme de crâne qui sourit, un galion au loin, et sur la plage un coffre au trésor ouvert, la croix rouge, une pelle et un crabe ; plateformes en planches de pont, en sable à coquillages et en coffres au trésor ; dans ce monde, les étoiles deviennent des **pièces d'or** (elles comptent pareil) ; gigue de pirates façon console.
+- **Île des Pirates** (monde imaginaire) : l'île au trésor, avec son eau turquoise, sa colline et ses palmiers, un gros rocher sculpté en tête de mort souriante (grandes orbites, dents de pierre, mousse sur le crâne), un galion au loin, et sur la plage un coffre au trésor ouvert, la croix rouge, une pelle et un crabe ; plateformes en planches de pont, en sable à coquillages et en coffres au trésor ; dans ce monde, les étoiles deviennent des **pièces d'or** (elles comptent pareil) ; gigue de pirates façon console.
 
 À mi-parcours de chaque monde, un spectacle passe dans le décor (sans effet sur le jeu) :
 
@@ -109,7 +109,9 @@ Sur l'écran titre, le bouton **carnet** (en haut à droite, à côté du son) o
 - **Cap Canaveral** : au décollage de la fusée.
 - **Pays des Bonbons** : en arrivant sur la Lune dans le niveau bonus.
 
-Un nouveau tampon tombe sur l'écran avec « NOUVEAU TAMPON ! ». Les tampons manquants apparaissent en pointillés avec un « ? ». Le carnet est gardé dans le téléphone.
+Un nouveau tampon tombe sur l'écran avec « NOUVEAU TAMPON ! », seul au milieu de l'écran : le nom du monde suivant et l'avion à banderole attendent qu'il ait disparu. En fin de partie (décollage de la fusée, Lune du niveau bonus), le tampon est posé sur le panneau, à côté du personnage.
+
+Le carnet montre **un tampon par page**, avec le numéro de la page et le nom du lieu dessous. On tourne les pages avec les flèches, en glissant le doigt sur la page, ou avec les flèches du clavier ; il s'ouvre à la page du dernier tampon gagné. Les tampons manquants apparaissent en pointillés avec un « ? » et « À DÉCOUVRIR ». Le carnet est gardé dans le téléphone.
 
 ### Langue
 

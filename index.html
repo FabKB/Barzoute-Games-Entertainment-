@@ -83,7 +83,16 @@
   .overlay[hidden] { display: none; }
   /* Ordre d'empilement : la galerie, puis l'atelier, puis l'achat, puis le contrôle parental tout devant. */
   #gallery, #carnet { z-index: 5; }
-  #caPage { image-rendering: pixelated; width: auto; height: auto; max-width: 100%; max-height: 62vh; display: block; margin: 0 auto; border: 3px solid #8a5a3b; border-radius: 4px; background: #f6edd9; }
+  /* Le carnet : une page à la fois, qu'on tourne avec les flèches ou en glissant le doigt. */
+  .ca-book { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #caPage { image-rendering: pixelated; height: min(52vh, 336px); width: auto; max-width: calc(100% - 96px); aspect-ratio: 112 / 140; display: block; border: 3px solid #8a5a3b; border-left-width: 8px; border-radius: 2px 6px 6px 2px; background: #f6edd9; touch-action: pan-y; cursor: grab; }
+  #caPage.turn-next { animation: caTurnNext 0.32s ease-in-out; transform-origin: left center; }
+  #caPage.turn-prev { animation: caTurnPrev 0.32s ease-in-out; transform-origin: right center; }
+  @keyframes caTurnNext { 50% { transform: perspective(600px) rotateY(-88deg); } }
+  @keyframes caTurnPrev { 50% { transform: perspective(600px) rotateY(88deg); } }
+  @media (prefers-reduced-motion: reduce) { #caPage.turn-next, #caPage.turn-prev { animation: none; } }
+  .cr-box .ca-book button { padding: 10px 12px; font-size: 14px; }
+  #caName { color: #fff3b0; min-height: 1.6em; }
   #creator { z-index: 6; } #paywall { z-index: 7; } #gate { z-index: 8; }
   .cr-box {
     width: min(100%, 420px); margin: auto;
@@ -207,7 +216,12 @@
   <div class="cr-box">
     <h2 id="caTitle" data-en="MY TRAVEL BOOK">MON CARNET DE VOYAGE</h2>
     <p id="caCount"></p>
-    <canvas id="caPage" width="160" height="380" aria-label="Les tampons des pays visités" data-en-label="Stamps of the places visited"></canvas>
+    <div class="ca-book">
+      <button id="caPrev" type="button" aria-label="Page précédente" data-en-label="Previous page">&lt;</button>
+      <canvas id="caPage" width="112" height="140" aria-label="Le tampon de cette page" data-en-label="The stamp on this page"></canvas>
+      <button id="caNext" type="button" aria-label="Page suivante" data-en-label="Next page">&gt;</button>
+    </div>
+    <p id="caName" aria-live="polite"></p>
     <button id="caClose" type="button" data-en="CLOSE">FERMER</button>
   </div>
 </div>
@@ -261,7 +275,7 @@
   'use strict';
 
   // Numéro affiché sur l'écran titre, pour vérifier que la dernière version est bien chargée.
-  const VERSION = 'v43';
+  const VERSION = 'v44';
   // Langue du téléphone : français si sa première langue est le français, anglais sinon.
   const LANG = (() => { try { return /^fr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'fr' : 'en'; } catch (e) { return 'en'; } })();
   const T = (fr, en) => (LANG === 'fr' ? fr : en);
@@ -2167,8 +2181,7 @@
     return null;
   });
 
-  // Île des Pirates, le port : maisons en bois sur pilotis, lanternes, enseignes, et des navires
-  // dont les drapeaux portent une tête de mort rigolote.
+  // Drapeau pirate à tête de mort rigolote.
   function jollyFlag(x, fb, fx, fy) {
     const lx = x - fx, ly = fy - fb;
     if (lx < 0 || lx > 8 || ly < 0 || ly > 5) return null;
@@ -2177,66 +2190,39 @@
     if (ly === 4 && (lx === 3 || lx === 5)) return '#ffffff';
     return '#2a2433';
   }
-  const pirPortFar = paintStrip(640, 100, (x, y) => {
-    const fb = 99 - y;
-    // Navires amarrés : coque, mâts, voiles roulées et drapeau.
-    for (const sx of [80, 330, 560]) {
-      const lx = x - sx;
-      if (lx >= -30 && lx <= 30) {
-        if (fb < 12 && Math.abs(lx) <= 30 - (12 - fb) * 0.9) return fb === 11 ? '#e9a42a' : (fb % 4 === 0 ? '#3e2614' : '#5a3a20');
-        for (const mx of [-12, 8]) {
-          if (lx === mx && fb < 66 + (mx > 0 ? 6 : 0)) return '#3e2614';
-          if (Math.abs(lx - mx) <= 9 && (fb === 40 || fb === 56) ) return '#5a3a20';
-          if (Math.abs(lx - mx) <= 8 && (fb === 41 || fb === 57)) return '#efe6d2';
-        }
-        const f = jollyFlag(x, fb, sx + 8, 76);
-        if (f) return f;
+  // Le rocher-crâne de l'île : un gros rocher sculpté en tête de mort souriante, éclairé par la gauche,
+  // avec des fissures, de la mousse sur le crâne et des dents en pierre.
+  function skullRock(ex, fy) {
+    const ax = Math.abs(ex);
+    const cran = (ex / 23) ** 2 + ((fy - 31) / 21) ** 2 <= 1;
+    const jaw = fy >= 2 && fy < 22 && ax <= 15 - Math.max(0, 8 - fy) * 0.5;
+    const cheek = fy >= 14 && fy < 26 && ax <= 19 - (26 - fy) * 0.3;
+    const base = fy < 6 && ax <= 30 - fy * 2;
+    if (!(cran || jaw || cheek || base)) return null;
+    // Orbites : grandes, sombres, avec un petit reflet pour un air gentil.
+    for (const sx of [-9, 9]) {
+      const d = ((ex - sx) / 6.5) ** 2 + ((fy - 27) / 7) ** 2;
+      if (d <= 1) {
+        if ((ex - sx + 2.5) ** 2 + (fy - 30) ** 2 <= 2.2) return '#ffffff';
+        return d > 0.7 ? '#3b3346' : '#1d1826';
       }
     }
-    // Maisons sur pilotis.
-    const i = Math.floor(x / 26), lx = x % 26, k = hash(i * 41 + 7), h = 34 + k % 18;
-    if (lx >= 2 && lx <= 23) {
-      if (fb < 14) return (lx === 4 || lx === 12 || lx === 21) ? '#3e2614' : null;
-      if (fb === 14 || fb === 15) return '#5a3a20';
-      const roof = fb - h, d = Math.abs(lx - 12.5);
-      if (roof >= 0 && roof < 9 - d * 0.7) return (roof + lx) % 3 === 0 ? '#6a4a2a' : ['#8a3a22', '#4a5a3a', '#6a4a7a'][k % 3];
-      if (fb < h) {
-        if ((fb - 18) % 10 >= 2 && (fb - 18) % 10 <= 6 && (lx % 8 >= 3 && lx % 8 <= 5)) return hash(i * 5 + fb) % 3 ? '#ffd97a' : '#ffb347';
-        if (k % 4 === 0 && fb >= h - 8 && fb <= h - 4 && lx >= 7 && lx <= 18) return fb === h - 6 && lx >= 9 && lx <= 16 ? '#e9a42a' : '#3e2614';
-        return lx % 4 === 0 ? '#6a3e20' : ['#9a6a3e', '#8a5a34', '#a8784a'][k % 3];
-      }
+    // Nez en cœur à l'envers.
+    if (fy >= 16 && fy <= 20 && ax <= (fy - 15) * 0.8) return '#1d1826';
+    // Sourire : une bouche en arc, avec des dents.
+    const mouth = 10.5 - (1 - (ex / 13) ** 2) * 3;
+    if (ax <= 12 && fy >= mouth - 2 && fy <= mouth + 2.2) {
+      if (Math.abs(fy - mouth) > 1.4) return '#1d1826';
+      return (ex + 13) % 4 === 0 ? '#8a8494' : '#e8e2d4';
     }
-    return null;
-  });
-  // Le ponton : planches, tonneaux, caisses, cordages, une lanterne et un perroquet.
-  const pirPortMid = paintStrip(480, 56, (x, y) => {
-    const fb = 55 - y;
-    // Perroquet sur le poteau.
-    if (x >= 296 && x <= 302 && fb >= 26 && fb < 36) {
-      const lx = x - 296, ly = fb - 26;
-      if (ly >= 7 && lx >= 2 && lx <= 5) return lx === 4 && ly === 8 ? '#2a2433' : (lx === 5 && ly === 7 ? '#ffd84a' : '#d7263d');
-      if (ly >= 2 && ly < 7 && lx >= 1 && lx <= 4) return lx === 1 ? '#2a6fdb' : (ly < 4 ? '#2e9e4a' : '#d7263d');
-      if (ly < 2 && lx >= 0 && lx <= 2) return '#2a6fdb';
-    }
-    if (fb < 10) return x % 30 >= 14 && x % 30 <= 16 ? '#3e2614' : null;
-    if (fb < 13) return x % 9 === 0 ? '#5a3a20' : (fb === 12 ? '#a8784a' : '#8a5a34');
-    // Tonneaux.
-    for (const bx of [40, 52, 200, 420]) {
-      const dx = x - bx;
-      if (Math.abs(dx) <= 5 && fb < 26) { if (fb === 16 || fb === 22) return '#3b3a4a'; return Math.abs(dx) === 5 ? '#5a3a20' : (dx % 3 === 0 ? '#7a4a2a' : '#9a6a3e'); }
-    }
-    // Caisses.
-    for (const cx of [120, 360]) {
-      const dx = x - cx;
-      if (dx >= 0 && dx <= 14 && fb < 27) return (dx === 0 || dx === 14 || fb === 13 || fb === 26 || dx === fb - 13 || dx === 27 - fb) ? '#6a4a2a' : '#c08a5a';
-    }
-    // Poteaux, cordage et lanterne.
-    if ((x === 300 || x === 250) && fb < 26) return '#3e2614';
-    if (x >= 250 && x <= 300 && Math.abs(fb - (24 - Math.sin(((x - 250) / 50) * Math.PI) * 5)) < 0.8) return '#c9b48a';
-    if (x === 250 && fb >= 26 && fb < 30) return '#3e2614';
-    if (x >= 247 && x <= 253 && fb >= 30 && fb < 36) return (x === 247 || x === 253 || fb === 30 || fb === 35) ? '#2a2433' : '#ffd97a';
-    return null;
-  });
+    // Fissures et mousse.
+    if ((Math.round(ex * 0.7 + fy) === 44 && ex > 4 && ex < 13) || (ex === -15 && fy >= 34 && fy <= 39) || (Math.round(-ex * 0.8 + fy) === 26 && ex < -14 && ex > -19)) return '#5c5868';
+    if (cran && (ex / 23) ** 2 + ((fy - 31) / 21) ** 2 > 0.72 && fy > 40 && hash(ex * 13 + fy * 7) % 3) return hash(ex + fy * 5) % 2 ? '#3f8a4a' : '#2f7a4a';
+    // Pierre éclairée par la gauche, plus sombre à droite et en bas.
+    const sh = ex / 23 - (fy - 26) / 60 + ((hash(ex * 31 + fy * 17) % 7) - 3) * 0.04;
+    if (cran && (ex / 23) ** 2 + ((fy - 31) / 21) ** 2 > 0.86 && fy > 26) return '#5c5868';
+    return sh < -0.45 ? '#e2dfe8' : sh < 0 ? '#c6c2d0' : sh < 0.45 ? '#a6a1b4' : '#86809a';
+  }
   // Île des Pirates, l'île au trésor : l'île au rocher en forme de crâne rigolo, et un galion au loin.
   const pirIslandFar = paintStrip(640, 90, (x, y) => {
     const fb = 89 - y;
@@ -2257,14 +2243,8 @@
     const ix = x - 260;
     if (ix >= -120 && ix <= 140) {
       const hill = 26 * Math.exp(-(((ix + 30) / 70) ** 2));
-      const skull = ((ix - 60) / 26) ** 2 + ((fb - 22) / 24) ** 2 <= 1;
-      if (skull) {
-        const ex = ix - 60;
-        if (((ex + 9) ** 2 + (fb - 28) ** 2 <= 20) || ((ex - 9) ** 2 + (fb - 28) ** 2 <= 20)) return '#2a2433';
-        if (Math.abs(ex) <= 2 && fb >= 18 && fb <= 22) return '#2a2433';
-        if (fb >= 10 && fb <= 13 && Math.abs(ex) <= 12 && Math.abs(fb - (11.5 - Math.cos(ex / 12 * 1.4) * 1.5)) < 1) return '#2a2433';
-        return (ex + fb) % 9 === 0 ? '#9a9aa8' : '#b8b8c4';
-      }
+      const c = skullRock(ix - 72, fb - 2);
+      if (c) return c;
       if (fb < 4) return '#f2dca0';
       if (fb < 4 + hill) return (ix + fb * 3) % 11 === 0 ? '#2f7a4a' : '#3f8a4a';
       for (const cx of [-90, -50, 0]) { const c = palmPix(x, fb - 4 - 26 * Math.exp(-(((cx + 30) / 70) ** 2)), 260 + cx, 18); if (c) return c; }
@@ -2294,83 +2274,6 @@
     return null;
   });
 
-  // Amsterdam, en ville : maisons étroites à pignons le long du canal, et la Westerkerk.
-  const AMS_HOUSE = ['#7a3418', '#9a4426', '#3b2f2a', '#e9dcc0', '#4a5a6a', '#2f4a3a', '#5a2a1a'];
-  const amsCityFar = paintStrip(640, 96, (x, y) => {
-    const fb = 95 - y;
-    // La Westerkerk : tour carrée, couronne bleue et or, flèche.
-    if (x >= 296 && x <= 310) {
-      const dx = x - 303;
-      if (fb < 58) return x === 296 || x === 310 ? '#5a2a1a' : (fb % 12 >= 4 && fb % 12 <= 9 && Math.abs(dx) <= 2 ? '#2a2433' : '#8a3a22');
-      if (fb < 70 && Math.abs(dx) <= 5) return fb % 4 === 0 ? '#e0c27a' : '#3a5fa8';
-      if (fb < 74 && Math.abs(dx) <= 3) return '#e0c27a';
-      if (fb < 88 && Math.abs(dx) <= Math.max(0, (88 - fb) / 5)) return '#3a5fa8';
-      if (fb < 92 && dx === 0) return '#e0c27a';
-    }
-    const i = Math.floor(x / 17), lx = x % 17;
-    if (lx === 16) return null;
-    const k = hash(i * 37 + 5), h = 44 + k % 22, col = AMS_HOUSE[k % AMS_HOUSE.length], light = col === '#e9dcc0';
-    const frame = light ? '#7a3418' : '#f4efe4';
-    if (fb < 3) return '#6a5a4a';
-    // Pignons : à gradins, en cloche ou pointu.
-    let top = h;
-    const d = Math.abs(lx - 7.5), gable = (k >> 3) % 3;
-    if (gable === 0) top = h + (d < 2 ? 12 : d < 4 ? 9 : d < 6 ? 5 : 2);
-    else if (gable === 1) top = h + (d < 2.5 ? 13 : 13 * Math.sqrt(Math.max(0, 1 - ((d - 2.5) / 6) ** 2)));
-    else top = h + Math.max(0, 12 - d * 1.5);
-    if (fb >= top) return null;
-    if (fb >= top - 1) return frame;
-    // Poutre de levage sous le sommet du pignon.
-    if (fb >= h + 2 && fb <= h + 3 && lx >= 7 && lx <= 8) return '#2a2433';
-    // Fenêtres à cadres blancs, trois par étage.
-    const cy = (fb - 4) % 9;
-    if (fb >= 4 && fb < h - 2 && cy >= 2 && cy <= 7) for (const wx of [2, 7, 12]) if (lx >= wx && lx <= wx + 2) return (lx === wx || lx === wx + 2 || cy === 2 || cy === 7 || cy === 5) ? frame : '#2f3b57';
-    if (fb >= h - 1 && fb < h + 1) return frame;
-    return col;
-  });
-  // Au bord du canal : un pont en briques avec des vélos, des ormes, des réverbères et une péniche.
-  const amsCityMid = paintStrip(480, 56, (x, y) => {
-    const fb = 55 - y;
-    if (x >= 150 && x <= 330) {
-      const lx = x - 150, d = Math.abs(lx - 90);
-      const arch = fb < 18 * Math.sqrt(Math.max(0, 1 - (d / 40) ** 2)) && d < 40;
-      if (fb < 26 && !arch) {
-        if (fb >= 24) return '#3a2a2a';
-        return (fb % 4 === 0 || (lx + ((fb >> 2) % 2) * 3) % 6 === 0) ? '#7a3418' : '#a04a2a';
-      }
-      if (arch && fb >= 16) return '#5a2a1a';
-      // Vélos garés contre la rambarde.
-      if (fb >= 26 && fb < 36) {
-        const bx = lx % 22;
-        if (bx < 16 && hash(Math.floor(lx / 22) * 7) % 3 !== 0) {
-          for (const wx of [3, 12]) { const r = Math.hypot(bx - wx, fb - 30); if (r >= 2.5 && r <= 3.6) return '#2a2433'; }
-          if (fb === 31 && bx >= 3 && bx <= 12) return '#2a2433';
-          if (bx === 7 && fb >= 30 && fb <= 34) return '#2a2433';
-          if (fb === 34 && bx >= 5 && bx <= 9) return ['#d7263d', '#2a6fdb', '#2e9e4a'][hash(Math.floor(lx / 22)) % 3];
-        }
-        if (fb === 26 || fb === 35 || lx % 10 === 0) return '#2a2433';
-      }
-      return null;
-    }
-    // Péniche aménagée, avec des plantes sur le toit.
-    if (x >= 20 && x <= 100 && fb < 20) {
-      const lx = x - 20;
-      if (fb < 5) return fb === 4 ? '#2a2433' : '#2f4a3a';
-      if (fb < 14 && lx > 6 && lx < 74) return (lx % 12 >= 4 && lx % 12 <= 8 && fb >= 7 && fb <= 11) ? '#ffd97a' : '#e86a2a';
-      if (fb >= 14 && fb < 16 && lx > 4 && lx < 76) return '#3b2f2a';
-      if (fb >= 16 && lx > 10 && lx < 70 && hash(lx * 3) % 3 === 0) return hash(lx * 7 + fb) % 2 ? '#3fa060' : '#ff4d6d';
-      return null;
-    }
-    // Ormes et réverbères.
-    for (const tx of [130, 360, 440]) {
-      const dx = x - tx;
-      if (Math.abs(dx) <= 1 && fb < 24) return '#4a3020';
-      if ((dx / 12) ** 2 + ((fb - 34) / 13) ** 2 <= 1) return hash(x * 7 + y * 13) % 5 === 0 ? '#4f8a45' : '#3f7a3a';
-    }
-    if (x === 400 && fb < 30) return '#2a2433';
-    if (x >= 398 && x <= 402 && fb >= 30 && fb <= 33) return fb === 33 ? '#2a2433' : '#ffd97a';
-    return null;
-  });
   // Amsterdam, à la campagne : moulins à vent et champs de tulipes.
   function millPix(x, fb, cx, h, sails) {
     const dx = x - cx, hub = h + 2, R = h * 0.62;
@@ -3294,8 +3197,9 @@
       if (!trans.switched && curtainX() <= -30) { trans.switched = true; switchWorld(trans.to); }
       if (trans.t >= TRANS_DUR) { trans = null; graceUntil = time + GRACE; }
     }
-    if (plane) { plane.t += dt; if (plane.t > PLANE_DUR) plane = null; }
-    if (worldCard > 0) worldCard -= dt;
+    // Un seul texte à la fois au milieu de l'écran : le tampon gagné, puis le nom du monde, puis l'avion.
+    if (worldCard > 0 && !stampQueue.length) worldCard -= dt;
+    if (plane && !stampQueue.length && !(worldCard > 0)) { plane.t += dt; if (plane.t > PLANE_DUR) plane = null; }
     for (const q of petals) {
       if (q.rain) { q.x -= (25 + speed * 0.2) * dt; q.y += 130 * dt; }
       else {
@@ -4146,23 +4050,11 @@
       drawWater(far, '#4f7a8a', '#fff4c0');
       drawStrip(tuscMid, 0.3, H * 0.82 - vOff * 0.3, '#c08a5a');
     } else if (world === 10) {
-      // Amsterdam : la ville et ses canaux, puis la campagne à partir du milieu du monde.
+      // Amsterdam : moulins à vent et champs de tulipes.
       drawDisc(goldSunC, W * 0.76, H * 0.2);
       drawBgClouds();
-      const d = Math.max(0, Math.floor((player.x - distStart) / 16)) % WORLD_EVERY, k = clamp((d - 45) / 10, 0, 1);
-      const far = H * 0.64 - vOff * 0.12;
-      if (k < 1) {
-        ctx.globalAlpha = 1 - k;
-        drawStrip(amsCityFar, 0.1, far, '#3d5f7a');
-        drawWater(far, '#3d5f7a', '#bcd6ea');
-        drawStrip(amsCityMid, 0.3, H * 0.84 - vOff * 0.3, '#3d5f7a');
-      }
-      if (k > 0) {
-        ctx.globalAlpha = k;
-        drawStrip(amsCountryFar, 0.1, H * 0.7 - vOff * 0.12, '#5a9a4e');
-        drawStrip(amsCountryMid, 0.3, H * 0.86 - vOff * 0.3, '#3fa060');
-      }
-      ctx.globalAlpha = 1;
+      drawStrip(amsCountryFar, 0.1, H * 0.7 - vOff * 0.12, '#5a9a4e');
+      drawStrip(amsCountryMid, 0.3, H * 0.86 - vOff * 0.3, '#3fa060');
     } else if (world === 11) {
       // Copenhague : Nyhavn, ses maisons colorées et ses voiliers.
       drawDisc(goldSunC, W * 0.2, H * 0.2);
@@ -4172,25 +4064,13 @@
       drawWater(far, '#2f5a7a', '#cfe4f2');
       drawStrip(cphMid, 0.3, H * 0.86 - vOff * 0.3, '#2f5a7a');
     } else if (world === PIRATE_WORLD) {
-      // Île des Pirates : le port sur pilotis, puis l'île au trésor à partir du milieu du monde.
+      // Île des Pirates : l'île au trésor et son rocher-crâne.
       drawDisc(goldSunC, W * 0.7, H * 0.22);
       drawBgClouds();
-      const d = Math.max(0, Math.floor((player.x - distStart) / 16)) % WORLD_EVERY, k = clamp((d - 45) / 10, 0, 1);
-      if (k < 1) {
-        ctx.globalAlpha = 1 - k;
-        const far = H * 0.64 - vOff * 0.12;
-        drawStrip(pirPortFar, 0.1, far, '#1f6f8a');
-        drawWater(far, '#1f6f8a', '#bfefff');
-        drawStrip(pirPortMid, 0.3, H * 0.86 - vOff * 0.3, '#1f6f8a');
-      }
-      if (k > 0) {
-        ctx.globalAlpha = k;
-        const far = H * 0.6 - vOff * 0.12;
-        drawStrip(pirIslandFar, 0.1, far, '#2fb5b0');
-        drawWater(far, '#2fb5b0', '#c8fff4');
-        drawStrip(pirIslandMid, 0.3, H * 0.86 - vOff * 0.3, '#f2dca0');
-      }
-      ctx.globalAlpha = 1;
+      const far = H * 0.6 - vOff * 0.12;
+      drawStrip(pirIslandFar, 0.1, far, '#2fb5b0');
+      drawWater(far, '#2fb5b0', '#c8fff4');
+      drawStrip(pirIslandMid, 0.3, H * 0.86 - vOff * 0.3, '#f2dca0');
     } else if (world === 9) {
       drawBgClouds();
       drawStrip(capeFar, 0.1, H * 0.72 - vOff * 0.12, '#4f7a4a');
@@ -4407,6 +4287,8 @@
     if (bonusEnd) text(T('QUEL VOYAGE !', 'WHAT A TRIP!'), cx, y, 8, '#fff3b0', 'center');
     else if (!newRecord || Math.floor(time * 3) % 2 === 0) text(newRecord ? T('NOUVEAU RECORD !', 'NEW RECORD!') : launchEnd ? T('MISSION ACCOMPLIE', 'MISSION COMPLETE') : T('BRAVO !', 'WELL DONE!'), cx, y, 8, '#fff3b0', 'center');
     y += 14;
+    const stSize = Math.min(56, heroH + 8);
+    goStampSpot = { x: px + pw - Math.round(stSize / 2) - 6, y: y + Math.round(heroH / 2), size: stSize };
     const spr = idleSprite(hero(), false), hop = Math.round(Math.abs(Math.sin(goT * 5)) * 6);
     ctx.drawImage(spr, Math.round(cx - spr.width * s / 2), y + heroH - spr.height * s - hop, spr.width * s, spr.height * s);
     if (Math.floor(time * 4) % 2) { ctx.drawImage(sprStar, cx - 30, y + 6); ctx.drawImage(sprStar, cx + 23, y + 14); }
@@ -4501,7 +4383,7 @@
       if (gameMode === 'defi') text(T('DEFI', 'HARD'), x, y + 26, 8, '#ff9ecf');
       if (launch && launch.phase === 'count') rainbowText(String(Math.max(1, 3 - Math.floor(launch.t))), cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
       if (launch && launch.phase === 'lift' && launch.t < 2) rainbowText(T('DECOLLAGE !', 'LIFT-OFF!'), cx, Math.round(Math.max(safe.t + 40, H * 0.25)), 16);
-      if (worldCard > 0) {
+      if (worldCard > 0 && !stampQueue.length) {
         ctx.globalAlpha = clamp(worldCard / 0.5, 0, 1);
         const cy = Math.round(Math.max(safe.t + 52, H * 0.3));
         rainbowText(bonus ? 'BONUS' : world === LAUNCH_WORLD ? 'FINALE' : T('MONDE ', 'WORLD ') + (route.indexOf(world) + 1) + '/' + ROUTE_LEN, cx, cy, 16);
@@ -5307,7 +5189,9 @@
     A: '.#.#.#####.##.#', B: '##.#.###.#.###.', C: '.###..#..#...##', D: '##.#.##.##.###.', E: '####..##.#..###', F: '####..##.#..#..',
     G: '.###..#.##.#.##', H: '#.##.#####.##.#', I: '###.#..#..#.###', J: '..#..#..##.#.#.', K: '#.##.###.#.##.#', L: '#..#..#..#..###',
     M: '#.########.##.#', N: '##.#.##.##.##.#', O: '.#.#.##.##.#.#.', P: '##.#.###.#..#..', R: '##.#.###.#.##.#', S: '.###...#...###.',
-    T: '###.#..#..#..#.', U: '#.##.##.##.####', V: '#.##.##.##.#.#.', W: '#.##.########.#', Y: '#.##.#.#..#..#.', Z: '###..#.#.#..###'
+    T: '###.#..#..#..#.', U: '#.##.##.##.####', V: '#.##.##.##.#.#.', W: '#.##.########.#', Y: '#.##.#.#..#..#.', Z: '###..#.#.#..###',
+    // Chiffres et barre, pour les numéros de page du carnet.
+    '0': '####.##.##.####', '1': '.#.##..#..#.###', '2': '###..#####..###', '3': '###..#.##..####', '4': '#.##.####..#..#', '5': '####..###..####', '6': '####..####.####', '7': '###..#.#..#..#.', '8': '####.#####.####', '9': '####.####..####', '/': '..#..#.#.#..#..'
   };
   function pixelText(g, txt, x, y) {
     for (const ch of txt) {
@@ -5359,20 +5243,38 @@
   }
   let stamps = [];
   try { stamps = JSON.parse(store.get('tampons', '[]')).filter(w => STAMP_INFO[w]); } catch (e) { stamps = []; }
-  let stampToast = null;
+  // Tampons gagnés qui attendent d'être montrés, un par un.
+  const stampQueue = [];
+  let goStampSpot = null;
   function earnStamp(w) {
     if (!STAMP_INFO[w] || stamps.includes(w)) return;
     stamps.push(w);
     store.set('tampons', JSON.stringify(stamps));
-    stampToast = { w, t: 0 };
+    stampQueue.push({ w, t: 0 });
     Sound.unlock();
   }
   // Le tampon qui « tombe » sur l'écran quand on le gagne.
   function drawStampToast(dt, cx) {
-    if (!stampToast) return;
-    const s = stampToast, D = 2.6;
+    if (mode === 'title' || (stampQueue[0] && stampQueue[0].go && mode !== 'gameover')) { stampQueue.length = 0; return; }
+    const s = stampQueue[0];
+    if (!s) return;
+    const D = 2.6;
+    // Fin de partie : le tampon est posé sur le panneau, à côté du personnage, et y reste.
+    if (mode === 'gameover' && goStampSpot) {
+      s.go = true;
+      s.t = Math.min(s.t + dt, 1);
+      const g = goStampSpot, k = s.t < 0.18 ? 2 - (s.t / 0.18) : 1, size = Math.round(g.size * k);
+      ctx.save();
+      ctx.translate(g.x, g.y);
+      ctx.rotate(0.14);
+      ctx.drawImage(stampArt(s.w), -size / 2, -size / 2, size, size);
+      ctx.restore();
+      return;
+    }
+    // On attend que les autres textes du milieu de l'écran aient disparu.
+    if (mode !== 'play' || unlockCard > 0 || (launch && (launch.phase === 'count' || (launch.phase === 'lift' && launch.t < 2)))) return;
     s.t += dt;
-    if (s.t > D) { stampToast = null; return; }
+    if (s.t > D) { stampQueue.shift(); return; }
     const base = Math.min(STAMP_SZ, H * 0.42), k = s.t < 0.18 ? 2 - (s.t / 0.18) : 1, img = stampArt(s.w), size = Math.round(base * k);
     const y = Math.round(Math.max(safe.t + 26, H * 0.16));
     ctx.globalAlpha = s.t > D - 0.4 ? (D - s.t) / 0.4 : 1;
@@ -5385,36 +5287,73 @@
     ctx.globalAlpha = 1;
   }
 
-  // La fenêtre du carnet : une page crème, les tampons gagnés posés de travers, les autres en pointillés.
+  // Le carnet : un tampon par page, posé de travers sur une page crème ; les tampons pas encore gagnés
+  // sont en pointillés avec un point d'interrogation. On tourne les pages avec les flèches ou en glissant le doigt.
   const carnet = document.getElementById('carnet'), caPage = document.getElementById('caPage');
-  function openCarnet() {
-    holding = false;
-    const wide = window.innerWidth > window.innerHeight, cols = wide ? 5 : 2, rows = Math.ceil(STAMP_ORDER.length / cols), cell = STAMP_SZ + 10, h = STAMP_SZ / 2;
-    caPage.width = cols * cell + 16; caPage.height = rows * cell + 12;
-    const g = caPage.getContext('2d'), Wp = caPage.width, Hp = caPage.height;
+  const caPrev = document.getElementById('caPrev'), caNext = document.getElementById('caNext'), caName = document.getElementById('caName');
+  let caAt = 0, caTurning = 0;
+  function drawCarnetPage() {
+    const w = STAMP_ORDER[caAt], g = caPage.getContext('2d'), Wp = caPage.width, Hp = caPage.height, h = STAMP_SZ / 2;
     g.imageSmoothingEnabled = false;
     g.fillStyle = '#f6edd9'; g.fillRect(0, 0, Wp, Hp);
-    g.fillStyle = '#e3d6ba'; for (let y = 10; y < Hp; y += 12) g.fillRect(0, y, Wp, 1);
-    g.fillStyle = '#e8a3a3'; g.fillRect(6, 0, 1, Hp);
-    STAMP_ORDER.forEach((w, i) => {
-      const x = 8 + (i % cols) * cell + 6, y = 6 + ((i / cols) | 0) * cell + 6;
-      if (stamps.includes(w)) {
-        g.save();
-        g.translate(x + h, y + h);
-        g.rotate(((hash(w * 7 + 3) % 15) - 7) * Math.PI / 180);
-        g.globalAlpha = 0.9;
-        g.drawImage(stampArt(w), -h, -h);
-        g.restore();
-      } else {
-        g.fillStyle = '#c9b996';
-        for (let a = 0; a < 48; a++) { const t = a / 48 * Math.PI * 2; if (a % 2 === 0) g.fillRect(Math.round(x + h + Math.cos(t) * (h - 4)), Math.round(y + h + Math.sin(t) * (h - 4)), 2, 2); }
-        // Point d'interrogation dessiné à la main (la petite police n'en a pas).
-        for (const [qx, qy] of [[1, 0], [2, 0], [3, 1], [3, 2], [2, 3], [2, 4], [2, 6]]) g.fillRect(x + h - 10 + qx * 4, y + h - 14 + qy * 4, 4, 4);
-      }
-    });
+    g.fillStyle = '#e3d6ba'; for (let y = 14; y < Hp - 8; y += 12) g.fillRect(4, y, Wp - 8, 1);
+    g.fillStyle = '#e8a3a3'; g.fillRect(12, 0, 1, Hp);
+    // Ombre de la reliure à gauche.
+    g.fillStyle = 'rgba(138, 90, 59, 0.18)'; g.fillRect(0, 0, 3, Hp);
+    const x = Math.round(Wp / 2 - h + 4), y = 22;
+    if (stamps.includes(w)) {
+      g.save();
+      g.translate(x + h, y + h);
+      g.rotate(((hash(w * 7 + 3) % 15) - 7) * Math.PI / 180);
+      g.globalAlpha = 0.9;
+      g.drawImage(stampArt(w), -h, -h);
+      g.restore();
+    } else {
+      g.fillStyle = '#c9b996';
+      for (let a = 0; a < 48; a++) { const t = a / 48 * Math.PI * 2; if (a % 2 === 0) g.fillRect(Math.round(x + h + Math.cos(t) * (h - 4)), Math.round(y + h + Math.sin(t) * (h - 4)), 2, 2); }
+      // Point d'interrogation dessiné à la main (la petite police n'en a pas).
+      for (const [qx, qy] of [[1, 0], [2, 0], [3, 1], [3, 2], [2, 3], [2, 4], [2, 6]]) g.fillRect(x + h - 10 + qx * 4, y + h - 14 + qy * 4, 4, 4);
+    }
+    // Numéro de page en bas, à l'encre du carnet.
+    const no = (caAt + 1) + '/' + STAMP_ORDER.length;
+    g.fillStyle = '#8a5a3b'; pixelText(g, no, Math.round(Wp / 2 - no.length * 2 + 4), Hp - 12);
+    caName.textContent = stamps.includes(w) ? stampLabel(w) : T('A DECOUVRIR', 'NOT FOUND YET');
+    caPrev.disabled = caAt === 0;
+    caNext.disabled = caAt === STAMP_ORDER.length - 1;
+  }
+  function turnCarnet(d) {
+    const to = caAt + d;
+    if (to < 0 || to >= STAMP_ORDER.length || caTurning) return;
+    Sound.jump();
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { caAt = to; drawCarnetPage(); return; }
+    caPage.classList.remove('turn-next', 'turn-prev');
+    void caPage.offsetWidth;
+    caPage.classList.add(d > 0 ? 'turn-next' : 'turn-prev');
+    // La nouvelle page apparaît quand l'ancienne est sur la tranche.
+    caTurning = setTimeout(() => { caAt = to; drawCarnetPage(); caTurning = 0; }, 160);
+  }
+  function openCarnet() {
+    holding = false;
+    // On ouvre le carnet à la page du dernier tampon gagné.
+    const last = stamps[stamps.length - 1];
+    caAt = Math.max(0, STAMP_ORDER.indexOf(last));
+    drawCarnetPage();
     document.getElementById('caCount').textContent = T(stamps.length + ' tampon' + (stamps.length > 1 ? 's' : '') + ' sur ' + STAMP_ORDER.length, stamps.length + ' of ' + STAMP_ORDER.length + ' stamps');
     carnet.hidden = false;
   }
+  caPrev.addEventListener('click', () => turnCarnet(-1));
+  caNext.addEventListener('click', () => turnCarnet(1));
+  // Glisser le doigt vers la gauche : page suivante ; vers la droite : page précédente.
+  let caSwipe = null;
+  caPage.addEventListener('pointerdown', e => { caSwipe = { x: e.clientX, y: e.clientY }; });
+  caPage.addEventListener('pointerup', e => {
+    if (!caSwipe) return;
+    const dx = e.clientX - caSwipe.x, dy = e.clientY - caSwipe.y;
+    caSwipe = null;
+    if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) turnCarnet(dx < 0 ? 1 : -1);
+  });
+  caPage.addEventListener('pointercancel', () => { caSwipe = null; });
   document.getElementById('caClose').addEventListener('click', () => { carnet.hidden = true; });
   const btnBook = document.getElementById('btnBook');
   btnBook.addEventListener('click', openCarnet);
@@ -5539,7 +5478,11 @@
 
   window.addEventListener('keydown', e => {
     const open = [...document.querySelectorAll('.overlay')].filter(o => !o.hidden);
-    if (open.length) { if (e.code === 'Escape') open[open.length - 1].hidden = true; return; }
+    if (open.length) {
+      if (e.code === 'Escape') open[open.length - 1].hidden = true;
+      else if (!carnet.hidden && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) turnCarnet(e.code === 'ArrowLeft' ? -1 : 1);
+      return;
+    }
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Enter') {
       if (e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
